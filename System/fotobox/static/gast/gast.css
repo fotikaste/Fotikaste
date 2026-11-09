@@ -76,6 +76,14 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 @keyframes puls-live { from { transform: translate(-50%, -38%) scale(1.25); opacity: 0; } 30% { opacity: 1; } to { transform: translate(-50%, -38%) scale(1); } }
 #countdown.mit-livebild .hinweis-oben { top: 1.5rem; flex-direction: row; gap: 1.2rem; }
 .zahl.leer { visibility: hidden; }
+/* «Bitte noch kurz stillhalten» über dem Livebild, solange die Kamera scharfstellt */
+.live-hinweis { display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  flex-direction: column; align-items: center; gap: .8rem; padding: 2.2rem 3.6rem; border-radius: 1.2rem;
+  background: rgba(0, 0, 0, .55); color: #fff; text-align: center; backdrop-filter: blur(.3rem); pointer-events: none;
+  white-space: nowrap; }
+.live-hinweis b { font-size: 3.6rem; font-weight: 600; }
+.live-hinweis span { font-size: 1.8rem; opacity: .85; }
+#countdown.stillhalten .live-hinweis { display: flex; animation: einblenden .25s ease-out; }
 
 /* Laden, Druck, Fertig, Fehler */
 .gross-text { font-size: 3.4rem; font-weight: 600; margin-top: 2.4rem; }

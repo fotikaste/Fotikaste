@@ -146,6 +146,7 @@ function warte(ms) { return new Promise((r) => setTimeout(r, ms)); }
 // Holt laufend Einzelbilder vom Server und zeichnet sie gespiegelt (wie ein Spiegel).
 // Fällt das Livebild aus, geht der Ablauf einfach ohne weiter – es blockiert nie die Aufnahme.
 let liveToken = 0;
+let stillhalten = false;   // während die Kamera scharfstellt und auslöst
 
 function liveStop() { liveToken++; }
 
@@ -171,7 +172,8 @@ async function liveSchleife() {
       ctx.drawImage(bild, 0, 0);
       fehlversuche = 0;
     } catch {
-      if (++fehlversuche >= 8) { liveAus(); return; }
+      // Während des Auslösens kann das Livebild kurz stocken – dann nicht ausblenden
+      if (++fehlversuche >= 8 && !stillhalten) { liveAus(); return; }
     }
     await warte(Math.max(0, 90 - (performance.now() - t0)));   // höchstens ca. 11 Bilder/s
   }
@@ -215,16 +217,39 @@ async function countdownStarten() {
     zahl.classList.remove('puls'); void zahl.offsetWidth; zahl.classList.add('puls');
     await warte(1000);
   }
-  $('#blitz').classList.remove('an'); void $('#blitz').offsetWidth; $('#blitz').classList.add('an');
-  setTimeout(() => $('#blitz').classList.remove('an'), 700);
-  liveStop();
-  zeige('laden');
-  $('#laden-text').textContent = 'Dein Foto wird geladen …';
+  // Die Kamera stellt nach dem Countdown noch scharf und löst erst dann aus (bis zu einigen
+  // Sekunden). Darum bitten wir freundlich ums Stillhalten, bis das Foto wirklich im Kasten ist.
+  const mitLive = $('#countdown').classList.contains('mit-livebild');
+  stillhalten = true;
+  if (mitLive) {
+    zahl.classList.add('leer');
+    $('#countdown-text').textContent = 'Die Kamera stellt scharf';
+    $('#countdown').classList.add('stillhalten');
+  } else {
+    zeige('laden');
+    $('#laden-text').textContent = 'Bitte noch einen Moment stillhalten …';
+  }
   try {
     const erg = await api(`/api/sitzung/${sitzung}/aufnahme`, {});
+    blitz();                               // erst jetzt ist das Foto wirklich gemacht
+    stillhalten = false;
+    $('#countdown').classList.remove('stillhalten');
+    liveStop();
+    zeige('laden');
+    $('#laden-text').textContent = 'Geschafft! Dein Foto wird vorbereitet …';
     await bildLaden(`/api/sitzung/${sitzung}/vorschau.jpg?n=${erg.aufnahme}`);
     vorschau(erg.wiederholungen_uebrig);
-  } catch (e) { fehler(e.fehler); }
+  } catch (e) {
+    stillhalten = false;
+    $('#countdown').classList.remove('stillhalten');
+    fehler(e.fehler);
+  }
+}
+
+function blitz() {
+  const b = $('#blitz');
+  b.classList.remove('an'); void b.offsetWidth; b.classList.add('an');
+  setTimeout(() => b.classList.remove('an'), 700);
 }
 
 function bildLaden(url) {
