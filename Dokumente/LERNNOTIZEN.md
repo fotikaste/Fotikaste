@@ -9,5 +9,12 @@
 - Der Browsertest hat einen echten Bedienfehler gefunden: Ein Doppeldruck auf «Drucken» hat den nächsten Bildschirm gleich mit bestätigt. Die Lösung ist eine kurze Eingabesperre nach jedem Wechsel. Automatische Tests auf dem Server hätten das nicht entdeckt.
 - Ein Druckauftrag mit «Status unbekannt» wird nie automatisch wiederholt. Sonst entstehen ungewollte Doppeldrucke, die Material kosten.
 
+## Verständnisfragen M2 (2026-11-09)
+| Frage | Schon verstanden | Lücke / ergänzt |
+|---|---|---|
+| Doppeldruck verhindern | Die Oberfläche hat eine Eingabesperre | Die zweite Sicherung ist der **Server/die Datenbank**: pro Sitzung nur ein Druckauftrag. Die Oberfläche allein reicht nicht, weil man sie umgehen kann (zwei Tabs, Neuladen, Fehler im Browser). |
+| «Status unbekannt» | Gast soll sich beim Team melden | **Warum kein automatischer Nachdruck:** Vielleicht wurde schon gedruckt, dann gäbe es einen Doppeldruck. Der Betreiber schaut am Drucker nach und klickt «Wurde gedruckt» oder «Wurde nicht gedruckt». |
+| Echte Kamera | Fast alles bleibt gleich | Nur der **Kamera-Baustein** wird ergänzt. Das Livebild ist eine *zusätzliche, getrennte* Fähigkeit und für die erste echte Aufnahme nicht nötig. Wartezeit (Auslösen + Übertragen) wird gemessen. |
+
 ## Offene Verständnisfragen
-- (werden nach Meilenstein M2 ergänzt)
+- Server vs. Oberfläche: Wer entscheidet was? → beim Kamera-Meilenstein nochmals aufgreifen

@@ -72,6 +72,88 @@ class SimulierteKamera(Kamera):
         return ziel
 
 
+class DigiCamControlKamera(Kamera):
+    """Echte Kamera unter Windows über digiCamControl (CameraControlCmd.exe).
+
+    Laut Anleitung: CameraControlCmd.exe /filename <Datei> /capture
+    Einschränkung: Das Hauptprogramm digiCamControl darf dabei NICHT geöffnet sein.
+    Nur unter Windows nutzbar – auf dem Raspberry Pi käme stattdessen gphoto2.
+    """
+    name = "Canon über digiCamControl (Windows)"
+    simuliert = False
+    PFADE = (r"C:\Program Files (x86)\digiCamControl\CameraControlCmd.exe",
+             r"C:\Program Files\digiCamControl\CameraControlCmd.exe")
+
+    def __init__(self, autofokus=lambda: False, zeitlimit_s=14):
+        self._autofokus = autofokus
+        self.zeitlimit_s = zeitlimit_s
+        self.exe = next((p for p in self.PFADE if Path(p).exists()), None)
+        self._status_cache = (0.0, None)
+
+    def _hauptprogramm_offen(self) -> bool:
+        import subprocess
+        try:
+            out = subprocess.run(["tasklist", "/FI", "IMAGENAME eq CameraControl.exe", "/NH"],
+                                 capture_output=True, text=True, timeout=5,
+                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
+            return "CameraControl.exe" in out
+        except (OSError, subprocess.SubprocessError):
+            return False
+
+    def _usb_verbunden(self) -> bool | None:
+        """Fragt Windows, ob eine Canon-Kamera (USB-Hersteller-ID 04A9) angeschlossen ist."""
+        import subprocess
+        try:
+            out = subprocess.run(
+                ["powershell", "-NoProfile", "-Command",
+                 "@(Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -match 'VID_04A9' -and $_.Class -eq 'WPD' }).Count"],
+                capture_output=True, text=True, timeout=10,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
+            return int(out or 0) > 0
+        except (OSError, ValueError, subprocess.SubprocessError):
+            return None  # unbekannt – nicht blockieren, die Aufnahme meldet dann den Fehler
+
+    def status(self):
+        zeit, wert = self._status_cache
+        if wert and time.monotonic() - zeit < 10:
+            return wert
+        if not self.exe:
+            wert = {"bereit": False, "text": "digiCamControl ist nicht installiert"}
+        elif self._hauptprogramm_offen():
+            wert = {"bereit": False, "text": "Hauptprogramm digiCamControl ist geöffnet – bitte schliessen"}
+        elif self._usb_verbunden() is False:
+            wert = {"bereit": False, "text": "Keine Canon-Kamera per USB gefunden (eingeschaltet? Kabel?)"}
+        else:
+            wert = {"bereit": True, "text": "Kamera per USB verbunden"}
+        self._status_cache = (time.monotonic(), wert)
+        return wert
+
+    def aufnehmen(self, ziel: Path) -> Path:
+        import subprocess
+        if not self.exe:
+            raise KameraFehler("nicht_verbunden", "digiCamControl ist nicht installiert")
+        ziel.parent.mkdir(parents=True, exist_ok=True)
+        befehl = [self.exe, "/filename", str(ziel), "/capture" if self._autofokus() else "/capturenoaf"]
+        try:
+            erg = subprocess.run(befehl, capture_output=True, text=True, timeout=self.zeitlimit_s,
+                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except subprocess.TimeoutExpired as e:
+            self._status_cache = (0.0, None)
+            raise KameraFehler("zeitueberschreitung", "digiCamControl hat nicht rechtzeitig geantwortet") from e
+        ausgabe = (erg.stdout + erg.stderr).strip().replace("\n", " | ")
+        if not ziel.exists() or ziel.stat().st_size == 0:
+            self._status_cache = (0.0, None)
+            code = "nicht_verbunden" if "no camera" in ausgabe.lower() or "not found" in ausgabe.lower() else "fehler"
+            raise KameraFehler(code, f"Keine Bilddatei erhalten (Rückgabe {erg.returncode}): {ausgabe[-300:]}")
+        return ziel
+
+
+def erstelle_kamera(modus: str, sim_verhalten, autofokus=lambda: False) -> Kamera:
+    if modus == "digicamcontrol":
+        return DigiCamControlKamera(autofokus)
+    return SimulierteKamera(sim_verhalten)
+
+
 def testbild(breite: int, hoehe: int, nummer: int) -> Image.Image:
     """Ein buntes, eindeutig als Test erkennbares Bild (keine echten Personen)."""
     rnd = random.Random(nummer * 7919)

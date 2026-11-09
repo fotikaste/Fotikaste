@@ -15,7 +15,7 @@ from pathlib import Path
 
 from . import bild
 from .drucker import SimulierterDrucker, freier_speicher_mb
-from .kamera import KameraFehler, SimulierteKamera, mit_zeitlimit
+from .kamera import KameraFehler, SimulierteKamera, erstelle_kamera, mit_zeitlimit
 from .store import Store, jetzt as _jetzt
 
 log = logging.getLogger("fotobox")
@@ -38,7 +38,9 @@ class Fotobox:
         self.daten = daten
         daten.mkdir(parents=True, exist_ok=True)
         self.store = Store(daten / "fotobox.db")
-        self.kamera = kamera or SimulierteKamera(lambda: self.store.einstellung("sim_kamera_verhalten"))
+        self._feste_kamera = kamera
+        self._sim_kamera = SimulierteKamera(lambda: self.store.einstellung("sim_kamera_verhalten"))
+        self._echte_kameras = {}
         self.drucker = drucker or SimulierterDrucker(
             daten / "druck_simulation",
             verhalten=lambda: self.store.einstellung("sim_drucker_verhalten"),
@@ -56,6 +58,18 @@ class Fotobox:
         n = self.store.unterbrochene_auftraege_markieren()
         if n:
             log.warning("%d Druckauftrag/-aufträge nach Neustart auf «unbekannt» gesetzt", n)
+
+    @property
+    def kamera(self):
+        """Welche Kamera gilt, entscheidet die Einstellung «kamera_modus» – umschaltbar ohne Neustart."""
+        if self._feste_kamera:
+            return self._feste_kamera
+        modus = self.e("kamera_modus")
+        if modus == "simuliert":
+            return self._sim_kamera
+        if modus not in self._echte_kameras:
+            self._echte_kameras[modus] = erstelle_kamera(modus, None, lambda: bool(self.e("kamera_autofokus")))
+        return self._echte_kameras[modus]
 
     # ---------- Hilfen ----------
     def e(self, schluessel):

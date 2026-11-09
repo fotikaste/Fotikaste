@@ -29,7 +29,8 @@ STANDARD_EINSTELLUNGEN = {
     "druck_hoehe_px": 1200,
     "druck_dpi": 300,
     # Simulation
-    "kamera_modus": "simuliert",       # simuliert | (später: digicamcontrol, gphoto2)
+    "kamera_modus": "simuliert",       # simuliert | digicamcontrol (Windows) | (später: gphoto2)
+    "kamera_autofokus": False,         # False = ohne Scharfstellen auslösen (Objektiv auf MF stellen)
     "sim_kamera_verhalten": "ok",      # ok | nicht_verbunden | zeitueberschreitung
     "drucker_modus": "simuliert",
     "sim_drucker_verhalten": "ok",     # ok | naechster_fehlgeschlagen | naechster_unbekannt

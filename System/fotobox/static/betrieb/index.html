@@ -107,9 +107,12 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
       </section>
 
       <section class="karte voll">
-        <h2>Simulation (für Tests)</h2>
+        <h2>Kamera und Simulation</h2>
         <form class="formular" id="f-sim">
-          <label>Kamera<select name="sim_kamera_verhalten">
+          <label>Verwendete Kamera<select name="kamera_modus">
+            <option value="simuliert">Simulation (Testbilder)</option>
+            <option value="digicamcontrol">Echte Canon über digiCamControl</option></select></label>
+          <label>Simulierte Kamera<select name="sim_kamera_verhalten">
             <option value="ok">funktioniert</option>
             <option value="nicht_verbunden">nicht verbunden</option>
             <option value="zeitueberschreitung">antwortet nicht (Zeitüberschreitung)</option></select></label>
@@ -239,7 +242,7 @@ $('#f-ablauf').addEventListener('submit', async (e) => {
 $('#f-sim').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target.elements;
-  await api('/api/betrieb/einstellungen', {sim_kamera_verhalten: f.sim_kamera_verhalten.value, sim_drucker_verhalten: f.sim_drucker_verhalten.value});
+  await api('/api/betrieb/einstellungen', {kamera_modus: f.kamera_modus.value, sim_kamera_verhalten: f.sim_kamera_verhalten.value, sim_drucker_verhalten: f.sim_drucker_verhalten.value});
   meldung('Simulation übernommen'); laden();
 });
 
