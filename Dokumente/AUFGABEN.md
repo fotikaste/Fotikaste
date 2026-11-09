@@ -12,7 +12,7 @@
 - [x] 21 automatische Tests, Browserprüfung durch Claude, Startdatei
 
 ## Offen
-- [ ] **M2 abnehmen:** Du führst 10 Sitzungen durch und behebst einen simulierten Druckfehler
+- [x] **M2 abgenommen (2026-11-09):** 13 Sitzungen, 2 simulierte Druckfehler per Nachdruck behoben, Kameraausfall abgefangen (laut Protokoll und Datenbank)
 - [ ] Verständnisfragen zu M2
 - [ ] Darstellung am BenQ prüfen (Vollbild F11, Lesbarkeit aus 1,5 m)
 - [ ] M3: Echte Aufnahme mit der EOS 600D unter Windows (digiCamControl prüfen, erst nach deiner Zustimmung installieren)

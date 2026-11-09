@@ -7,7 +7,8 @@ Legende: ✅ **getestet** (selbst ausprobiert) · 📄 **nur Doku** (laut offizi
 | Anwendung mit simulierter Kamera und simuliertem Drucker | ✅ 21 automatische Tests und Browserprüfung durch Claude (2026-11-09) | ❔ |
 | Gästeoberfläche bei 1920×1080 | ✅ im eingebauten Browser von Claude (nachgebildete Grösse) | ❔ |
 | BenQ GL2450H, echte Darstellung | ❔ von dir zu prüfen | ❔ |
-| Startdatei `Fotobox starten.bat` | ❔ von dir zu prüfen (Claude hat den Startbefehl darin geprüft, nicht die Datei selbst) | – |
+| Startdatei `Fotobox starten.bat` | ✅ von dir gestartet (2026-11-09) | – |
+| Abnahme M2 durch dich (Sitzungen, Druckfehler, Nachdruck) | ✅ 2026-11-09 | ❔ |
 | Canon EOS 600D – Auslösen und Übertragen | 📄 Canon SDK, digiCamControl-Liste | 📄 gphoto2-Liste |
 | Canon EOS 600D – Livebild | 📄 Canon-Support | 📄 gphoto2-Liste |
 | Fotodrucker | ❔ noch nicht gewählt | ❔ noch nicht gewählt |
