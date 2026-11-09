@@ -30,7 +30,8 @@ STANDARD_EINSTELLUNGEN = {
     "druck_dpi": 300,
     # Simulation
     "kamera_modus": "simuliert",       # simuliert | digicamcontrol_app (schnell) | digicamcontrol (langsam) | (später: gphoto2)
-    "kamera_autofokus": False,         # False = ohne Scharfstellen auslösen (Objektiv auf MF stellen)
+    "livebild": True,                  # Livebild während der Sitzung zeigen (falls die Kamera es kann)
+    "kamera_autofokus": False,        # False = ohne Scharfstellen auslösen (Objektiv auf MF stellen)
     "sim_kamera_verhalten": "ok",      # ok | nicht_verbunden | zeitueberschreitung
     "drucker_modus": "simuliert",
     "sim_drucker_verhalten": "ok",     # ok | naechster_fehlgeschlagen | naechster_unbekannt

@@ -163,6 +163,57 @@ class Kamerafehler(unittest.TestCase):
         self.assertLess(time.monotonic() - t0, 3)
 
 
+class Livebild(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.box = neue_box(Path(self.tmp.name))
+
+    def tearDown(self):
+        self.box.store.schliessen()
+        self.tmp.cleanup()
+
+    def test_livebild_nur_waehrend_der_sitzung(self):
+        s = self.box.sitzung_starten()
+        self.assertTrue(self.box.livebild_starten(s["id"]))
+        self.assertTrue(self.box.livebild_bild(s["id"]).startswith(b"\xff\xd8"))   # JPEG
+        self.box.sitzung_beenden(s["id"])
+        self.assertFalse(self.box._livebild_an)                                   # automatisch gestoppt
+        with self.assertRaises(FotoboxFehler):
+            self.box.livebild_bild(s["id"])
+
+    def test_livebild_stoppt_nach_aufnahme(self):
+        s = self.box.sitzung_starten()
+        self.box.livebild_starten(s["id"])
+        self.box.aufnehmen(s["id"])
+        self.assertFalse(self.box._livebild_an)
+
+    def test_ohne_livebild_geht_es_trotzdem(self):
+        s = self.box.sitzung_starten()
+        self.box.store.setze_einstellung("livebild", False)
+        self.assertFalse(self.box.livebild_starten(s["id"]))
+        self.box.store.setze_einstellung("livebild", True)
+        with mock.patch.object(type(self.box.kamera), "livebild_start",
+                               side_effect=__import__("fotobox.kamera", fromlist=["KameraFehler"]).KameraFehler("kein_livebild", "x")):
+            self.assertFalse(self.box.livebild_starten(s["id"]))   # Kamera ohne Livebild: kein Fehler
+        self.assertEqual(self.box.aufnehmen(s["id"])["aufnahme"], 1)
+
+    def test_rahmen_entspricht_postkarte(self):
+        from fotobox.bild import ausschnitt
+        a = ausschnitt(1800, 1200)
+        self.assertAlmostEqual(a["w"], 1.0)
+        self.assertAlmostEqual(a["h"], 1.5 / (1716 / 948), places=3)   # Fotofeld 1716x948 Pixel
+        self.assertAlmostEqual(a["y"], (1 - a["h"]) / 2)
+
+    def test_livebild_ueber_web(self):
+        c = erstelle_app(self.box).test_client()
+        sid = c.post("/api/sitzung", json={}).json["id"]
+        self.assertTrue(c.post(f"/api/sitzung/{sid}/livebild").json["livebild"])
+        r = c.get(f"/api/sitzung/{sid}/livebild.jpg")
+        self.assertEqual((r.status_code, r.mimetype), (200, "image/jpeg"))
+        self.assertIn("no-store", r.headers["Cache-Control"])
+        self.assertIn("ausschnitt", c.get("/api/konfig").json)
+
+
 class FalscheKamera(unittest.TestCase):
     def test_nur_canon_fotos_werden_akzeptiert(self):
         from fotobox.kamera import KameraFehler, pruefe_canon

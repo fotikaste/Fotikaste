@@ -1,13 +1,16 @@
 """Kamera-Baustein.
 
-Jede Kamera (simuliert oder echt) bietet dieselben zwei Funktionen:
+Jede Kamera (simuliert oder echt) bietet dieselben Funktionen:
   status()          -> Ist die Kamera bereit?
   aufnehmen(ziel)   -> Foto auslösen und als JPEG-Datei unter «ziel» ablegen.
+  livebild_start() / livebild_bild() / livebild_stop()
+                    -> Livebild (optional; Kameras ohne Livebild melden KameraFehler)
 Der restliche Ablauf weiss nicht, welche Kamera dahintersteckt.
 """
 from __future__ import annotations
 
 import colorsys
+import math
 import random
 import threading
 import time
@@ -36,6 +39,16 @@ class Kamera:
 
     def aufnehmen(self, ziel: Path) -> Path:
         raise NotImplementedError
+
+    # Livebild: Standard = nicht vorhanden. Die Oberfläche läuft dann ohne Livebild weiter.
+    def livebild_start(self):
+        raise KameraFehler("kein_livebild", "Diese Kamera-Anbindung hat kein Livebild")
+
+    def livebild_bild(self) -> bytes:
+        raise KameraFehler("kein_livebild", "Diese Kamera-Anbindung hat kein Livebild")
+
+    def livebild_stop(self):
+        pass
 
 
 class SimulierteKamera(Kamera):
@@ -70,6 +83,29 @@ class SimulierteKamera(Kamera):
         ziel.parent.mkdir(parents=True, exist_ok=True)
         bild.save(ziel, "JPEG", quality=90)
         return ziel
+
+    def livebild_start(self):
+        if self._verhalten() == "nicht_verbunden":
+            raise KameraFehler("nicht_verbunden", "Simulation: Kamera nicht verbunden")
+
+    def livebild_bild(self) -> bytes:
+        """Ein bewegtes Testbild (Kreis wandert), damit man Bewegung und Spiegelung sieht."""
+        import io
+        b, h = 720, 480
+        t = time.monotonic()
+        bild = Image.new("RGB", (b, h), (52, 62, 78))
+        d = ImageDraw.Draw(bild)
+        for i in range(0, b, 60):           # Raster als Orientierung
+            d.line((i, 0, i, h), fill=(70, 82, 100))
+        for i in range(0, h, 60):
+            d.line((0, i, b, i), fill=(70, 82, 100))
+        x = b / 2 + (b / 3) * math.sin(t * 1.3)
+        d.ellipse((x - 60, h / 2 - 60, x + 60, h / 2 + 60), fill=(235, 190, 110))
+        f = ImageFont.truetype(str(SCHRIFTEN / "Inter.ttf"), 26)
+        d.text((24, 20), "Livebild (Simulation)", font=f, fill="white")
+        puffer = io.BytesIO()
+        bild.save(puffer, "JPEG", quality=70)
+        return puffer.getvalue()
 
 
 class DigiCamControlKamera(Kamera):
@@ -225,6 +261,35 @@ class DigiCamControlAppKamera(DigiCamControlKamera):
         ausgabe = ((erg.stdout or "") + (erg.stderr or "")).strip().replace("\n", " | ")
         raise KameraFehler("nicht_verbunden" if not self._usb_verbunden() else "fehler",
                            f"Keine Bilddatei erhalten: {ausgabe[-300:]}")
+
+    # ---- Livebild über den Webserver der digiCamControl-App (nur 127.0.0.1) ----
+    # Voraussetzung: In digiCamControl «Use web server» und «Allow interaction via webserver» an.
+    # Gemessen 2026-11-09: ca. 9 Bilder/s, 1056x704, Foto während Livebild nach 1,7 s.
+    WEB = "http://127.0.0.1:5513"
+
+    def _web(self, pfad: str, timeout=3.0) -> bytes:
+        import urllib.error
+        import urllib.request
+        try:
+            with urllib.request.urlopen(self.WEB + pfad, timeout=timeout) as r:
+                return r.read()
+        except (urllib.error.URLError, OSError) as e:
+            raise KameraFehler("kein_livebild", f"Webserver von digiCamControl nicht erreichbar: {e}") from e
+
+    def livebild_start(self):
+        self._web("/?CMD=LiveViewWnd_Show")
+
+    def livebild_bild(self) -> bytes:
+        daten = self._web("/liveview.jpg", timeout=2.0)
+        if not daten.startswith(b"\xff\xd8"):  # JPEG beginnt immer mit FF D8
+            raise KameraFehler("kein_livebild", "Livebild noch nicht bereit")
+        return daten
+
+    def livebild_stop(self):
+        try:
+            self._web("/?CMD=LiveViewWnd_Hide")
+        except KameraFehler:
+            pass
 
 
 def pruefe_canon(datei: Path):

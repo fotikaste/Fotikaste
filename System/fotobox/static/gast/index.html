@@ -27,8 +27,13 @@
   </section>
 
   <!-- 2. Countdown -->
-  <section class="ansicht" data-ansicht="countdown">
-    <p class="hinweis-oben"><span class="pfeil-hoch"></span>Schau in die Kamera</p>
+  <!-- 2. Ausrichten (mit Livebild) und Countdown -->
+  <section class="ansicht" data-ansicht="countdown" id="countdown">
+    <p class="hinweis-oben"><span class="pfeil-hoch"></span><span id="countdown-text">Schau in die Kamera</span></p>
+    <div class="live" id="live">
+      <canvas id="live-bild"></canvas>
+      <div class="live-rahmen" id="live-rahmen"></div>
+    </div>
     <div class="zahl" id="zahl">3</div>
   </section>
 

@@ -57,6 +57,7 @@ function schneeErzeugen() {
 // t = [links, mitte, rechts]; jede Taste: {text, los, aus} oder null (unsichtbar)
 function zeige(name, t = [null, null, null], {inaktiv = false} = {}) {
   clearTimeout(autoTimer);
+  if (name !== 'countdown') liveStop();   // Livebild nur beim Ausrichten und im Countdown
   for (const el of document.querySelectorAll('.ansicht')) el.classList.toggle('sichtbar', el.dataset.ansicht === name);
   ansicht = name;
   belegung = t;
@@ -141,9 +142,74 @@ async function starten() {
 
 function warte(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
+// ---------------- Livebild ----------------
+// Holt laufend Einzelbilder vom Server und zeichnet sie gespiegelt (wie ein Spiegel).
+// Fällt das Livebild aus, geht der Ablauf einfach ohne weiter – es blockiert nie die Aufnahme.
+let liveToken = 0;
+
+function liveStop() { liveToken++; }
+
+function liveAus() {
+  liveStop();
+  $('#countdown').classList.remove('mit-livebild');
+}
+
+async function liveSchleife() {
+  const token = ++liveToken;
+  const canvas = $('#live-bild');
+  const ctx = canvas.getContext('2d');
+  let fehlversuche = 0;
+  while (token === liveToken) {
+    const t0 = performance.now();
+    try {
+      const r = await fetch(`/api/sitzung/${sitzung}/livebild.jpg?t=${Date.now()}`);
+      if (!r.ok) throw new Error(r.status);
+      const bild = await createImageBitmap(await r.blob());
+      if (token !== liveToken) return;
+      if (canvas.width !== bild.width) { canvas.width = bild.width; canvas.height = bild.height; }
+      ctx.setTransform(-1, 0, 0, 1, canvas.width, 0);   // spiegeln
+      ctx.drawImage(bild, 0, 0);
+      fehlversuche = 0;
+    } catch {
+      if (++fehlversuche >= 8) { liveAus(); return; }
+    }
+    await warte(Math.max(0, 90 - (performance.now() - t0)));   // höchstens ca. 11 Bilder/s
+  }
+}
+
+function rahmenSetzen() {
+  const a = konfig.ausschnitt;
+  Object.assign($('#live-rahmen').style, {left: a.x * 100 + '%', top: a.y * 100 + '%', width: a.w * 100 + '%', height: a.h * 100 + '%'});
+}
+
+// Schritt 1: Ausrichten. Mit Livebild sehen sich die Gäste im Rahmen und starten selbst.
+// Ohne Livebild geht es wie bisher direkt in den Countdown.
 async function countdownUndAufnahme() {
-  zeige('countdown');
   const zahl = $('#zahl');
+  zahl.classList.add('leer');
+  $('#countdown-text').textContent = 'Einen Moment …';
+  $('#countdown').classList.remove('mit-livebild');
+  zeige('countdown');
+  let mitLive = false;
+  try { mitLive = (await api(`/api/sitzung/${sitzung}/livebild`, {})).livebild; } catch { mitLive = false; }
+  if (!mitLive) return countdownStarten();
+  rahmenSetzen();
+  $('#countdown').classList.add('mit-livebild');
+  $('#countdown-text').textContent = 'Stellt euch in den Rahmen';
+  liveSchleife();
+  zeige('countdown', [
+    {text: 'Abbrechen', los: () => beenden('abgebrochen')},
+    {text: 'Los!', los: countdownStarten},
+    null,
+  ], {inaktiv: true});
+}
+
+// Schritt 2: Countdown (über dem Livebild, falls vorhanden) und Aufnahme
+async function countdownStarten() {
+  zeige('countdown');
+  $('#countdown-text').textContent = 'Schau in die Kamera';
+  const zahl = $('#zahl');
+  zahl.classList.remove('leer');
   for (let n = konfig.countdown_s; n >= 1; n--) {
     zahl.textContent = n;
     zahl.classList.remove('puls'); void zahl.offsetWidth; zahl.classList.add('puls');
@@ -151,6 +217,7 @@ async function countdownUndAufnahme() {
   }
   $('#blitz').classList.remove('an'); void $('#blitz').offsetWidth; $('#blitz').classList.add('an');
   setTimeout(() => $('#blitz').classList.remove('an'), 700);
+  liveStop();
   zeige('laden');
   $('#laden-text').textContent = 'Dein Foto wird geladen …';
   try {

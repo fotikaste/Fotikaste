@@ -30,6 +30,21 @@ def layout(breite: int, hoehe: int) -> dict:
             "foto": (rand, rand, breite - rand, hoehe - rand - fuss)}
 
 
+KAMERA_SEITENVERHAELTNIS = 3 / 2  # Canon EOS 600D (5184x3456) und ihr Livebild (1056x704)
+
+
+def ausschnitt(breite: int, hoehe: int, kamera=KAMERA_SEITENVERHAELTNIS) -> dict:
+    """Welcher Teil des Kamerabilds kommt auf die Postkarte? Gleiche Rechnung wie ImageOps.fit
+    (mittig zuschneiden). Ergebnis als Anteile 0..1 – für den Rahmen im Livebild."""
+    x0, y0, x1, y1 = layout(breite, hoehe)["foto"]
+    ziel = (x1 - x0) / (y1 - y0)
+    if ziel > kamera:   # Foto-Feld ist breiter: oben und unten wird abgeschnitten
+        w, h = 1.0, kamera / ziel
+    else:               # Foto-Feld ist schmaler: links und rechts wird abgeschnitten
+        w, h = ziel / kamera, 1.0
+    return {"x": (1 - w) / 2, "y": (1 - h) / 2, "w": w, "h": h}
+
+
 def postkarte(original: Path, ziel: Path, *, breite: int, hoehe: int, dpi: int,
               thema_name: str, namen: str, datum_text: str) -> Path:
     t = thema(thema_name)

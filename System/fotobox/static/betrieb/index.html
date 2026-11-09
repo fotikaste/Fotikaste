@@ -131,6 +131,9 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
             <option value="simuliert">Simulation (Testbilder)</option>
             <option value="digicamcontrol_app">Echte Canon – schnell (digiCamControl-App, empfohlen)</option>
             <option value="digicamcontrol">Echte Canon – langsam (ohne App, 8–15 s)</option></select></label>
+          <label>Livebild beim Ausrichten<select name="livebild">
+            <option value="true">an</option>
+            <option value="false">aus</option></select></label>
           <label>Simulierte Kamera<select name="sim_kamera_verhalten">
             <option value="ok">funktioniert</option>
             <option value="nicht_verbunden">nicht verbunden</option>
@@ -338,7 +341,8 @@ $('#f-ablauf').addEventListener('submit', async (e) => {
 $('#f-sim').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target.elements;
-  await api('/api/betrieb/einstellungen', {kamera_modus: f.kamera_modus.value, sim_kamera_verhalten: f.sim_kamera_verhalten.value, sim_drucker_verhalten: f.sim_drucker_verhalten.value});
+  await api('/api/betrieb/einstellungen', {kamera_modus: f.kamera_modus.value, livebild: f.livebild.value === 'true',
+    sim_kamera_verhalten: f.sim_kamera_verhalten.value, sim_drucker_verhalten: f.sim_drucker_verhalten.value});
   meldung('Simulation übernommen'); laden();
 });
 

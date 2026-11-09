@@ -15,6 +15,7 @@ from pathlib import Path
 from flask import Flask, jsonify, request, send_file, send_from_directory, session
 
 from .ablauf import Fotobox, FotoboxFehler
+from .bild import ausschnitt
 from .store import STANDARD_EINSTELLUNGEN
 from .themen import THEMEN, thema
 
@@ -73,6 +74,8 @@ def erstelle_app(box: Fotobox) -> Flask:
             "inaktiv_s": e["inaktiv_s"], "inaktiv_warnung_s": e["inaktiv_warnung_s"], "abschluss_s": e["abschluss_s"],
             "druck_verbleibend": box.kontingent()["verbleibend"],
             "seitenverhaeltnis": e["druck_breite_px"] / e["druck_hoehe_px"],
+            # Welcher Teil des Kamerabilds landet auf der Postkarte? (Anteile 0..1, mittig)
+            "ausschnitt": ausschnitt(e["druck_breite_px"], e["druck_hoehe_px"]),
         })
 
     @app.post("/api/sitzung")
@@ -84,6 +87,15 @@ def erstelle_app(box: Fotobox) -> Flask:
     @app.post("/api/sitzung/<sid>/aufnahme")
     def aufnahme(sid):
         return jsonify(box.aufnehmen(sid))
+
+    @app.post("/api/sitzung/<sid>/livebild")
+    def livebild_start(sid):
+        return jsonify({"livebild": box.livebild_starten(sid)})
+
+    @app.get("/api/sitzung/<sid>/livebild.jpg")
+    def livebild_bild(sid):
+        from flask import Response
+        return Response(box.livebild_bild(sid), mimetype="image/jpeg")
 
     @app.get("/api/sitzung/<sid>/vorschau.jpg")
     def vorschau(sid):

@@ -52,6 +52,8 @@ class Fotobox:
         self._aktiv: str | None = None
         self._start_anfrage: str | None = None
         self._aufnahme_laeuft = False
+        self._livebild_an = False
+        self._livebild_zuletzt = 0.0
         self.speicher_mb = lambda: freier_speicher_mb(self.daten)
 
         # Kamera-Prüfung im Hintergrund (dauert bei echter Kamera ca. 3 s), damit der
@@ -80,6 +82,11 @@ class Fotobox:
     def _kamera_beobachten(self):
         while True:
             try:
+                # Livebild-Wächter: Holt niemand mehr Bilder ab (z. B. Browser geschlossen),
+                # wird das Livebild gestoppt – schont Akku und Sensor.
+                if self._livebild_an and time.monotonic() - self._livebild_zuletzt > 10:
+                    log.info("Livebild gestoppt (keine Abrufe mehr)")
+                    self.livebild_stoppen()
                 k = self.kamera
                 if not k.simuliert:
                     k.status(frisch=True)  # frische Prüfung, Ergebnis landet im Zwischenspeicher
@@ -171,6 +178,43 @@ class Fotobox:
         finally:
             with self._lock:
                 self._aufnahme_laeuft = False
+            self.livebild_stoppen()  # nach dem Foto wird kein Livebild mehr gebraucht
+
+    # ---------- Livebild ----------
+    def livebild_starten(self, sid: str) -> bool:
+        """True = Livebild läuft. False = kein Livebild (ausgeschaltet oder Kamera kann es nicht);
+        der Ablauf funktioniert dann einfach ohne."""
+        with self._lock:
+            self._pruefe_aktiv(sid)
+        if not self.e("livebild"):
+            return False
+        try:
+            self.kamera.livebild_start()
+        except KameraFehler as e:
+            log.warning("Livebild nicht verfügbar: %s", e)
+            return False
+        self._livebild_an = True
+        self._livebild_zuletzt = time.monotonic()
+        return True
+
+    def livebild_bild(self, sid: str) -> bytes:
+        with self._lock:
+            self._pruefe_aktiv(sid)          # Livebild nur für die laufende Sitzung
+        if not self._livebild_an:
+            raise FotoboxFehler("kein_livebild")
+        self._livebild_zuletzt = time.monotonic()
+        try:
+            return self.kamera.livebild_bild()
+        except KameraFehler as e:
+            raise FotoboxFehler("kein_livebild", str(e)) from e
+
+    def livebild_stoppen(self):
+        if self._livebild_an:
+            self._livebild_an = False
+            try:
+                self.kamera.livebild_stop()
+            except Exception:  # noqa: BLE001 – Stoppen darf nie den Ablauf stören
+                log.exception("Livebild stoppen fehlgeschlagen")
 
     def vorschau_datei(self, sid: str) -> Path:
         with self._lock:
@@ -237,6 +281,7 @@ class Fotobox:
                 self._aktiv = None
                 self._start_anfrage = None
                 log.info("Sitzung %s: %s", sid, grund)
+        self.livebild_stoppen()  # nach Sitzungsende nie ein Livebild weiterlaufen lassen
 
     # ---------- Betreiber ----------
     def nachdrucken(self, did: str) -> dict:

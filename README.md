@@ -44,6 +44,8 @@ Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
    Die Fotobox startet die digiCamControl-App automatisch minimiert in der Taskleiste. **Nicht schliessen**, sie hält die Verbindung zur Kamera offen.
    Nach dem Start etwa 20 s warten, bis die Betriebsseite «Kamera bereit» zeigt.
 
+**Livebild:** In digiCamControl unter File → Settings → Webserver «Use web server» und «Allow interaction via webserver» einschalten (Port 5513) und die App neu starten. Danach sehen Gäste sich gespiegelt mit dem Postkarten-Rahmen und starten den Countdown mit der mittleren Taste. Abschalten: Betriebsseite → «Livebild beim Ausrichten: aus». Fehlt das Livebild, läuft der Countdown wie früher ohne Bild.
+
 Foto ist ca. 1,4 s nach dem Auslösen auf dem PC. Der Modus «langsam» braucht 8–15 s, weil er die Verbindung jedes Mal neu aufbaut, und funktioniert nur, wenn die App **geschlossen** ist.
 
 ## Beenden
@@ -63,7 +65,7 @@ Im Ordner `System` in PowerShell:
 ```
 .venv\Scripts\python.exe -m unittest -v
 ```
-Erwartet: `Ran 30 tests … OK`
+Erwartet: `Ran 35 tests … OK`
 
 ## Häufige Fehler
 | Problem | Lösung |
