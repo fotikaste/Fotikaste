@@ -33,10 +33,11 @@ Ausserdem stellst du hier Veranstaltung, Thema, Ablauf und Simulation ein.
 1. Einmalig: **digiCamControl** installiert (ist auf diesem PC erledigt).
 2. Kamera: Akku voll, automatische Abschaltung **Aus**, Modus **P** oder **M**, Objektiv auf **MF** und vorher auf den Gastabstand scharfstellen.
 3. USB-Kabel direkt am Laptop einstecken und die Kamera einschalten. Das Display wird dunkel, das ist normal.
-4. Das Hauptfenster von digiCamControl darf **nicht** offen sein.
-5. Betriebsseite → «Kamera und Simulation» → «Echte Canon über digiCamControl» → Übernehmen.
+4. Betriebsseite → «Kamera und Simulation» → **«Echte Canon – schnell (digiCamControl-App)»** → Übernehmen.
+   Die Fotobox startet die digiCamControl-App automatisch minimiert in der Taskleiste. **Nicht schliessen**, sie hält die Verbindung zur Kamera offen.
+   Nach dem Start etwa 20 s warten, bis die Betriebsseite «Kamera bereit» zeigt.
 
-Eine Aufnahme dauert derzeit 8–15 Sekunden.
+Foto ist ca. 1,4 s nach dem Auslösen auf dem PC. Der Modus «langsam» braucht 8–15 s, weil er die Verbindung jedes Mal neu aufbaut, und funktioniert nur, wenn die App **geschlossen** ist.
 
 ## Beenden
 Das schwarze Fenster «Fotobox» schliessen oder darin **Strg+C** drücken. Danach den Browser schliessen.

@@ -53,6 +53,11 @@ class Fotobox:
         self._aufnahme_laeuft = False
         self.speicher_mb = lambda: freier_speicher_mb(self.daten)
 
+        # Kamera-Prüfung im Hintergrund (dauert bei echter Kamera ca. 3 s), damit der
+        # Gast beim Start nicht warten muss: status() liest dann nur den Zwischenspeicher.
+        if kamera is None:
+            threading.Thread(target=self._kamera_beobachten, daemon=True).start()
+
         # Aufräumen nach einem Neustart
         self.store.offene_sitzungen_beenden("neustart")
         n = self.store.unterbrochene_auftraege_markieren()
@@ -70,6 +75,16 @@ class Fotobox:
         if modus not in self._echte_kameras:
             self._echte_kameras[modus] = erstelle_kamera(modus, None, lambda: bool(self.e("kamera_autofokus")))
         return self._echte_kameras[modus]
+
+    def _kamera_beobachten(self):
+        while True:
+            try:
+                k = self.kamera
+                if not k.simuliert:
+                    k.status(frisch=True)  # frische Prüfung, Ergebnis landet im Zwischenspeicher
+            except Exception:  # noqa: BLE001 – z. B. Datenbank geschlossen beim Beenden
+                return
+            time.sleep(6)
 
     # ---------- Hilfen ----------
     def e(self, schluessel):

@@ -16,9 +16,11 @@
 - [ ] Verständnisfragen zu M2
 - [ ] Darstellung am BenQ prüfen (Vollbild F11, Lesbarkeit aus 1,5 m)
 - [x] **M3 (technisch, 2026-11-09):** Echte Aufnahme der EOS 600D über digiCamControl, durch den normalen Fotobox-Ablauf (Postkarte und simulierter Druck)
-- [ ] M3 von dir abnehmen: in der Gästeansicht mit echter Kamera fotografieren, Kabel ziehen testen
-- [ ] Wartezeit verkürzen (8–15 s): dauerhafte Kameraverbindung prüfen (digiCamControl-Fernsteuerung, Canon EDSDK oder gphoto2 auf dem Pi)
-- [ ] Kamera-Statusprüfung (dauert ca. 3 s) im Hintergrund statt beim Start
+- [x] Problem aus deinem Test: Foto erst ca. 6 s nach dem Countdown → schneller Modus mit offener digiCamControl-App (Foto nach 1,4 s)
+- [x] Sicherung gegen Ausweichen auf die Laptop-Webcam
+- [x] Kamera-Statusprüfung läuft im Hintergrund
+- [ ] M3 von dir abnehmen: schneller Modus in der Gästeansicht, Kabel ziehen testen
+- [ ] Falls der Klick immer noch spürbar nach der «1» kommt: Auslösebefehl etwas früher senden (Vorlauf einstellbar machen)
 - [ ] Scharfstellen: einmal mit AF auf Gastabstand scharfstellen, dann MF (Ablauf dokumentieren) oder `/capture` mit Autofokus testen
 - [ ] Kamera-Uhr stellen (steht auf März 2025)
 - [ ] M4 vervollständigen: mehrere Veranstaltungen anlegen/auswählen, Export der Bilder, Löschen nur mit Bestätigung, PIN-Änderung in der Oberfläche

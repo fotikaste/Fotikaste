@@ -163,6 +163,24 @@ class Kamerafehler(unittest.TestCase):
         self.assertLess(time.monotonic() - t0, 3)
 
 
+class FalscheKamera(unittest.TestCase):
+    def test_nur_canon_fotos_werden_akzeptiert(self):
+        from fotobox.kamera import KameraFehler, pruefe_canon
+        with tempfile.TemporaryDirectory() as tmp:
+            webcam = Path(tmp) / "webcam.jpg"
+            Image.new("RGB", (64, 48)).save(webcam)
+            with self.assertRaises(KameraFehler) as f:
+                pruefe_canon(webcam)
+            self.assertEqual(f.exception.code, "falsche_kamera")
+            self.assertTrue((Path(tmp) / "webcam_FALSCHE_KAMERA.jpg").exists())
+
+            canon = Path(tmp) / "canon.jpg"
+            exif = Image.Exif()
+            exif[271] = "Canon"
+            Image.new("RGB", (64, 48)).save(canon, exif=exif)
+            pruefe_canon(canon)  # darf keinen Fehler werfen
+
+
 class Druckfehler(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

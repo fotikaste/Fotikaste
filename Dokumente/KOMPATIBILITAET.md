@@ -10,9 +10,11 @@ Legende: ✅ **getestet** (selbst ausprobiert) · 📄 **nur Doku** (laut offizi
 | Startdatei `Fotobox starten.bat` | ✅ von dir gestartet (2026-11-09) | – |
 | Abnahme M2 durch dich (Sitzungen, Druckfehler, Nachdruck) | ✅ 2026-11-09 | ❔ |
 | **Canon EOS 600D – Auslösen und Übertragen** | ✅ **digiCamControl 2.1.6.0, `/capturenoaf`, USB direkt am Laptop (2026-11-09).** 5184×3456 JPEG, ca. 5,9 MB. Dauer 15,1 s / 8,4 s (nur Kamera), 9,0 s (Kamera + Postkarte im Fotobox-Ablauf) | 📄 gphoto2-Liste |
+| **Canon EOS 600D – schneller Modus** (digiCamControl-App offen + `CameraControlRemoteCmd /c capture`) | ✅ 2026-11-09: Foto nach 1,4 s auf dem PC (3 Messungen), Aufnahme + Postkarte 2,0–2,1 s. Auslöseverzögerung konstant (Schwankung < 0,05 s, über die Kamerauhr gemessen). Absolute Verzögerung bis zum Klick: nicht gemessen | 📄 gphoto2 (eigene Lösung nötig) |
+| Ausweichen auf Laptop-Webcam bei fehlender Canon | ✅ beobachtet (Protokoll 19:26) → Sicherung eingebaut: nur Fotos mit Hersteller «Canon» werden angenommen | – |
+| Canon EOS 600D – Kabel ziehen und erneut versuchen | ✅ von dir getestet (langsamer Modus): Fehler angezeigt, Wiederholung klappte | ❔ |
 | Canon EOS 600D – Auslösen mit Autofokus (`/capture`) | ❔ | ❔ |
 | Canon EOS 600D – Livebild | 📄 Canon-Support | 📄 gphoto2-Liste |
-| Canon EOS 600D – Kabel während der Aufnahme ziehen | ❔ (nur simuliert getestet) | ❔ |
 | Fotodrucker | ❔ noch nicht gewählt | ❔ noch nicht gewählt |
 | Python 3.13, Flask 3.1.3, Pillow 13.0.0, waitress 3.0.2 | ✅ | ❔ |
 

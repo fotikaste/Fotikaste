@@ -115,9 +115,9 @@ class DigiCamControlKamera(Kamera):
         except (OSError, ValueError, subprocess.SubprocessError):
             return None  # unbekannt – nicht blockieren, die Aufnahme meldet dann den Fehler
 
-    def status(self):
+    def status(self, frisch=False):
         zeit, wert = self._status_cache
-        if wert and time.monotonic() - zeit < 10:
+        if not frisch and wert and time.monotonic() - zeit < 15:
             return wert
         if not self.exe:
             wert = {"bereit": False, "text": "digiCamControl ist nicht installiert"}
@@ -147,10 +147,102 @@ class DigiCamControlKamera(Kamera):
             self._status_cache = (0.0, None)
             code = "nicht_verbunden" if "no camera" in ausgabe.lower() or "not found" in ausgabe.lower() else "fehler"
             raise KameraFehler(code, f"Keine Bilddatei erhalten (Rückgabe {erg.returncode}): {ausgabe[-300:]}")
+        pruefe_canon(ziel)
         return ziel
 
 
+class DigiCamControlAppKamera(DigiCamControlKamera):
+    """Schnelle Variante: Die digiCamControl-App läuft dauerhaft (minimiert) und hält die
+    Verbindung zur Kamera offen. Wir schicken nur noch den Auslösebefehl über
+    CameraControlRemoteCmd.exe /c capture <Datei>.
+
+    Gemessen am 2026-11-09 mit EOS 600D: Foto nach 1,4 s auf dem PC (statt 8–15 s),
+    Auslöseverzögerung von Mal zu Mal gleich (Schwankung < 0,05 s).
+    """
+    name = "Canon über digiCamControl-App (schnell, Windows)"
+    APP = (r"C:\Program Files (x86)\digiCamControl\CameraControl.exe",
+           r"C:\Program Files\digiCamControl\CameraControl.exe")
+    REMOTE = (r"C:\Program Files (x86)\digiCamControl\CameraControlRemoteCmd.exe",
+              r"C:\Program Files\digiCamControl\CameraControlRemoteCmd.exe")
+
+    def __init__(self, autofokus=lambda: False, zeitlimit_s=15):
+        super().__init__(autofokus, zeitlimit_s)
+        self.app = next((p for p in self.APP if Path(p).exists()), None)
+        self.remote = next((p for p in self.REMOTE if Path(p).exists()), None)
+        self._letzter_appstart = 0.0
+
+    def app_starten(self):
+        """Startet die digiCamControl-App minimiert (höchstens alle 30 s ein Versuch)."""
+        import subprocess
+        if not self.app or time.monotonic() - self._letzter_appstart < 30:
+            return
+        self._letzter_appstart = time.monotonic()
+        info = subprocess.STARTUPINFO()
+        info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        info.wShowWindow = 7  # SW_SHOWMINNOACTIVE: minimiert, ohne den Fokus zu stehlen
+        subprocess.Popen([self.app], startupinfo=info, close_fds=True)
+
+    def status(self, frisch=False):
+        zeit, wert = self._status_cache
+        if not frisch and wert and time.monotonic() - zeit < 15:
+            return wert
+        if not (self.app and self.remote):
+            wert = {"bereit": False, "text": "digiCamControl ist nicht installiert"}
+        elif self._usb_verbunden() is False:
+            wert = {"bereit": False, "text": "Keine Canon-Kamera per USB gefunden (eingeschaltet? Kabel?)"}
+        elif not self._hauptprogramm_offen():
+            self.app_starten()
+            wert = {"bereit": False, "text": "digiCamControl-App wird gestartet – bitte ca. 20 s warten"}
+        else:
+            wert = {"bereit": True, "text": "Kamera verbunden, digiCamControl-App läuft"}
+        self._status_cache = (time.monotonic(), wert)
+        return wert
+
+    def aufnehmen(self, ziel: Path) -> Path:
+        import subprocess
+        if not self.remote:
+            raise KameraFehler("nicht_verbunden", "digiCamControl ist nicht installiert")
+        ziel.parent.mkdir(parents=True, exist_ok=True)
+        t0 = time.monotonic()
+        try:
+            erg = subprocess.run([self.remote, "/c", "capture", str(ziel)], capture_output=True, text=True,
+                                 encoding="oem", errors="replace", timeout=self.zeitlimit_s,
+                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except subprocess.TimeoutExpired as e:
+            self._status_cache = (0.0, None)
+            raise KameraFehler("zeitueberschreitung", "digiCamControl-App hat nicht rechtzeitig geantwortet") from e
+        # Warten, bis die Datei vollständig übertragen ist (Grösse bleibt gleich)
+        groesse = -1
+        while time.monotonic() - t0 < self.zeitlimit_s:
+            if ziel.exists():
+                neu = ziel.stat().st_size
+                if neu > 0 and neu == groesse:
+                    pruefe_canon(ziel)
+                    return ziel
+                groesse = neu
+            time.sleep(0.15)
+        self._status_cache = (0.0, None)
+        ausgabe = ((erg.stdout or "") + (erg.stderr or "")).strip().replace("\n", " | ")
+        raise KameraFehler("nicht_verbunden" if not self._usb_verbunden() else "fehler",
+                           f"Keine Bilddatei erhalten: {ausgabe[-300:]}")
+
+
+def pruefe_canon(datei: Path):
+    """Sicherung: digiCamControl kann bei fehlender Canon auf die Laptop-Webcam ausweichen
+    (im Protokoll vom 2026-11-09 gesehen). Nur Fotos mit Hersteller «Canon» werden akzeptiert."""
+    try:
+        with Image.open(datei) as b:
+            hersteller = str(b.getexif().get(271, ""))
+    except OSError:
+        hersteller = ""
+    if "canon" not in hersteller.lower():
+        datei.replace(datei.with_name(datei.stem + "_FALSCHE_KAMERA" + datei.suffix))
+        raise KameraFehler("falsche_kamera", f"Foto stammt nicht von der Canon (Hersteller: {hersteller or 'unbekannt'})")
+
+
 def erstelle_kamera(modus: str, sim_verhalten, autofokus=lambda: False) -> Kamera:
+    if modus == "digicamcontrol_app":
+        return DigiCamControlAppKamera(autofokus)
     if modus == "digicamcontrol":
         return DigiCamControlKamera(autofokus)
     return SimulierteKamera(sim_verhalten)

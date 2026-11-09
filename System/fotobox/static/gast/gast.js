@@ -239,6 +239,7 @@ const FEHLERTEXTE = {
   kamera_nicht_verbunden: ['Kurze Pause', 'Die Kamera ist gerade nicht erreichbar. Versuch es gleich nochmal.'],
   kamera_zeitueberschreitung: ['Kurze Pause', 'Die Kamera hat nicht reagiert. Versuch es gleich nochmal.'],
   kamera_fehler: ['Kurze Pause', 'Das Foto hat nicht geklappt. Versuch es gleich nochmal.'],
+  kamera_falsche_kamera: ['Kurze Pause', 'Die Kamera ist gerade nicht erreichbar. Versuch es gleich nochmal.'],
   speicher_voll: ['Kurze Pause', 'Die Fotobox braucht kurz Hilfe. Bitte melde dich beim Team.'],
   speichern: ['Kurze Pause', 'Das Foto konnte nicht gespeichert werden. Bitte melde dich beim Team.'],
   kontingent: ['Drucken nicht mehr möglich', 'Für diese Veranstaltung sind keine Abzüge mehr verfügbar.'],
