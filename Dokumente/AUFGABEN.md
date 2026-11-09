@@ -23,7 +23,8 @@
 - [ ] Verständnisfragen zu M3
 - [ ] Scharfstellen: einmal mit AF auf Gastabstand scharfstellen, dann MF (Ablauf dokumentieren) oder `/capture` mit Autofokus testen
 - [ ] Kamera-Uhr stellen (steht auf März 2025)
-- [ ] M4 vervollständigen: mehrere Veranstaltungen anlegen/auswählen, Export der Bilder, Löschen nur mit Bestätigung, PIN-Änderung in der Oberfläche
+- [x] M4 (technisch, 2026-11-09): Veranstaltungen mit eigenem Thema, Ordner und Kontingent anlegen und aktivieren. Export, Papierkorb-Löschen mit Bestätigung und PIN, PIN ändern, automatische Abmeldung nach 15 min. 30 Tests, Browserprüfung durch Claude.
+- [ ] M4 von dir abnehmen (PIN ändern, Veranstaltung anlegen, exportieren)
 - [ ] Kiosk-Modus: Browser startet automatisch im Vollbild ohne Adressleiste
 - [ ] Echte Tasten: USB-Tastencontroller wählen, der sich wie eine Tastatur meldet
 - [ ] M6: Drucker- und Plattformentscheid

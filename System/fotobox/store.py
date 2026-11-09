@@ -83,6 +83,15 @@ class Store:
         self._db.execute("PRAGMA journal_mode=WAL")
         self._db.execute("PRAGMA synchronous=FULL")
         self._db.executescript(SCHEMA)
+        self._migrieren()
+
+    def _migrieren(self):
+        """Ergänzt neue Spalten in bestehenden Datenbanken, ohne Daten zu verlieren."""
+        spalten = {r["name"] for r in self._q("PRAGMA table_info(veranstaltungen)")}
+        if "thema" not in spalten:
+            self._q("ALTER TABLE veranstaltungen ADD COLUMN thema TEXT")
+        if "bilder_status" not in spalten:
+            self._q("ALTER TABLE veranstaltungen ADD COLUMN bilder_status TEXT NOT NULL DEFAULT 'vorhanden'")
 
     def schliessen(self):
         with self._lock:
@@ -120,15 +129,48 @@ class Store:
     def aktive_veranstaltung(self) -> dict:
         row = self._q("SELECT * FROM veranstaltungen WHERE aktiv=1").fetchone()
         if row:
-            return dict(row)
-        vid = neue_id("V")
-        self._q("INSERT INTO veranstaltungen VALUES (?, ?, ?, ?, ?, 1)",
-                (vid, "Hochzeit", "Lea & Noah", "Samstag, 14. Juni 2027", jetzt()))
+            return self._mit_thema(dict(row))
+        self.neue_veranstaltung("Hochzeit", "Lea & Noah", "Samstag, 14. Juni 2027", aktiv=True)
         return self.aktive_veranstaltung()
 
-    def aendere_veranstaltung(self, vid, anlass, namen, datum_text):
-        self._q("UPDATE veranstaltungen SET anlass=?, namen=?, datum_text=? WHERE id=?",
-                (anlass, namen, datum_text, vid))
+    def _mit_thema(self, v: dict) -> dict:
+        v["thema"] = v.get("thema") or self.einstellung("thema")
+        return v
+
+    def neue_veranstaltung(self, anlass, namen, datum_text, thema=None, aktiv=False) -> dict:
+        vid = neue_id("V")
+        with self._lock:
+            if aktiv:
+                self._q("UPDATE veranstaltungen SET aktiv=0")
+            self._q("INSERT INTO veranstaltungen (id, anlass, namen, datum_text, erstellt, aktiv, thema) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (vid, anlass, namen, datum_text, jetzt(), int(aktiv), thema or self.einstellung("thema")))
+        return self.veranstaltung(vid)
+
+    def veranstaltung(self, vid):
+        row = self._q("SELECT * FROM veranstaltungen WHERE id=?", (vid,)).fetchone()
+        return self._mit_thema(dict(row)) if row else None
+
+    def veranstaltungen(self) -> list[dict]:
+        sql = """SELECT v.*,
+                   (SELECT COUNT(*) FROM sitzungen s WHERE s.veranstaltung_id=v.id) AS sitzungen,
+                   (SELECT COALESCE(SUM(abzuege),0) FROM druckauftraege d
+                     WHERE d.veranstaltung_id=v.id AND d.status='erfolgreich') AS abzuege
+                 FROM veranstaltungen v ORDER BY v.aktiv DESC, v.erstellt DESC"""
+        return [self._mit_thema(dict(r)) for r in self._q(sql)]
+
+    def aktiviere_veranstaltung(self, vid):
+        with self._lock:
+            if not self.veranstaltung(vid):
+                raise KeyError(vid)
+            self._q("UPDATE veranstaltungen SET aktiv = (id = ?)", (vid,))
+
+    def aendere_veranstaltung(self, vid, anlass, namen, datum_text, thema=None):
+        self._q("UPDATE veranstaltungen SET anlass=?, namen=?, datum_text=?, thema=COALESCE(?, thema) WHERE id=?",
+                (anlass, namen, datum_text, thema, vid))
+
+    def setze_bilder_status(self, vid, status):
+        self._q("UPDATE veranstaltungen SET bilder_status=? WHERE id=?", (status, vid))
 
     # ---------- Sitzungen ----------
     def neue_sitzung(self, veranstaltung_id) -> dict:

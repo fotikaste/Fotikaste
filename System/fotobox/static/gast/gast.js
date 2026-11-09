@@ -39,6 +39,7 @@ function themaAnwenden(k) {
   buehne.dataset.deko = k.thema.deko;
   for (const el of document.querySelectorAll('[data-feld]')) el.textContent = k.veranstaltung[el.dataset.feld] || '';
   $('.karte-rahmen').style.aspectRatio = String(k.seitenverhaeltnis);
+  buehne.classList.add('bereit');
 }
 
 function schneeErzeugen() {
@@ -122,7 +123,7 @@ async function startbildschirm() {
   const bild = $('#vorschau-bild');
   bild.removeAttribute('src');           // Foto der vorherigen Gäste sofort entfernen
   try { konfig = await api('/api/konfig'); themaAnwenden(konfig); }
-  catch { /* alte Konfiguration weiterverwenden */ }
+  catch { buehne.classList.add('bereit'); /* alte Konfiguration weiterverwenden */ }
   const los = {text: 'Start', los: starten};
   zeige('start', [{text: '', los: starten}, los, {text: '', los: starten}]);
   tasten[0].classList.add('still'); tasten[2].classList.add('still');

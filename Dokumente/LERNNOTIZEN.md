@@ -16,5 +16,11 @@
 | «Status unbekannt» | Gast soll sich beim Team melden | **Warum kein automatischer Nachdruck:** Vielleicht wurde schon gedruckt, dann gäbe es einen Doppeldruck. Der Betreiber schaut am Drucker nach und klickt «Wurde gedruckt» oder «Wurde nicht gedruckt». |
 | Echte Kamera | Fast alles bleibt gleich | Nur der **Kamera-Baustein** wird ergänzt. Das Livebild ist eine *zusätzliche, getrennte* Fähigkeit und für die erste echte Aufnahme nicht nötig. Wartezeit (Auslösen + Übertragen) wird gemessen. |
 
+## Verständnisfragen M3 (2026-11-09)
+Auf deinen Wunsch übersprungen, später kurz aufgreifen:
+1. Warum war die Kamera zuerst langsam und jetzt schnell? (Verbindung jedes Mal neu ↔ App hält Verbindung offen)
+2. Wozu prüfen wir «Canon» in den Bilddaten? (Schutz vor unbemerkten Laptop-Webcam-Fotos)
+3. Was ändert sich auf dem Raspberry Pi? (nur der Kamera-Baustein: gphoto2 statt digiCamControl)
+
 ## Offene Verständnisfragen
 - Server vs. Oberfläche: Wer entscheidet was? → beim Kamera-Meilenstein nochmals aufgreifen

@@ -7,6 +7,7 @@ Schnittstelle (API = «Programmierschnittstelle»): /api/...
 from __future__ import annotations
 
 import logging
+import os
 import secrets
 import time
 from pathlib import Path
@@ -20,8 +21,10 @@ from .themen import THEMEN, thema
 STATIC = Path(__file__).parent / "static"
 log = logging.getLogger("fotobox")
 
-# Diese Einstellungen darf der Betreiber über die Betriebsseite ändern (mit Typ)
-AENDERBAR = {k: type(v) for k, v in STANDARD_EINSTELLUNGEN.items()}
+# Diese Einstellungen darf der Betreiber über die Betriebsseite ändern (mit Typ).
+# Die PIN gehört nicht dazu – sie hat eine eigene Funktion, die die alte PIN verlangt.
+AENDERBAR = {k: type(v) for k, v in STANDARD_EINSTELLUNGEN.items() if k != "betreiber_pin"}
+ABMELDEN_NACH_S = 15 * 60  # automatische Abmeldung nach 15 Minuten ohne Aktivität
 
 
 def erstelle_app(box: Fotobox) -> Flask:
@@ -31,10 +34,12 @@ def erstelle_app(box: Fotobox) -> Flask:
 
     @app.errorhandler(FotoboxFehler)
     def fotobox_fehler(e: FotoboxFehler):
-        status = 409 if e.code in ("beschaeftigt", "sitzung_ungueltig", "keine_wiederholung", "aktion_ungueltig") else 503
-        if e.code in ("abzuege_ungueltig", "auftrag_unbekannt"):
+        status = 409 if e.code in ("beschaeftigt", "sitzung_ungueltig", "keine_wiederholung", "aktion_ungueltig",
+                                   "sitzung_laeuft") else 503
+        if e.code in ("abzuege_ungueltig", "auftrag_unbekannt", "veranstaltung_unbekannt", "bestaetigung_fehlt"):
             status = 400
-        return jsonify({"fehler": e.code}), status
+        # «text» ist nur für den Betreiberbereich gedacht; die Gästeansicht zeigt eigene Texte
+        return jsonify({"fehler": e.code, "text": str(e) if str(e) != e.code else ""}), status
 
     @app.errorhandler(Exception)
     def unerwartet(e):
@@ -60,9 +65,9 @@ def erstelle_app(box: Fotobox) -> Flask:
     def konfig():
         e = box.store.einstellungen()
         v = box.store.aktive_veranstaltung()
-        t = thema(e["thema"])
+        t = thema(v["thema"])
         return jsonify({
-            "thema": {"name": e["thema"], "farben": t["farben"], "schrift": t["schrift"], "name_gr": t["name_gr"], "deko": t["deko"]},
+            "thema": {"name": v["thema"], "farben": t["farben"], "schrift": t["schrift"], "name_gr": t["name_gr"], "deko": t["deko"]},
             "veranstaltung": {"anlass": v["anlass"], "namen": v["namen"], "datum_text": v["datum_text"]},
             "countdown_s": e["countdown_s"], "max_abzuege": e["max_abzuege_pro_sitzung"],
             "inaktiv_s": e["inaktiv_s"], "inaktiv_warnung_s": e["inaktiv_warnung_s"], "abschluss_s": e["abschluss_s"],
@@ -105,7 +110,15 @@ def erstelle_app(box: Fotobox) -> Flask:
 
     # ---------------- Betreiber ----------------
     def angemeldet():
-        return session.get("betreiber") is True
+        """Angemeldet bleibt man nur, solange man aktiv ist (Abmeldung nach ABMELDEN_NACH_S)."""
+        if session.get("betreiber") is not True:
+            return False
+        if time.time() - session.get("zuletzt", 0) > ABMELDEN_NACH_S:
+            session.clear()
+            return False
+        if request.headers.get("X-Hintergrund") != "1":  # automatisches Aktualisieren zählt nicht
+            session["zuletzt"] = time.time()
+        return True
 
     @app.get("/betrieb")
     def betrieb():
@@ -116,6 +129,7 @@ def erstelle_app(box: Fotobox) -> Flask:
         pin = str((request.get_json(silent=True) or {}).get("pin", ""))
         if secrets.compare_digest(pin, str(box.e("betreiber_pin"))):
             session["betreiber"] = True
+            session["zuletzt"] = time.time()
             log.info("Betreiber angemeldet")
             return jsonify({"ok": True})
         time.sleep(1)  # bremst Durchprobieren
@@ -140,6 +154,9 @@ def erstelle_app(box: Fotobox) -> Flask:
         return jsonify({
             "geraete": box.geraetestatus(),
             "veranstaltung": {**v, "sitzungen": box.store.anzahl_sitzungen(v["id"])},
+            "veranstaltungen": box.store.veranstaltungen(),
+            "export_basis": str(export_basis()),
+            "standard_pin": str(box.e("betreiber_pin")) == STANDARD_EINSTELLUNGEN["betreiber_pin"],
             "kontingent": box.kontingent(),
             "einstellungen": e,
             "themen": {k: t["titel"] for k, t in THEMEN.items()},
@@ -160,23 +177,86 @@ def erstelle_app(box: Fotobox) -> Flask:
         for k, wert in daten.items():
             if k not in AENDERBAR:
                 return jsonify({"fehler": f"unbekannt: {k}"}), 400
+            typ = AENDERBAR[k]
+            if typ is bool and not isinstance(wert, bool):
+                return jsonify({"fehler": f"ungültig: {k}"}), 400
             try:
-                wert = AENDERBAR[k](wert)
+                wert = typ(wert)
             except (TypeError, ValueError):
                 return jsonify({"fehler": f"ungültig: {k}"}), 400
+            if k == "thema" and wert not in THEMEN:
+                return jsonify({"fehler": f"ungültig: {k}"}), 400
             box.store.setze_einstellung(k, wert)
-            log.info("Einstellung geändert: %s", k if k == "betreiber_pin" else f"{k} = {wert}")
+            log.info("Einstellung geändert: %s = %s", k, wert)
         return jsonify({"ok": True})
 
     @app.post("/api/betrieb/veranstaltung")
     def b_veranstaltung():
+        """Ändert die aktive Veranstaltung (Texte und Thema)."""
         d = request.get_json(silent=True) or {}
         v = box.store.aktive_veranstaltung()
+        t = d.get("thema")
+        if t is not None and t not in THEMEN:
+            return jsonify({"fehler": "thema_unbekannt"}), 400
         box.store.aendere_veranstaltung(v["id"], d.get("anlass", v["anlass"]), d.get("namen", v["namen"]),
-                                        d.get("datum_text", v["datum_text"]))
+                                        d.get("datum_text", v["datum_text"]), t)
+        log.info("Betreiber: Veranstaltung %s geändert", v["id"])
+        return jsonify({"ok": True})
+
+    @app.post("/api/betrieb/veranstaltungen")
+    def b_neue_veranstaltung():
+        d = request.get_json(silent=True) or {}
+        if not str(d.get("namen", "")).strip():
+            return jsonify({"fehler": "namen_fehlt", "text": "Bitte Namen eingeben"}), 400
+        t = d.get("thema") or box.e("thema")
+        if t not in THEMEN:
+            return jsonify({"fehler": "thema_unbekannt"}), 400
+        v = box.veranstaltung_anlegen(str(d.get("anlass", "")).strip(), str(d["namen"]).strip(),
+                                      str(d.get("datum_text", "")).strip(), t, bool(d.get("aktivieren")))
+        return jsonify(v)
+
+    @app.post("/api/betrieb/veranstaltung/<vid>/<aktion>")
+    def b_veranstaltung_aktion(vid, aktion):
+        d = request.get_json(silent=True) or {}
+        if aktion == "aktivieren":
+            box.veranstaltung_aktivieren(vid)
+            return jsonify({"ok": True})
+        if aktion == "exportieren":
+            return jsonify(box.exportieren(vid, export_basis()))
+        if aktion == "ordner_oeffnen":
+            ordner = Path(str(d.get("ordner", "")))
+            # Nur Ordner innerhalb des Exportbereichs öffnen – nie beliebige Pfade
+            if not ordner.is_dir() or export_basis().resolve() not in ordner.resolve().parents:
+                return jsonify({"fehler": "ordner_ungueltig"}), 400
+            os.startfile(str(ordner))  # nur Windows; öffnet den Explorer auf diesem PC
+            return jsonify({"ok": True})
+        if aktion == "bilder_loeschen":
+            if not secrets.compare_digest(str(d.get("pin", "")), str(box.e("betreiber_pin"))):
+                time.sleep(1)
+                return jsonify({"fehler": "pin", "text": "PIN falsch"}), 403
+            box.bilder_in_papierkorb(vid, str(d.get("bestaetigung", "")))
+            return jsonify({"ok": True})
+        return jsonify({"fehler": "aktion_unbekannt"}), 400
+
+    @app.post("/api/betrieb/pin")
+    def b_pin():
+        d = request.get_json(silent=True) or {}
+        alt, neu = str(d.get("alt", "")), str(d.get("neu", ""))
+        if not secrets.compare_digest(alt, str(box.e("betreiber_pin"))):
+            time.sleep(1)
+            return jsonify({"fehler": "pin", "text": "Bisherige PIN falsch"}), 403
+        if not (neu.isdigit() and 4 <= len(neu) <= 8):
+            return jsonify({"fehler": "pin_format", "text": "Neue PIN: 4 bis 8 Ziffern"}), 400
+        box.store.setze_einstellung("betreiber_pin", neu)
+        log.info("Betreiber-PIN geändert")
         return jsonify({"ok": True})
 
     return app
+
+
+def export_basis() -> Path:
+    """Exportziel: Ordner «Bilder\\Fotobox-Export» des Windows-Benutzers."""
+    return Path.home() / "Pictures" / "Fotobox-Export"
 
 
 def protokoll_ende(pfad: Path, zeilen: int) -> list[str]:

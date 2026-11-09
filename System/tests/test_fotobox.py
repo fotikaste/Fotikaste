@@ -285,6 +285,81 @@ class NeustartUndSpeicher(unittest.TestCase):
         box.store.schliessen()
 
 
+class Veranstaltungen(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.daten = Path(self.tmp.name)
+        self.box = neue_box(self.daten / "daten")
+
+    def tearDown(self):
+        time.sleep(0.3)
+        self.box.store.schliessen()
+        self.tmp.cleanup()
+
+    def test_wechsel_mit_eigenem_thema_ordner_und_kontingent(self):
+        alt = self.box.store.aktive_veranstaltung()
+        sid = sitzung_mit_foto(self.box)
+        warte_auf_druck(self.box, self.box.drucken(sid, 2)["id"])
+        self.box.sitzung_beenden(sid)
+
+        neu = self.box.veranstaltung_anlegen("Geburtstag", "Mia", "1. Mai", "sommer", aktivieren=True)
+        self.assertEqual(self.box.store.aktive_veranstaltung()["id"], neu["id"])
+        self.assertEqual(self.box.kontingent()["verbleibend"], 300)        # eigenes Kontingent
+        sid = sitzung_mit_foto(self.box)
+        self.assertIn(neu["id"], self.box.store.sitzung(sid)["karte"])      # eigener Ordner
+        self.assertEqual(self.box.store.veranstaltung(neu["id"])["thema"], "sommer")
+        self.assertEqual(self.box.store.veranstaltung(alt["id"])["thema"], "elegant")
+
+    def test_kein_wechsel_waehrend_sitzung(self):
+        neu = self.box.veranstaltung_anlegen("Fest", "Team", "", "winter")
+        self.box.sitzung_starten()
+        with self.assertRaises(FotoboxFehler) as f:
+            self.box.veranstaltung_aktivieren(neu["id"])
+        self.assertEqual(f.exception.code, "sitzung_laeuft")
+
+    def test_export_kopiert_und_behaelt_originale(self):
+        v = self.box.store.aktive_veranstaltung()
+        for _ in range(2):
+            self.box.sitzung_beenden(sitzung_mit_foto(self.box))
+        erg = self.box.exportieren(v["id"], self.daten / "export")
+        self.assertEqual((erg["originale"], erg["postkarten"]), (2, 2))
+        self.assertEqual(len(list((Path(erg["ordner"]) / "Originale").glob("*.jpg"))), 2)
+        self.assertEqual(len(list(self.box.ordner(v["id"], "originale").glob("*.jpg"))), 2)  # nichts verschoben
+        erg2 = self.box.exportieren(v["id"], self.daten / "export")                          # zweimal ist ok
+        self.assertEqual(erg2["originale"], 2)
+
+    def test_loeschen_nur_mit_bestaetigung_und_in_papierkorb(self):
+        alt = self.box.store.aktive_veranstaltung()
+        self.box.sitzung_beenden(sitzung_mit_foto(self.box))
+        with self.assertRaises(FotoboxFehler):
+            self.box.bilder_in_papierkorb(alt["id"], "LÖSCHEN")  # aktive Veranstaltung: nicht erlaubt
+        self.box.veranstaltung_anlegen("Neu", "X", "", "minimal", aktivieren=True)
+        with self.assertRaises(FotoboxFehler) as f:
+            self.box.bilder_in_papierkorb(alt["id"], "ja")
+        self.assertEqual(f.exception.code, "bestaetigung_fehlt")
+        self.assertTrue(self.box.ordner(alt["id"], "originale").exists())
+        self.box.bilder_in_papierkorb(alt["id"], "LÖSCHEN")
+        self.assertFalse(self.box.ordner(alt["id"], "originale").exists())
+        papierkorb = list((self.daten / "daten" / "papierkorb").glob(f"{alt['id']}_*/originale/*.jpg"))
+        self.assertEqual(len(papierkorb), 1)                                   # nicht endgültig gelöscht
+        self.assertEqual(self.box.store.veranstaltung(alt["id"])["bilder_status"], "im_papierkorb")
+
+    def test_alte_datenbank_wird_ergaenzt(self):
+        import sqlite3
+        from fotobox.store import Store
+        pfad = self.daten / "alt.db"
+        db = sqlite3.connect(pfad)
+        db.execute("CREATE TABLE veranstaltungen (id TEXT PRIMARY KEY, anlass TEXT, namen TEXT, datum_text TEXT, "
+                   "erstellt TEXT NOT NULL, aktiv INTEGER NOT NULL DEFAULT 0)")
+        db.execute("INSERT INTO veranstaltungen VALUES ('V-1', 'Fest', 'Alt', '', '2026-01-01', 1)")
+        db.commit()
+        db.close()
+        s = Store(pfad)
+        v = s.aktive_veranstaltung()
+        self.assertEqual((v["id"], v["thema"], v["bilder_status"]), ("V-1", "elegant", "vorhanden"))
+        s.schliessen()
+
+
 class Webschnittstelle(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -318,6 +393,35 @@ class Webschnittstelle(unittest.TestCase):
         self.assertEqual(self.c.post("/api/betrieb/einstellungen", json={"countdown_s": "5"}).status_code, 200)
         self.assertEqual(self.box.store.einstellung("countdown_s"), 5)
         self.assertEqual(self.c.post("/api/betrieb/einstellungen", json={"gibtsnicht": 1}).status_code, 400)
+        # PIN lässt sich nicht über die allgemeinen Einstellungen ändern
+        self.assertEqual(self.c.post("/api/betrieb/einstellungen", json={"betreiber_pin": "9999"}).status_code, 400)
+
+    def test_pin_aendern(self):
+        self.c.post("/api/betrieb/anmelden", json={"pin": "1234"})
+        self.assertEqual(self.c.post("/api/betrieb/pin", json={"alt": "1111", "neu": "5678"}).status_code, 403)
+        self.assertEqual(self.c.post("/api/betrieb/pin", json={"alt": "1234", "neu": "12"}).status_code, 400)
+        self.assertEqual(self.c.post("/api/betrieb/pin", json={"alt": "1234", "neu": "5678"}).status_code, 200)
+        self.assertFalse(self.c.get("/api/betrieb/status").json["standard_pin"])
+        self.c.post("/api/betrieb/abmelden")
+        self.assertEqual(self.c.post("/api/betrieb/anmelden", json={"pin": "5678"}).status_code, 200)
+
+    def test_automatische_abmeldung(self):
+        from fotobox import web
+        self.c.post("/api/betrieb/anmelden", json={"pin": "1234"})
+        with mock.patch.object(web, "ABMELDEN_NACH_S", 0.5):
+            self.assertEqual(self.c.get("/api/betrieb/status", headers={"X-Hintergrund": "1"}).status_code, 200)
+            time.sleep(0.7)
+            # Hintergrund-Aktualisierung hat die Anmeldung NICHT verlängert
+            self.assertEqual(self.c.get("/api/betrieb/status", headers={"X-Hintergrund": "1"}).status_code, 401)
+
+    def test_bilder_loeschen_braucht_pin(self):
+        self.c.post("/api/betrieb/anmelden", json={"pin": "1234"})
+        alt = self.box.store.aktive_veranstaltung()["id"]
+        self.c.post("/api/betrieb/veranstaltungen", json={"namen": "Neu", "aktivieren": True})
+        r = self.c.post(f"/api/betrieb/veranstaltung/{alt}/bilder_loeschen", json={"bestaetigung": "LÖSCHEN", "pin": "0000"})
+        self.assertEqual(r.status_code, 403)
+        r = self.c.post(f"/api/betrieb/veranstaltung/{alt}/bilder_loeschen", json={"bestaetigung": "LÖSCHEN", "pin": "1234"})
+        self.assertEqual(r.status_code, 200)
 
 
 if __name__ == "__main__":

@@ -34,4 +34,8 @@
 | **digiCamControl** | Kostenloses Windows-Programm zur Kamerasteuerung | Unsere Fotobox ruft dessen Befehl `CameraControlCmd.exe` auf, um die 600D auszulösen |
 | **MF / AF** (manueller / automatischer Fokus) | Wer stellt scharf: du am Objektivring oder die Kamera | Mit MF löst die Kamera immer sofort aus, muss aber vorher einmal auf die Gäste scharfgestellt werden |
 | **Zeichenkodierung** | Regel, wie Buchstaben als Zahlen gespeichert werden | Das deutsche Windows schreibt Umlaute anders; deshalb ist die Kamera-Prüfung zuerst abgestürzt |
+| **Veranstaltung** | Ein Mietauftrag mit eigenen Fotos, eigenem Thema und eigenem Druckkontingent | «Geburtstag Mia wird 30» im Sommer-Thema |
+| **Export** | Kopie der Bilder an einen anderen Ort, das Original bleibt | Bilder für den Kunden auf einen USB-Stick |
+| **Papierkorb** (weiches Löschen) | Gelöschtes wird nur verschoben und ist wiederherstellbar | `System\daten\papierkorb\` |
+| **Migration** | Automatisches Anpassen einer bestehenden Datenbank an eine neue Programmversion, ohne Datenverlust | Deine bisherigen Zähler blieben erhalten, als «Thema pro Veranstaltung» dazukam |
 | **Kiosk-Modus** | Browser im Vollbild ohne Adressleiste und Menüs | So sehen Gäste nur die Fotobox |

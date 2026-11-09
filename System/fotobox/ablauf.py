@@ -9,6 +9,7 @@ Hier wird entschieden, was erlaubt ist – unabhängig von der Oberfläche:
 from __future__ import annotations
 
 import logging
+import shutil
 import threading
 import time
 from pathlib import Path
@@ -142,7 +143,7 @@ class Fotobox:
                 raise FotoboxFehler("keine_wiederholung")
             self._aufnahme_laeuft = True
         try:
-            v = self.store.aktive_veranstaltung()
+            v = self.store.veranstaltung(s["veranstaltung_id"])
             nr = s["aufnahmen"] + 1
             original = self.ordner(v["id"], "originale") / f"{sid}_{nr}.jpg"
             karte = self.ordner(v["id"], "karten") / f"{sid}.jpg"
@@ -158,7 +159,7 @@ class Fotobox:
                 vorschau.parent.mkdir(parents=True, exist_ok=True)
                 bild.postkarte(original, karte, breite=int(self.e("druck_breite_px")),
                                hoehe=int(self.e("druck_hoehe_px")), dpi=int(self.e("druck_dpi")),
-                               thema_name=self.e("thema"), namen=v["namen"], datum_text=v["datum_text"])
+                               thema_name=v["thema"], namen=v["namen"], datum_text=v["datum_text"])
                 bild.vorschau(karte, vorschau)
             except OSError as e:
                 log.exception("Speichern fehlgeschlagen in %s", sid)
@@ -262,6 +263,74 @@ class Fotobox:
             raise FotoboxFehler("aktion_ungueltig")
         self.store.setze_druckstatus(did, neu, f"Entscheid Betreiber: {entscheidung}")
         log.info("Betreiber: Auftrag %s %s -> %s", did, a["status"], neu)
+
+    # ---------- Veranstaltungen (Betreiber) ----------
+    def veranstaltung_anlegen(self, anlass, namen, datum_text, thema, aktivieren=False) -> dict:
+        with self._lock:
+            if aktivieren and (self._aktiv or self._aufnahme_laeuft):
+                raise FotoboxFehler("sitzung_laeuft", "Bitte warten, bis die laufende Gästesitzung beendet ist")
+            v = self.store.neue_veranstaltung(anlass, namen, datum_text, thema, aktiv=aktivieren)
+        log.info("Betreiber: Veranstaltung angelegt %s (%s %s)%s", v["id"], anlass, namen, " und aktiviert" if aktivieren else "")
+        return v
+
+    def veranstaltung_aktivieren(self, vid: str):
+        with self._lock:
+            if self._aktiv or self._aufnahme_laeuft:
+                raise FotoboxFehler("sitzung_laeuft", "Bitte warten, bis die laufende Gästesitzung beendet ist")
+            v = self.store.veranstaltung(vid)
+            if not v:
+                raise FotoboxFehler("veranstaltung_unbekannt")
+            if v["bilder_status"] != "vorhanden":
+                raise FotoboxFehler("aktion_ungueltig", "Bilder dieser Veranstaltung liegen im Papierkorb")
+            self.store.aktiviere_veranstaltung(vid)
+        log.info("Betreiber: Veranstaltung %s aktiviert", vid)
+
+    def exportieren(self, vid: str, basis: Path) -> dict:
+        """Kopiert Originale und Postkarten in einen Exportordner. Kopieren, nicht verschieben:
+        Die Fotobox behält ihre Dateien. Bereits vorhandene Dateien werden übersprungen."""
+        v = self.store.veranstaltung(vid)
+        if not v:
+            raise FotoboxFehler("veranstaltung_unbekannt")
+        name = "".join(c if c.isalnum() or c in " -_&" else "_" for c in f"{v['anlass']} {v['namen']}").strip()
+        ziel = basis / f"{name} ({v['erstellt'][:10]})"
+        anzahl = {"originale": 0, "postkarten": 0}
+        try:
+            for art, unterordner in (("originale", "Originale"), ("karten", "Postkarten")):
+                quelle = self.ordner(vid, art)
+                if not quelle.exists():
+                    continue
+                (ziel / unterordner).mkdir(parents=True, exist_ok=True)
+                for datei in sorted(quelle.glob("*.jpg")):
+                    if "_FALSCHE_KAMERA" in datei.name:
+                        continue
+                    z = ziel / unterordner / datei.name
+                    if not (z.exists() and z.stat().st_size == datei.stat().st_size):
+                        shutil.copy2(datei, z)
+                    anzahl["originale" if art == "originale" else "postkarten"] += 1
+        except OSError as e:
+            log.exception("Export fehlgeschlagen")
+            raise FotoboxFehler("export", str(e)) from e
+        log.info("Betreiber: Export %s nach %s (%s)", vid, ziel, anzahl)
+        return {"ordner": str(ziel), **anzahl}
+
+    def bilder_in_papierkorb(self, vid: str, bestaetigung: str):
+        """Löscht NICHT endgültig, sondern verschiebt die Bilder in daten/papierkorb.
+        Von dort kann man sie im Explorer zurückholen oder endgültig löschen."""
+        if bestaetigung != "LÖSCHEN":
+            raise FotoboxFehler("bestaetigung_fehlt", "Zum Bestätigen LÖSCHEN eingeben")
+        with self._lock:
+            v = self.store.veranstaltung(vid)
+            if not v:
+                raise FotoboxFehler("veranstaltung_unbekannt")
+            if v["aktiv"]:
+                raise FotoboxFehler("aktion_ungueltig", "Die aktive Veranstaltung kann nicht gelöscht werden – zuerst eine andere aktivieren")
+            quelle = self.daten / "veranstaltungen" / vid
+            if quelle.exists():
+                ziel = self.daten / "papierkorb" / f"{vid}_{time.strftime('%Y%m%d-%H%M%S')}"
+                ziel.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(quelle), str(ziel))
+            self.store.setze_bilder_status(vid, "im_papierkorb")
+        log.warning("Betreiber: Bilder der Veranstaltung %s in den Papierkorb verschoben", vid)
 
     def geraetestatus(self) -> dict:
         return {"kamera": {"name": self.kamera.name, "simuliert": self.kamera.simuliert, **self.kamera.status()},

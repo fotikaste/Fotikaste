@@ -20,14 +20,21 @@ Drei Tasten: **links · Mitte · rechts**. Zum Testen am PC:
 | rechts | Pfeil rechts oder `3` | auf den rechten Kreis klicken |
 
 ## Betriebsbereich
-`http://127.0.0.1:8080/betrieb` – **Standard-PIN: 1234** (vor dem ersten Einsatz ändern, siehe Aufgaben).
-Hier siehst du:
-- Druckkontingent und Zähler
-- Gerätestatus
-- fehlgeschlagene oder unklare Druckaufträge
-- das Fehlerprotokoll
+`http://127.0.0.1:8080/betrieb` – **Standard-PIN: 1234**. Ändere sie unter «Sicherheit», bevor du die Fotobox vermietest. Solange sie aktiv ist, zeigt die Seite oben eine rote Warnung.
+Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
 
-Ausserdem stellst du hier Veranstaltung, Thema, Ablauf und Simulation ein.
+| Bereich | Was du dort tust |
+|---|---|
+| Druckaufträge mit Handlungsbedarf | Fehlgeschlagene Aufträge nachdrucken oder verwerfen, unklare als «gedruckt» oder «nicht gedruckt» markieren |
+| Druckkontingent | Verbleibende Abzüge der aktiven Veranstaltung, getrennt nach echt und simuliert |
+| Aktive Veranstaltung | Anlass, Namen, Datum und Thema der laufenden Veranstaltung ändern |
+| Alle Veranstaltungen | Neue Veranstaltung anlegen, aktivieren, Bilder exportieren, Bilder löschen |
+| Ablauf | Countdown, Wiederholungen, Abzüge pro Sitzung, Inaktivität, Kontingent |
+| Kamera und Simulation | Echte Kamera oder Testbilder, Fehler simulieren |
+| Sicherheit | PIN ändern |
+
+**Bilder exportieren:** «Exportieren» kopiert Originale und Postkarten nach `Bilder\Fotobox-Export\<Veranstaltung>`. Die Fotobox behält ihre eigenen Dateien.
+**Bilder löschen:** geht nur bei einer nicht aktiven Veranstaltung und nur mit dem Wort LÖSCHEN und der PIN. Die Bilder landen in `System\daten\papierkorb\` und sind von dort wiederherstellbar. Endgültig löschen musst du sie selbst im Explorer.
 
 ## Echte Kamera (Canon EOS 600D) verwenden
 1. Einmalig: **digiCamControl** installiert (ist auf diesem PC erledigt).
@@ -56,7 +63,7 @@ Im Ordner `System` in PowerShell:
 ```
 .venv\Scripts\python.exe -m unittest -v
 ```
-Erwartet: `Ran 21 tests … OK`
+Erwartet: `Ran 30 tests … OK`
 
 ## Häufige Fehler
 | Problem | Lösung |

@@ -64,6 +64,8 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
       <div class="aktionen"><a href="/" target="_blank"><button>Gästeansicht öffnen</button></a><button id="abmelden">Abmelden</button></div>
     </header>
 
+    <p class="karte problem" id="pin-warnung" hidden style="margin-bottom:16px">
+      <b>Standard-PIN 1234 ist noch aktiv.</b> Bitte unten unter «Sicherheit» ändern, bevor die Fotobox vermietet wird.</p>
     <div class="grid">
       <section class="karte" id="k-probleme" hidden>
         <h2>Druckaufträge mit Handlungsbedarf</h2>
@@ -83,15 +85,31 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
       </section>
 
       <section class="karte voll">
-        <h2>Veranstaltung</h2>
+        <h2>Aktive Veranstaltung</h2>
         <form class="formular" id="f-veranstaltung">
           <label>Anlass<input name="anlass"></label>
           <label>Namen<input name="namen"></label>
           <label>Datum (Text)<input name="datum_text"></label>
-          <label>Thema<select name="thema" id="thema"></select></label>
+          <label>Thema<select name="thema" class="themenwahl"></select></label>
           <button class="primaer">Speichern</button>
         </form>
-        <p class="hinweis" id="v-info"></p>
+        <p class="hinweis">Änderungen gelten ab der nächsten Gästesitzung.</p>
+      </section>
+
+      <section class="karte voll">
+        <h2>Alle Veranstaltungen</h2>
+        <div class="tabelle"><table><thead><tr><th>Veranstaltung</th><th>Thema</th><th>Sitzungen</th><th>Abzüge</th><th>Aktionen</th></tr></thead>
+        <tbody id="veranstaltungen"></tbody></table></div>
+        <p class="hinweis" id="export-info">Export kopiert Originale und Postkarten nach <span id="export-basis"></span>. Die Fotobox behält ihre eigenen Dateien.</p>
+        <h2 style="margin-top:20px">Neue Veranstaltung</h2>
+        <form class="formular" id="f-neu">
+          <label>Anlass<input name="anlass" placeholder="z. B. Hochzeit"></label>
+          <label>Namen<input name="namen" placeholder="z. B. Mia & Luca" required></label>
+          <label>Datum (Text)<input name="datum_text" placeholder="z. B. Samstag, 5. Juli 2027"></label>
+          <label>Thema<select name="thema" class="themenwahl"></select></label>
+          <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" name="aktivieren" style="width:auto"> sofort aktivieren</label>
+          <button class="primaer">Anlegen</button>
+        </form>
       </section>
 
       <section class="karte voll">
@@ -136,6 +154,17 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
         <h2>Fehlerprotokoll (letzte Einträge)</h2>
         <pre id="protokoll"></pre>
       </section>
+
+      <section class="karte voll">
+        <h2>Sicherheit</h2>
+        <form class="formular" id="f-pin">
+          <label>Bisherige PIN<input name="alt" type="password" inputmode="numeric" autocomplete="off"></label>
+          <label>Neue PIN (4–8 Ziffern)<input name="neu" type="password" inputmode="numeric" autocomplete="off"></label>
+          <label>Neue PIN wiederholen<input name="neu2" type="password" inputmode="numeric" autocomplete="off"></label>
+          <button class="primaer">PIN ändern</button>
+        </form>
+        <p class="hinweis">Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.</p>
+      </section>
     </div>
   </main>
 </div>
@@ -147,8 +176,10 @@ const STATUS = {angefordert: 'angefordert', warteschlange: 'in Warteschlange', e
   fehlgeschlagen: 'fehlgeschlagen', unbekannt: 'Status unbekannt', ersetzt: 'ersetzt durch Nachdruck', verworfen: 'verworfen'};
 let formularGeladen = false;
 
-async function api(pfad, daten) {
-  const r = await fetch(pfad, daten === undefined ? {} : {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(daten)});
+// hintergrund=true: automatisches Aktualisieren zählt nicht als Aktivität (sonst nie automatische Abmeldung)
+async function api(pfad, daten, hintergrund = false) {
+  const kopf = hintergrund ? {'X-Hintergrund': '1'} : {};
+  const r = await fetch(pfad, daten === undefined ? {headers: kopf} : {method: 'POST', headers: {'Content-Type': 'application/json', ...kopf}, body: JSON.stringify(daten)});
   const j = await r.json().catch(() => ({}));
   if (r.status === 401) { zeigeLogin(); throw j; }
   if (!r.ok) throw j;
@@ -170,9 +201,21 @@ $('#login').addEventListener('submit', async (e) => {
 });
 $('#abmelden').onclick = async () => { await api('/api/betrieb/abmelden', {}); zeigeLogin(); };
 
-async function laden() {
-  const d = await api('/api/betrieb/status');
+async function laden(hintergrund = false) {
+  const d = await api('/api/betrieb/status', undefined, hintergrund);
   $('#app').hidden = false;
+  $('#pin-warnung').hidden = !d.standard_pin;
+  $('#export-basis').textContent = d.export_basis;
+  setzeHtml('#veranstaltungen', d.veranstaltungen.map((v) => `<tr>
+    <td><b>${esc(v.anlass)} ${esc(v.namen)}</b><br><small>${esc(v.datum_text)}</small>
+      ${v.aktiv ? ' <span class="marke m-erfolgreich">aktiv</span>' : ''}
+      ${v.bilder_status !== 'vorhanden' ? ' <span class="marke m-verworfen">Bilder im Papierkorb</span>' : ''}</td>
+    <td>${esc(d.themen[v.thema] || v.thema)}</td><td>${v.sitzungen}</td><td>${v.abzuege}</td>
+    <td class="aktionen">${v.bilder_status === 'vorhanden' ? `
+      ${v.aktiv ? '' : `<button data-v="${v.id}" data-x="aktivieren">Aktivieren</button>`}
+      <button data-v="${v.id}" data-x="exportieren">Exportieren</button>
+      ${v.aktiv ? '' : `<button class="gefahr" data-v="${v.id}" data-x="bilder_loeschen" data-name="${esc(v.anlass + ' ' + v.namen)}">Bilder löschen</button>`}` : ''}
+    </td></tr>`).join(''));
   const k = d.kontingent;
   $('#verbleibend').textContent = `${k.verbleibend} von ${k.gesamt} übrig`;
   $('#balken').style.width = Math.min(100, 100 * (k.gesamt - k.verbleibend) / Math.max(1, k.gesamt)) + '%';
@@ -209,7 +252,8 @@ async function laden() {
   if (!formularGeladen) {   // Formulare nur einmal füllen, damit Eingaben nicht überschrieben werden
     formularGeladen = true;
     const e = d.einstellungen;
-    $('#thema').innerHTML = Object.entries(d.themen).map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('');
+    for (const s of document.querySelectorAll('.themenwahl'))
+      s.innerHTML = Object.entries(d.themen).map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('');
     for (const f of ['#f-veranstaltung', '#f-ablauf', '#f-sim']) {
       for (const el of $(f).elements) if (el.name) el.value = (el.name in d.veranstaltung ? d.veranstaltung : e)[el.name];
     }
@@ -229,9 +273,60 @@ document.addEventListener('click', async (e) => {
 $('#f-veranstaltung').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target.elements;
-  await api('/api/betrieb/veranstaltung', {anlass: f.anlass.value, namen: f.namen.value, datum_text: f.datum_text.value});
-  await api('/api/betrieb/einstellungen', {thema: f.thema.value});
+  await api('/api/betrieb/veranstaltung', {anlass: f.anlass.value, namen: f.namen.value, datum_text: f.datum_text.value, thema: f.thema.value});
   meldung('Gespeichert – gilt ab der nächsten Sitzung'); laden();
+});
+
+// Aktionen für Veranstaltungen
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-v]');
+  if (!b) return;
+  const {v, x, name} = b.dataset;
+  const daten = {};
+  if (x === 'bilder_loeschen') {
+    const best = prompt(`Alle Bilder von «${name}» in den Papierkorb verschieben?\n\nZum Bestätigen LÖSCHEN eingeben:`);
+    if (best === null) return;
+    const pin = prompt('Zur Sicherheit: Betreiber-PIN eingeben');
+    if (pin === null) return;
+    Object.assign(daten, {bestaetigung: best.trim(), pin});
+  }
+  b.disabled = true;
+  try {
+    const erg = await api(`/api/betrieb/veranstaltung/${v}/${x}`, daten);
+    if (x === 'exportieren') {
+      $('#export-info').innerHTML = `Exportiert: ${erg.originale} Originale und ${erg.postkarten} Postkarten nach <b>${esc(erg.ordner)}</b> ` +
+        `<button id="ordner-oeffnen">Ordner öffnen</button>`;
+      $('#ordner-oeffnen').onclick = () => api(`/api/betrieb/veranstaltung/${v}/ordner_oeffnen`, {ordner: erg.ordner}).catch(() => meldung('Ordner nicht gefunden'));
+      meldung('Export fertig');
+    } else {
+      meldung(x === 'aktivieren' ? 'Aktiviert – gilt ab der nächsten Sitzung' : 'Bilder liegen jetzt im Papierkorb');
+      formularGeladen = false;   // Formular der aktiven Veranstaltung neu füllen
+    }
+  } catch (err) { meldung(err.text || 'Aktion nicht möglich'); }
+  b.disabled = false;
+  laden();
+});
+
+$('#f-neu').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target.elements;
+  try {
+    await api('/api/betrieb/veranstaltungen', {anlass: f.anlass.value, namen: f.namen.value, datum_text: f.datum_text.value,
+      thema: f.thema.value, aktivieren: f.aktivieren.checked});
+    e.target.reset();
+    formularGeladen = false;
+    meldung('Veranstaltung angelegt');
+  } catch (err) { meldung(err.text || 'Anlegen nicht möglich'); }
+  laden();
+});
+
+$('#f-pin').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target.elements;
+  if (f.neu.value !== f.neu2.value) { meldung('Die neuen PINs stimmen nicht überein'); return; }
+  try { await api('/api/betrieb/pin', {alt: f.alt.value, neu: f.neu.value}); e.target.reset(); meldung('PIN geändert'); }
+  catch (err) { meldung(err.text || 'PIN nicht geändert'); }
+  laden();
 });
 $('#f-ablauf').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -248,7 +343,7 @@ $('#f-sim').addEventListener('submit', async (e) => {
 });
 
 laden().catch(() => {});
-setInterval(() => { if (!$('#app').hidden) laden().catch(() => {}); }, 3000);
+setInterval(() => { if (!$('#app').hidden) laden(true).catch(() => {}); }, 3000);
 </script>
 </body>
 </html>
