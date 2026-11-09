@@ -1,0 +1,6 @@
+# Laufzeitdaten (Fotos, Datenbank, Protokolle) gehören nicht in Git
+System/daten/
+# Python-Umgebung und Zwischendateien
+System/.venv/
+__pycache__/
+*.pyc
