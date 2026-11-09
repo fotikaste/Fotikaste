@@ -31,4 +31,7 @@
 | **Eingabesperre** | Kurze Pause nach jedem Bildschirmwechsel, in der Tasten ignoriert werden | Verhindert, dass ein Doppeldruck auf «Drucken» gleich den nächsten Schritt bestätigt |
 | **Protokoll / Log** | Tagebuch des Programms | `System\daten\protokoll\fotobox.log` zeigt z. B. Kamerafehler |
 | **Unit-Test** (automatischer Test) | Kleines Prüfprogramm, das eine Funktion automatisch kontrolliert | Prüft z. B., dass 8 gleichzeitige Druckwünsche nur 1 Auftrag erzeugen |
+| **digiCamControl** | Kostenloses Windows-Programm zur Kamerasteuerung | Unsere Fotobox ruft dessen Befehl `CameraControlCmd.exe` auf, um die 600D auszulösen |
+| **MF / AF** (manueller / automatischer Fokus) | Wer stellt scharf: du am Objektivring oder die Kamera | Mit MF löst die Kamera immer sofort aus, muss aber vorher einmal auf die Gäste scharfgestellt werden |
+| **Zeichenkodierung** | Regel, wie Buchstaben als Zahlen gespeichert werden | Das deutsche Windows schreibt Umlaute anders; deshalb ist die Kamera-Prüfung zuerst abgestürzt |
 | **Kiosk-Modus** | Browser im Vollbild ohne Adressleiste und Menüs | So sehen Gäste nur die Fotobox |

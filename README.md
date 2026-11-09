@@ -29,6 +29,15 @@ Hier siehst du:
 
 Ausserdem stellst du hier Veranstaltung, Thema, Ablauf und Simulation ein.
 
+## Echte Kamera (Canon EOS 600D) verwenden
+1. Einmalig: **digiCamControl** installiert (ist auf diesem PC erledigt).
+2. Kamera: Akku voll, automatische Abschaltung **Aus**, Modus **P** oder **M**, Objektiv auf **MF** und vorher auf den Gastabstand scharfstellen.
+3. USB-Kabel direkt am Laptop einstecken und die Kamera einschalten. Das Display wird dunkel, das ist normal.
+4. Das Hauptfenster von digiCamControl darf **nicht** offen sein.
+5. Betriebsseite → «Kamera und Simulation» → «Echte Canon über digiCamControl» → Übernehmen.
+
+Eine Aufnahme dauert derzeit 8–15 Sekunden.
+
 ## Beenden
 Das schwarze Fenster «Fotobox» schliessen oder darin **Strg+C** drücken. Danach den Browser schliessen.
 Prüfen, ob wirklich beendet: `http://127.0.0.1:8080/` lädt nicht mehr.

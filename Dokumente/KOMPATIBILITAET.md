@@ -6,10 +6,17 @@ Legende: ✅ **getestet** (selbst ausprobiert) · 📄 **nur Doku** (laut offizi
 |---|---|---|
 | Anwendung mit simulierter Kamera und simuliertem Drucker | ✅ 21 automatische Tests und Browserprüfung durch Claude (2026-11-09) | ❔ |
 | Gästeoberfläche bei 1920×1080 | ✅ im eingebauten Browser von Claude (nachgebildete Grösse) | ❔ |
-| BenQ GL2450H, echte Darstellung | ❔ von dir zu prüfen | ❔ |
+| BenQ GL2450H, echte Darstellung | ❔ von dir zu bestätigen (Abnahmetest lief, Monitor nicht ausdrücklich bewertet) | ❔ |
 | Startdatei `Fotobox starten.bat` | ✅ von dir gestartet (2026-11-09) | – |
 | Abnahme M2 durch dich (Sitzungen, Druckfehler, Nachdruck) | ✅ 2026-11-09 | ❔ |
-| Canon EOS 600D – Auslösen und Übertragen | 📄 Canon SDK, digiCamControl-Liste | 📄 gphoto2-Liste |
+| **Canon EOS 600D – Auslösen und Übertragen** | ✅ **digiCamControl 2.1.6.0, `/capturenoaf`, USB direkt am Laptop (2026-11-09).** 5184×3456 JPEG, ca. 5,9 MB. Dauer 15,1 s / 8,4 s (nur Kamera), 9,0 s (Kamera + Postkarte im Fotobox-Ablauf) | 📄 gphoto2-Liste |
+| Canon EOS 600D – Auslösen mit Autofokus (`/capture`) | ❔ | ❔ |
 | Canon EOS 600D – Livebild | 📄 Canon-Support | 📄 gphoto2-Liste |
+| Canon EOS 600D – Kabel während der Aufnahme ziehen | ❔ (nur simuliert getestet) | ❔ |
 | Fotodrucker | ❔ noch nicht gewählt | ❔ noch nicht gewählt |
 | Python 3.13, Flask 3.1.3, Pillow 13.0.0, waitress 3.0.2 | ✅ | ❔ |
+
+## Beobachtungen echte Kamera (2026-11-09)
+- Bei angeschlossenem USB-Kabel ist das Kamera-Display dunkel. Das ist normal (PC-Verbindungsmodus).
+- Die Kamera-Uhr steht auf März 2025. Für die Fotobox ist das egal, weil wir die Dateien selbst benennen. Für saubere Bilddaten trotzdem stellen.
+- Jede Aufnahme baut die Verbindung neu auf, daher dauert sie 8–15 s. Für Gäste ist das spürbar lang (siehe Aufgaben).

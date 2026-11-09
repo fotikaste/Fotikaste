@@ -15,7 +15,12 @@
 - [x] **M2 abgenommen (2026-11-09):** 13 Sitzungen, 2 simulierte Druckfehler per Nachdruck behoben, Kameraausfall abgefangen (laut Protokoll und Datenbank)
 - [ ] Verständnisfragen zu M2
 - [ ] Darstellung am BenQ prüfen (Vollbild F11, Lesbarkeit aus 1,5 m)
-- [ ] M3: Echte Aufnahme mit der EOS 600D unter Windows (digiCamControl prüfen, erst nach deiner Zustimmung installieren)
+- [x] **M3 (technisch, 2026-11-09):** Echte Aufnahme der EOS 600D über digiCamControl, durch den normalen Fotobox-Ablauf (Postkarte und simulierter Druck)
+- [ ] M3 von dir abnehmen: in der Gästeansicht mit echter Kamera fotografieren, Kabel ziehen testen
+- [ ] Wartezeit verkürzen (8–15 s): dauerhafte Kameraverbindung prüfen (digiCamControl-Fernsteuerung, Canon EDSDK oder gphoto2 auf dem Pi)
+- [ ] Kamera-Statusprüfung (dauert ca. 3 s) im Hintergrund statt beim Start
+- [ ] Scharfstellen: einmal mit AF auf Gastabstand scharfstellen, dann MF (Ablauf dokumentieren) oder `/capture` mit Autofokus testen
+- [ ] Kamera-Uhr stellen (steht auf März 2025)
 - [ ] M4 vervollständigen: mehrere Veranstaltungen anlegen/auswählen, Export der Bilder, Löschen nur mit Bestätigung, PIN-Änderung in der Oberfläche
 - [ ] Kiosk-Modus: Browser startet automatisch im Vollbild ohne Adressleiste
 - [ ] Echte Tasten: USB-Tastencontroller wählen, der sich wie eine Tastatur meldet

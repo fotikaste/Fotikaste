@@ -20,7 +20,7 @@ from .store import Store, jetzt as _jetzt
 
 log = logging.getLogger("fotobox")
 
-KAMERA_ZEITLIMIT_S = 15
+KAMERA_ZEITLIMIT_S = 30  # muss grösser sein als das eigene Zeitlimit der echten Kamera (25 s)
 DRUCK_ZEITLIMIT_S = 120
 MIN_FREIER_SPEICHER_MB = 300
 

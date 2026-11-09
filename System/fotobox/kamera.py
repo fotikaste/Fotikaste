@@ -84,7 +84,9 @@ class DigiCamControlKamera(Kamera):
     PFADE = (r"C:\Program Files (x86)\digiCamControl\CameraControlCmd.exe",
              r"C:\Program Files\digiCamControl\CameraControlCmd.exe")
 
-    def __init__(self, autofokus=lambda: False, zeitlimit_s=14):
+    # Gemessen am 2026-11-09 mit EOS 600D: 15,1 s (erste Aufnahme), 8,4 s (zweite).
+    # Jede Aufnahme baut die Verbindung neu auf – daher die lange Dauer.
+    def __init__(self, autofokus=lambda: False, zeitlimit_s=25):
         self._autofokus = autofokus
         self.zeitlimit_s = zeitlimit_s
         self.exe = next((p for p in self.PFADE if Path(p).exists()), None)
@@ -94,9 +96,9 @@ class DigiCamControlKamera(Kamera):
         import subprocess
         try:
             out = subprocess.run(["tasklist", "/FI", "IMAGENAME eq CameraControl.exe", "/NH"],
-                                 capture_output=True, text=True, timeout=5,
+                                 capture_output=True, text=True, encoding="oem", errors="replace", timeout=5,
                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
-            return "CameraControl.exe" in out
+            return "CameraControl.exe" in (out or "")
         except (OSError, subprocess.SubprocessError):
             return False
 
@@ -107,7 +109,7 @@ class DigiCamControlKamera(Kamera):
             out = subprocess.run(
                 ["powershell", "-NoProfile", "-Command",
                  "@(Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -match 'VID_04A9' -and $_.Class -eq 'WPD' }).Count"],
-                capture_output=True, text=True, timeout=10,
+                capture_output=True, text=True, encoding="oem", errors="replace", timeout=10,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
             return int(out or 0) > 0
         except (OSError, ValueError, subprocess.SubprocessError):
@@ -135,12 +137,12 @@ class DigiCamControlKamera(Kamera):
         ziel.parent.mkdir(parents=True, exist_ok=True)
         befehl = [self.exe, "/filename", str(ziel), "/capture" if self._autofokus() else "/capturenoaf"]
         try:
-            erg = subprocess.run(befehl, capture_output=True, text=True, timeout=self.zeitlimit_s,
+            erg = subprocess.run(befehl, capture_output=True, text=True, encoding="oem", errors="replace", timeout=self.zeitlimit_s,
                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         except subprocess.TimeoutExpired as e:
             self._status_cache = (0.0, None)
             raise KameraFehler("zeitueberschreitung", "digiCamControl hat nicht rechtzeitig geantwortet") from e
-        ausgabe = (erg.stdout + erg.stderr).strip().replace("\n", " | ")
+        ausgabe = ((erg.stdout or "") + (erg.stderr or "")).strip().replace("\n", " | ")
         if not ziel.exists() or ziel.stat().st_size == 0:
             self._status_cache = (0.0, None)
             code = "nicht_verbunden" if "no camera" in ausgabe.lower() or "not found" in ausgabe.lower() else "fehler"
