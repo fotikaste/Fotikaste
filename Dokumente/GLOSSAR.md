@@ -18,4 +18,6 @@
 | **Virtuelle Umgebung (venv)** | Abgeschlossener Ordner für die Python-Pakete eines Projekts | Unsere Pakete landen in `System/.venv`, nicht im ganzen Windows |
 | **SQLite** | Kleine Datenbank in einer einzigen Datei | Speichert Druckzähler, damit sie Neustarts überleben |
 | **127.0.0.1 / localhost** | Adresse «dieser Computer» | Die Fotobox ist nur am eigenen PC erreichbar |
+| **Thema** (engl. Theme) | Paket aus Farben, Schrift und Dekoration | «Winter» mit Schneeflocken und Schreibschrift Pinyon Script |
+| **OFL** (Open Font License, freie Schriftlizenz) | Lizenz, die Schriften auch kommerziell frei nutzbar macht | Unsere Schreibschriften stehen unter OFL, also auch für die Vermietung |
 | **Kiosk-Modus** | Browser im Vollbild ohne Adressleiste und Menüs | So sehen Gäste nur die Fotobox |

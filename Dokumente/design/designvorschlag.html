@@ -4,62 +4,97 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fotobox Designvorschlag</title>
-<!-- Nur für den Vorschlag aus dem Internet geladen. In der fertigen Fotobox liegen die Schriften lokal im Projekt. -->
+<!-- Nur für den Vorschlag aus dem Internet geladen. In der fertigen Fotobox liegen die Schriften lokal im Projekt (alle unter freier Lizenz SIL OFL). -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Parisienne&family=Pacifico&family=Pinyon+Script&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --nacht:#15120f;      /* Hintergrund */
-  --flaeche:#211c17;    /* Karten, Leisten */
-  --linie:#3a322a;      /* feine Trennlinien */
-  --text:#f6f1ea;       /* Haupttext */
-  --leise:#a89e92;      /* Nebentext */
-  --akzent:#e3b96b;     /* Champagner: wichtigste Aktion */
-  --akzent-tief:#b98f45;
-  --erfolg:#7bc4a0;
-  --fehler:#e0705a;
-  --serif:"Fraunces", Georgia, serif;
-  --sans:"Inter", "Segoe UI", system-ui, sans-serif;
+/* =========================================================
+   THEMEN: Jedes Thema ist nur eine Sammlung von Werten.
+   Später wählt der Betreiber das Thema pro Veranstaltung.
+   ========================================================= */
+body[data-thema="elegant"]{
+  --bg:#15120f; --flaeche:#211c17; --linie:#3a322a;
+  --text:#f6f1ea; --leise:#a89e92;
+  --akzent:#e3b96b; --akzent-text:#1d160d;
+  --licht1:rgba(227,185,107,.16); --licht2:rgba(180,120,90,.12);
+  --name-font:"Great Vibes"; --name-gr:8.2cqw; --name-farbe:#f6f1ea;
 }
+body[data-thema="minimal"]{
+  --bg:#f7f5f2; --flaeche:#ffffff; --linie:#dcd7d0;
+  --text:#1c1a17; --leise:#6f6a63;
+  --akzent:#1c1a17; --akzent-text:#ffffff;
+  --licht1:transparent; --licht2:transparent;
+  --name-font:"Parisienne"; --name-gr:7.4cqw; --name-farbe:#1c1a17;
+}
+body[data-thema="sommer"]{
+  --bg:#fff4e4; --flaeche:#ffffff; --linie:#f2d6b3;
+  --text:#2b2320; --leise:#7d6458;
+  --akzent:#ff6b4a; --akzent-text:#ffffff;
+  --licht1:rgba(255,190,70,.45); --licht2:rgba(40,190,180,.30);
+  --name-font:"Pacifico"; --name-gr:6.2cqw; --name-farbe:#e2512f;
+}
+body[data-thema="winter"]{
+  --bg:#0e1a2b; --flaeche:#16263c; --linie:#2a3f5c;
+  --text:#eef4fb; --leise:#9db0c8;
+  --akzent:#cfe3f7; --akzent-text:#0e1a2b;
+  --licht1:rgba(150,190,240,.18); --licht2:rgba(220,235,255,.10);
+  --name-font:"Pinyon Script"; --name-gr:7.2cqw; --name-farbe:#ffffff;
+}
+:root{--ui:"Inter","Segoe UI",system-ui,sans-serif}
 *{box-sizing:border-box;margin:0}
-html,body{background:var(--nacht);color:var(--text);font-family:var(--sans)}
-body{padding:40px 24px 80px}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--text);font-family:var(--ui);padding:32px 24px 80px;transition:background .4s,color .4s}
 .wrap{max-width:1180px;margin:0 auto}
-h1.doc{font-family:var(--serif);font-weight:300;font-size:40px;letter-spacing:-.01em}
-.doc-sub{color:var(--leise);margin:8px 0 36px;max-width:70ch;line-height:1.5}
-h2.doc{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--leise);font-weight:600;margin:48px 0 16px}
-.hint{color:var(--leise);font-size:14px;margin-top:12px}
-kbd{font-family:var(--sans);background:var(--flaeche);border:1px solid var(--linie);border-radius:6px;padding:1px 7px;font-size:13px}
+h1.doc{font-size:30px;font-weight:600;letter-spacing:-.01em}
+.doc-sub{color:var(--leise);margin:8px 0 24px;max-width:75ch;line-height:1.5}
+h2.doc{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--leise);font-weight:600;margin:40px 0 14px}
+.hint{color:var(--leise);font-size:14px;margin-top:12px;line-height:1.5}
+kbd{font-family:var(--ui);background:var(--flaeche);border:1px solid var(--linie);border-radius:6px;padding:1px 7px;font-size:13px}
 
-/* ---------- Startbildschirm (skaliert mit seiner Breite: 1 cqw = 1 % der Breite) ---------- */
+/* Themenwahl */
+.themen{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.themen button{font:600 15px var(--ui);padding:10px 18px;border-radius:999px;border:1.5px solid var(--linie);background:var(--flaeche);color:var(--text);cursor:pointer}
+.themen button[aria-pressed="true"]{background:var(--akzent);border-color:var(--akzent);color:var(--akzent-text)}
+
+/* ---------- Startbildschirm (1 cqw = 1 % der Bildschirmbreite) ---------- */
 .screen{container-type:inline-size;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;
-  border-radius:14px;border:1px solid var(--linie);background:var(--nacht);isolation:isolate}
-.screen .licht{position:absolute;inset:-20%;z-index:-1;
-  background:
-    radial-gradient(40% 50% at 30% 35%, rgba(227,185,107,.16), transparent 70%),
-    radial-gradient(35% 45% at 72% 65%, rgba(180,120,90,.12), transparent 70%);
+  border-radius:14px;border:1px solid var(--linie);background:var(--bg);isolation:isolate}
+.licht{position:absolute;inset:-20%;z-index:-2;
+  background:radial-gradient(40% 50% at 28% 32%,var(--licht1),transparent 70%),
+             radial-gradient(38% 48% at 74% 68%,var(--licht2),transparent 70%);
   animation:schweben 18s ease-in-out infinite alternate}
-@keyframes schweben{to{transform:translate(3%,-2%) scale(1.05)}}
-.screen .inhalt{position:absolute;inset:0;display:grid;grid-template-rows:auto 1fr auto;padding:4.2cqw 5cqw 0}
+@keyframes schweben{to{transform:translate(3%,-2%) scale(1.06)}}
+.deko{position:absolute;inset:0;z-index:-1;pointer-events:none;display:none}
+/* Sommer: zwei weiche Sonnenkreise */
+body[data-thema="sommer"] .deko.sommer{display:block}
+.sommer i{position:absolute;border-radius:50%}
+.sommer i:nth-child(1){width:26cqw;aspect-ratio:1;right:-6cqw;top:-8cqw;background:#ffc94a;opacity:.55}
+.sommer i:nth-child(2){width:14cqw;aspect-ratio:1;left:-4cqw;bottom:-5cqw;background:#2ec4b6;opacity:.35}
+/* Winter: leise fallende Schneeflocken */
+body[data-thema="winter"] .deko.winter{display:block}
+.winter i{position:absolute;top:-2cqw;width:.45cqw;aspect-ratio:1;border-radius:50%;background:#fff;opacity:.55;animation:fallen linear infinite}
+@keyframes fallen{to{transform:translate(2cqw,60cqw)}}
+/* Minimal: eine feine Linie statt Effekten */
+body[data-thema="minimal"] .deko.minimal{display:block}
+.minimal i{position:absolute;left:50%;top:6.5cqw;width:6cqw;height:1px;background:var(--text);transform:translateX(-50%);opacity:.6}
+
+.inhalt{position:absolute;inset:0;display:grid;grid-template-rows:auto 1fr auto;padding:4cqw 5cqw 0}
 .kopf{text-align:center}
-.anlass{font-size:1.3cqw;letter-spacing:.32em;text-transform:uppercase;color:var(--akzent);font-weight:600}
-.namen{font-family:var(--serif);font-weight:300;font-size:6.4cqw;line-height:1.05;margin-top:1.1cqw;letter-spacing:-.015em}
-.datum{color:var(--leise);font-size:1.7cqw;margin-top:.9cqw}
+.anlass{font-size:1.3cqw;letter-spacing:.32em;text-transform:uppercase;color:var(--leise);font-weight:600}
+.namen{font-family:var(--name-font),cursive;font-size:var(--name-gr);color:var(--name-farbe);line-height:1.25;margin-top:.6cqw;font-weight:400;word-spacing:.18em}
+.datum{color:var(--leise);font-size:1.7cqw;margin-top:.4cqw}
 .mitte{display:grid;place-items:center}
-.ring{width:17cqw;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
-  border:.18cqw solid rgba(227,185,107,.55)}
-.ring::before{content:"";position:absolute;inset:-1.6cqw;border-radius:50%;border:.1cqw solid rgba(227,185,107,.25);
-  animation:atmen 3.2s ease-in-out infinite}
-@keyframes atmen{0%,100%{transform:scale(.96);opacity:.35}50%{transform:scale(1.04);opacity:1}}
-.ring span{font-family:var(--serif);font-size:2.5cqw;font-weight:300}
+.ring{width:15cqw;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;border:.18cqw solid var(--akzent)}
+.ring::before{content:"";position:absolute;inset:-1.6cqw;border-radius:50%;border:.1cqw solid var(--akzent);opacity:.4;animation:atmen 3.2s ease-in-out infinite}
+@keyframes atmen{0%,100%{transform:scale(.96);opacity:.2}50%{transform:scale(1.04);opacity:.6}}
+.ring span{font-size:2.1cqw;font-weight:500}
 .leiste{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;padding:0 4cqw 3.2cqw;gap:2cqw}
 .aufruf{grid-column:1/-1;text-align:center;font-size:1.9cqw;font-weight:500;margin-bottom:2cqw}
 .taste{display:flex;flex-direction:column;align-items:center;gap:.8cqw;color:var(--leise);font-size:1.25cqw;font-weight:500}
 .knopf{width:5.2cqw;aspect-ratio:1;border-radius:50%;background:var(--flaeche);border:.16cqw solid var(--linie)}
-.taste.haupt{color:var(--text);font-size:1.6cqw}
-.taste.still .knopf{border-color:rgba(227,185,107,.35)}
-.taste.haupt .knopf{width:6.6cqw;background:var(--akzent);border-color:var(--akzent);box-shadow:0 0 3cqw rgba(227,185,107,.35)}
+.taste.haupt{color:var(--text);font-size:1.6cqw;font-weight:600}
+.taste.haupt .knopf{width:6.6cqw;background:var(--akzent);border-color:var(--akzent);box-shadow:0 0 3cqw color-mix(in srgb,var(--akzent) 40%,transparent)}
 .pfeil{width:0;height:0;border-left:.7cqw solid transparent;border-right:.7cqw solid transparent;border-top:.8cqw solid var(--akzent);margin-top:.2cqw}
 
 /* Vollbild-Testmodus für den BenQ */
@@ -69,40 +104,41 @@ body.vollbild .wrap{max-width:none}
 body.vollbild #start{width:100vw;height:100vh;aspect-ratio:auto;border:0;border-radius:0}
 
 /* ---------- Stilelemente ---------- */
-.grid{display:grid;gap:16px}
-.farben{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
-.farbe{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;overflow:hidden}
-.farbe i{display:block;height:72px}
-.farbe div{padding:10px 12px;font-size:13px;line-height:1.4}
-.farbe b{display:block;font-weight:600}
-.farbe code{color:var(--leise);font-size:12px}
-.schrift{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;padding:24px;display:grid;gap:14px}
-.schrift .s1{font-family:var(--serif);font-weight:300;font-size:56px;line-height:1.05}
+.grid{display:grid;gap:14px}
+.farben{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.farbe{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;overflow:hidden;font-size:13px}
+.farbe i{display:block;height:64px;border-bottom:1px solid var(--linie)}
+.farbe div{padding:10px 12px;line-height:1.4}
+.farbe b{display:block}
+.schrift{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;padding:24px;display:grid;gap:12px}
+.schrift .s1{font-family:var(--name-font),cursive;font-size:64px;color:var(--name-farbe);line-height:1.3}
 .schrift .s2{font-size:28px;font-weight:500}
 .schrift .s3{font-size:20px;color:var(--leise)}
 .schrift small{color:var(--leise);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-.knoepfe{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-.kbox{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;padding:24px;display:grid;justify-items:center;gap:14px;text-align:center}
-.kbox p{color:var(--leise);font-size:13px;line-height:1.45}
-.btn{font:600 22px var(--sans);min-width:200px;padding:20px 34px;border-radius:999px;border:2px solid var(--linie);background:transparent;color:var(--text);cursor:pointer;transition:transform .08s,background .15s}
-.btn.haupt{background:var(--akzent);border-color:var(--akzent);color:#1d160d}
-.btn.gedrueckt{transform:scale(.96);background:var(--akzent-tief);border-color:var(--akzent-tief);color:#1d160d}
-.btn.aus{opacity:.35;cursor:default}
 .beispiel{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;padding:22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center}
 .beispiel .taste{font-size:16px}
 .beispiel .knopf{width:46px}
 .beispiel .taste.haupt .knopf{width:58px}
-@media (max-width:640px){body{padding:24px 16px 60px}.btn{min-width:0;width:100%}}
+@media (max-width:640px){body{padding:24px 16px 60px}}
 </style>
 </head>
-<body>
+<body data-thema="elegant">
 <div class="wrap">
-  <h1 class="doc">Designvorschlag Fotobox</h1>
-  <p class="doc-sub">Stimmung: <b>ruhig, warm, festlich</b>. Ein dunkler Hintergrund lässt die Fotos der Gäste später leuchten und blendet in abgedunkelten Festsälen nicht. Champagner als einzige Akzentfarbe markiert immer die wichtigste Aktion, und die liegt immer auf der mittleren Taste.</p>
+  <h1 class="doc">Designvorschlag Fotobox · Themen</h1>
+  <p class="doc-sub">Pro Veranstaltung wählt der Betreiber ein <b>Thema</b>. Ein Thema legt Farben, Schreibschrift und Dekoration fest. Bedienung und Anordnung bleiben überall gleich: Die Hauptaktion liegt immer auf der mittleren Taste. Die Schreibschrift nutze ich nur für Namen und Anlass. Anweisungen bleiben in einer gut lesbaren Schrift, denn Schreibschrift liest sich im Vorbeigehen schwer.</p>
 
-  <h2 class="doc">1 · Beispiel: Startbildschirm (1920×1080)</h2>
+  <div class="themen" role="group" aria-label="Thema wählen">
+    <button data-t="elegant">1 · Elegant</button>
+    <button data-t="minimal">2 · Minimalistisch</button>
+    <button data-t="sommer">3 · Sommer</button>
+    <button data-t="winter">4 · Winter</button>
+  </div>
+
   <div class="screen" id="start">
     <div class="licht"></div>
+    <div class="deko sommer"><i></i><i></i></div>
+    <div class="deko winter" id="schnee"></div>
+    <div class="deko minimal"><i></i></div>
     <div class="inhalt">
       <header class="kopf">
         <div class="anlass">Hochzeit</div>
@@ -112,43 +148,27 @@ body.vollbild #start{width:100vw;height:100vh;aspect-ratio:auto;border:0;border-
       <div class="mitte"><div class="ring"><span>Bereit?</span></div></div>
       <footer class="leiste">
         <div class="aufruf">Drück eine Taste und lächle</div>
-        <div class="taste still"><div class="knopf"></div>&nbsp;</div>
+        <div class="taste"><div class="knopf"></div>&nbsp;</div>
         <div class="taste haupt"><div class="knopf"></div>Start<div class="pfeil"></div></div>
-        <div class="taste still"><div class="knopf"></div>&nbsp;</div>
+        <div class="taste"><div class="knopf"></div>&nbsp;</div>
       </footer>
     </div>
   </div>
-  <p class="hint">Test am BenQ: Fenster auf den BenQ ziehen, <kbd>F</kbd> drücken (Vollbild), mit <kbd>Esc</kbd> zurück. Die drei Kreise unten zeigen, wo die echten Tasten unter dem Bildschirm sitzen.</p>
+  <p class="hint">Thema wechseln: Tasten <kbd>1</kbd> bis <kbd>4</kbd>, auch im Vollbild. Vollbild am BenQ: Fenster auf den BenQ ziehen, <kbd>F</kbd> drücken, mit <kbd>Esc</kbd> zurück.</p>
 
-  <h2 class="doc">2 · Farben</h2>
-  <div class="grid farben">
-    <div class="farbe"><i style="background:var(--nacht)"></i><div><b>Nacht</b>Hintergrund<br><code>#15120F</code></div></div>
-    <div class="farbe"><i style="background:var(--flaeche)"></i><div><b>Fläche</b>Leisten, Karten<br><code>#211C17</code></div></div>
-    <div class="farbe"><i style="background:var(--text)"></i><div><b>Papier</b>Haupttext<br><code>#F6F1EA</code></div></div>
-    <div class="farbe"><i style="background:var(--leise)"></i><div><b>Sand</b>Nebentext<br><code>#A89E92</code></div></div>
-    <div class="farbe"><i style="background:var(--akzent)"></i><div><b>Champagner</b>Hauptaktion<br><code>#E3B96B</code></div></div>
-    <div class="farbe"><i style="background:var(--erfolg)"></i><div><b>Salbei</b>Erfolg<br><code>#7BC4A0</code></div></div>
-    <div class="farbe"><i style="background:var(--fehler)"></i><div><b>Koralle</b>Problem (nie grelles Rot)<br><code>#E0705A</code></div></div>
-  </div>
-  <p class="hint">Die Akzentfarbe soll später pro Veranstaltung im Betreiberbereich änderbar sein.</p>
+  <h2 class="doc">Farben dieses Themas</h2>
+  <div class="grid farben" id="farben"></div>
 
-  <h2 class="doc">3 · Schrift</h2>
+  <h2 class="doc">Schrift dieses Themas</h2>
   <div class="schrift">
-    <small>Fraunces Light, für Namen und grosse Momente</small>
-    <div class="s1">Lea &amp; Noah · 3 · 2 · 1</div>
-    <small>Inter, für Anweisungen und Tasten</small>
+    <small id="fontname">Schreibschrift für Namen</small>
+    <div class="s1">Lea &amp; Noah</div>
+    <small>Inter, für Anweisungen und Tasten (in allen Themen gleich)</small>
     <div class="s2">Dein Foto wird gedruckt …</div>
     <div class="s3">Bitte entnimm es gleich unten am Ausgabefach.</div>
   </div>
 
-  <h2 class="doc">4 · Schaltflächen und Tasten</h2>
-  <div class="grid knoepfe">
-    <div class="kbox"><button class="btn haupt">Drucken</button><p>Hauptaktion: gefüllt, immer Mitte</p></div>
-    <div class="kbox"><button class="btn">Nochmal</button><p>Nebenaktion: nur Umriss</p></div>
-    <div class="kbox"><button class="btn gedrueckt">Drucken</button><p>Gedrückt: kurz kleiner und dunkler, sofort sichtbar</p></div>
-    <div class="kbox"><button class="btn aus">Drucken</button><p>Gesperrt, z. B. während der Verarbeitung</p></div>
-  </div>
-  <h2 class="doc">5 · So sieht die Tastenleiste auf der Vorschau aus</h2>
+  <h2 class="doc">Tastenleiste auf der Vorschau</h2>
   <div class="beispiel">
     <div class="taste"><div class="knopf"></div>Nochmal</div>
     <div class="taste haupt"><div class="knopf"></div>Drucken</div>
@@ -156,17 +176,52 @@ body.vollbild #start{width:100vw;height:100vh;aspect-ratio:auto;border:0;border-
   </div>
 </div>
 <script>
-  // F = Vollbild-Test, Esc = zurück (nur für diesen Vorschlag)
+  const THEMEN = {
+    elegant: {font: 'Great Vibes'},
+    minimal: {font: 'Parisienne'},
+    sommer:  {font: 'Pacifico'},
+    winter:  {font: 'Pinyon Script'},
+  };
+  const FARBEN = [['--bg','Hintergrund'],['--flaeche','Fläche'],['--text','Text'],['--leise','Nebentext'],['--akzent','Hauptaktion'],['--name-farbe','Namen']];
+  const namen = Object.keys(THEMEN);
+
+  function setzeThema(t){
+    document.body.dataset.thema = t;
+    document.querySelectorAll('.themen button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === t));
+    document.getElementById('fontname').textContent = 'Schreibschrift für Namen: ' + THEMEN[t].font;
+    const cs = getComputedStyle(document.body);
+    document.getElementById('farben').innerHTML = FARBEN.map(([v, n]) => {
+      const wert = cs.getPropertyValue(v).trim();
+      return `<div class="farbe"><i style="background:${wert}"></i><div><b>${n}</b>${wert.toUpperCase()}</div></div>`;
+    }).join('');
+  }
+  document.querySelectorAll('.themen button').forEach(b => b.onclick = () => setzeThema(b.dataset.t));
+
+  // Schneeflocken für das Winterthema
+  const schnee = document.getElementById('schnee');
+  for (let i = 0; i < 40; i++) {
+    const f = document.createElement('i');
+    f.style.left = Math.random() * 100 + '%';
+    f.style.animationDuration = 9 + Math.random() * 10 + 's';
+    f.style.animationDelay = -Math.random() * 18 + 's';
+    f.style.transform = `scale(${0.5 + Math.random()})`;
+    schnee.appendChild(f);
+  }
+
   document.addEventListener('keydown', e => {
     if (e.key === 'f' || e.key === 'F') {
       document.body.classList.add('vollbild');
       document.documentElement.requestFullscreen?.().catch(() => {});
     }
+    const n = parseInt(e.key, 10);
+    if (n >= 1 && n <= namen.length) setzeThema(namen[n - 1]);
   });
   document.addEventListener('fullscreenchange', () => {
     if (!document.fullscreenElement) document.body.classList.remove('vollbild');
   });
+  const p = new URLSearchParams(location.search);
   if (location.hash === '#vollbild') document.body.classList.add('vollbild');
+  setzeThema(THEMEN[p.get('thema')] ? p.get('thema') : 'elegant');
 </script>
 </body>
 </html>
