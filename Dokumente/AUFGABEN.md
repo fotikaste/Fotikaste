@@ -19,8 +19,8 @@
 - [x] Problem aus deinem Test: Foto erst ca. 6 s nach dem Countdown → schneller Modus mit offener digiCamControl-App (Foto nach 1,4 s)
 - [x] Sicherung gegen Ausweichen auf die Laptop-Webcam
 - [x] Kamera-Statusprüfung läuft im Hintergrund
-- [ ] M3 von dir abnehmen: schneller Modus in der Gästeansicht, Kabel ziehen testen
-- [ ] Falls der Klick immer noch spürbar nach der «1» kommt: Auslösebefehl etwas früher senden (Vorlauf einstellbar machen)
+- [x] **M3 abgenommen (2026-11-09):** schneller Modus in der Gästeansicht, Klick passt zum Countdown (dein Urteil), Originale 6,2 MB von der Canon (laut Protokoll)
+- [ ] Verständnisfragen zu M3
 - [ ] Scharfstellen: einmal mit AF auf Gastabstand scharfstellen, dann MF (Ablauf dokumentieren) oder `/capture` mit Autofokus testen
 - [ ] Kamera-Uhr stellen (steht auf März 2025)
 - [ ] M4 vervollständigen: mehrere Veranstaltungen anlegen/auswählen, Export der Bilder, Löschen nur mit Bestätigung, PIN-Änderung in der Oberfläche
