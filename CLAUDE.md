@@ -20,5 +20,17 @@ Kamera und Drucker haben jeweils eine simulierte und echte Umsetzungen mit derse
 - Funktionierende Meilensteine mit verständlichen deutschen Commit-Nachrichten sichern.
 - Nicht bauen: Bezahlung, Cloud, Gesichtserkennung, Fernwartung, Online-Buchung, KI-Effekte.
 
-## Befehle
-(werden ergänzt, sobald der Code existiert)
+## Code (System/fotobox/)
+- `store.py` SQLite (Einstellungen, Veranstaltungen, Sitzungen, Druckaufträge; `sitzung_id` UNIQUE = kein Doppeldruck)
+- `kamera.py` Kamera-Schnittstelle + `SimulierteKamera`; `mit_zeitlimit` gegen hängende Kameras
+- `drucker.py` Drucker-Schnittstelle + `SimulierterDrucker` (markierte Datei, Fehler/Unbekannt simulierbar)
+- `bild.py` Postkarte (Pillow), Vorschau, Simulationsmarke
+- `themen.py` Themen (einzige Quelle für Farben/Schriften)
+- `ablauf.py` Sitzungsablauf und alle Regeln (Klasse `Fotobox`)
+- `web.py` Flask-Routen (Gäste `/`, Betrieb `/betrieb`, API `/api/...`); `__main__.py` Start mit waitress auf 127.0.0.1
+- `static/gast/`, `static/betrieb/` Oberflächen (reines HTML/CSS/JS), `static/fonts/` lokale OFL-Schriften
+
+## Befehle (im Ordner System)
+- Start: `.venv\Scripts\python.exe -m fotobox` (Optionen: `--port`, `--daten`, `--kein-browser`) oder `Fotobox starten.bat`
+- Tests: `.venv\Scripts\python.exe -m unittest -v`
+- Git liegt unter `C:\Program Files\Git\cmd\git.exe` (in älteren Shells evtl. nicht im PATH)

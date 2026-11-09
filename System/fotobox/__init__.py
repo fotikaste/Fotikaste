@@ -1,0 +1,1 @@
+"""Fotobox – lokale Fotobox-Anwendung."""

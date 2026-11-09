@@ -20,4 +20,15 @@
 | **127.0.0.1 / localhost** | Adresse «dieser Computer» | Die Fotobox ist nur am eigenen PC erreichbar |
 | **Thema** (engl. Theme) | Paket aus Farben, Schrift und Dekoration | «Winter» mit Schneeflocken und Schreibschrift Pinyon Script |
 | **OFL** (Open Font License, freie Schriftlizenz) | Lizenz, die Schriften auch kommerziell frei nutzbar macht | Unsere Schreibschriften stehen unter OFL, also auch für die Vermietung |
+| **Server** | Programm, das auf Anfragen wartet und antwortet | Unsere Fotobox läuft als Server, der Browser fragt ihn nach dem nächsten Foto |
+| **API** (Programmierschnittstelle) | Feste «Bestelladressen», über die Programmteile miteinander reden | Die Oberfläche bestellt ein Foto über `/api/sitzung/…/aufnahme` |
+| **Flask** | Python-Baukasten für Webserver | Verbindet Browser-Oberfläche und Fotobox-Logik |
+| **Pillow** | Python-Paket zur Bildbearbeitung | Setzt Foto, Rand und Namen zur Postkarte zusammen |
+| **waitress** | Stabiler Server zum Betreiben einer Flask-Anwendung | Läuft im schwarzen Fotobox-Fenster |
+| **Sitzung** (engl. Session) | Ein Durchgang eines Gastes von Start bis Abschluss | Hat eine eindeutige Kennung wie `S-20261109-181232-8db3ec` |
+| **Druckauftrag** | Bitte an den Drucker, eine Karte x-mal zu drucken | Kennung wie `D-…`; Status: angefordert, in Warteschlange, erfolgreich, fehlgeschlagen, unbekannt |
+| **Kontingent** | Höchstzahl erlaubter Abzüge pro Veranstaltung | Standard 300 – danach zeigt die Fotobox «Drucken nicht mehr möglich» |
+| **Eingabesperre** | Kurze Pause nach jedem Bildschirmwechsel, in der Tasten ignoriert werden | Verhindert, dass ein Doppeldruck auf «Drucken» gleich den nächsten Schritt bestätigt |
+| **Protokoll / Log** | Tagebuch des Programms | `System\daten\protokoll\fotobox.log` zeigt z. B. Kamerafehler |
+| **Unit-Test** (automatischer Test) | Kleines Prüfprogramm, das eine Funktion automatisch kontrolliert | Prüft z. B., dass 8 gleichzeitige Druckwünsche nur 1 Auftrag erzeugen |
 | **Kiosk-Modus** | Browser im Vollbild ohne Adressleiste und Menüs | So sehen Gäste nur die Fotobox |

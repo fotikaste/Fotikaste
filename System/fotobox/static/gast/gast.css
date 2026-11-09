@@ -1,0 +1,118 @@
+/* 1rem = 1 % der Bildschirmbreite (bei 16:9). So passt sich alles jeder Bildschirmgrösse an. */
+html { font-size: min(1vw, 1.78vh); }
+* { box-sizing: border-box; margin: 0; }
+:root {
+  --bg: #15120f; --flaeche: #211c17; --linie: #3a322a; --text: #f6f1ea; --leise: #a89e92;
+  --akzent: #e3b96b; --akzent_text: #1d160d; --licht1: transparent; --licht2: transparent;
+  --name_farbe: #f6f1ea; --name-font: "Great Vibes"; --name-gr: 8.2rem;
+  --ui: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--ui); overflow: hidden;
+  cursor: default; user-select: none; -webkit-user-select: none; }
+.buehne { position: relative; width: 100vw; height: 100vh; overflow: hidden; isolation: isolate; background: var(--bg);
+  transition: background .4s; }
+
+/* ---------- Dekoration ---------- */
+.licht { position: absolute; inset: -20%; z-index: -2;
+  background: radial-gradient(40% 50% at 28% 32%, var(--licht1), transparent 70%),
+              radial-gradient(38% 48% at 74% 68%, var(--licht2), transparent 70%);
+  animation: schweben 18s ease-in-out infinite alternate; }
+@keyframes schweben { to { transform: translate(3%, -2%) scale(1.06); } }
+.deko { position: absolute; inset: 0; z-index: -1; pointer-events: none; display: none; }
+.buehne[data-deko="sonne"] .deko[data-deko="sonne"],
+.buehne[data-deko="schnee"] .deko[data-deko="schnee"],
+.buehne[data-deko="linie"] .deko[data-deko="linie"] { display: block; }
+.deko[data-deko="sonne"] i { position: absolute; border-radius: 50%; }
+.deko[data-deko="sonne"] i:nth-child(1) { width: 26rem; aspect-ratio: 1; right: -6rem; top: -8rem; background: #ffc94a; opacity: .55; }
+.deko[data-deko="sonne"] i:nth-child(2) { width: 14rem; aspect-ratio: 1; left: -4rem; bottom: -5rem; background: #2ec4b6; opacity: .35; }
+.deko[data-deko="schnee"] i { position: absolute; top: -2rem; width: .45rem; aspect-ratio: 1; border-radius: 50%;
+  background: #fff; opacity: .55; animation: fallen linear infinite; }
+@keyframes fallen { to { transform: translate(2rem, 60rem); } }
+.deko[data-deko="linie"] i { position: absolute; left: 50%; top: 6.5rem; width: 6rem; height: 1px; background: var(--text);
+  transform: translateX(-50%); opacity: .6; }
+
+/* ---------- Ansichten ---------- */
+.ansicht { position: absolute; inset: 0 0 13rem 0; display: none; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; padding: 3rem 5rem 0; }
+.ansicht.sichtbar { display: flex; animation: einblenden .25s ease-out; }
+@keyframes einblenden { from { opacity: 0; transform: translateY(.6rem); } }
+
+/* Start */
+[data-ansicht="start"] { justify-content: space-between; padding-top: 4rem; }
+.anlass { font-size: 1.3rem; letter-spacing: .32em; text-transform: uppercase; color: var(--leise); font-weight: 600; }
+.namen { font-family: var(--name-font), cursive; font-size: var(--name-gr); color: var(--name_farbe);
+  line-height: 1.25; margin-top: .6rem; word-spacing: .18em; }
+.datum { color: var(--leise); font-size: 1.7rem; margin-top: .4rem; }
+.mitte { flex: 1; display: grid; place-items: center; }
+.ring { width: 15rem; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; position: relative;
+  border: .18rem solid var(--akzent); }
+.ring::before { content: ""; position: absolute; inset: -1.6rem; border-radius: 50%; border: .1rem solid var(--akzent);
+  animation: atmen 3.2s ease-in-out infinite; }
+@keyframes atmen { 0%, 100% { transform: scale(.96); opacity: .2; } 50% { transform: scale(1.04); opacity: .6; } }
+.ring span { font-size: 2.1rem; font-weight: 500; }
+.aufruf { font-size: 1.9rem; font-weight: 500; margin-bottom: 1rem; }
+
+/* Countdown */
+.hinweis-oben { position: absolute; top: 3rem; font-size: 2.2rem; font-weight: 600; display: flex; flex-direction: column;
+  align-items: center; gap: 1rem; }
+.pfeil-hoch { width: 0; height: 0; border-left: 1.4rem solid transparent; border-right: 1.4rem solid transparent;
+  border-bottom: 1.6rem solid var(--akzent); animation: hoch 1s ease-in-out infinite; }
+@keyframes hoch { 50% { transform: translateY(-.6rem); } }
+.zahl { font-size: 26rem; font-weight: 600; line-height: 1; color: var(--akzent); font-variant-numeric: tabular-nums; }
+.zahl.puls { animation: puls 1s ease-out; }
+@keyframes puls { from { transform: scale(1.25); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1); } }
+
+/* Laden, Druck, Fertig, Fehler */
+.gross-text { font-size: 3.4rem; font-weight: 600; margin-top: 2.4rem; }
+.unterzeile { font-size: 1.8rem; color: var(--leise); margin-top: 1rem; max-width: 60rem; line-height: 1.4; }
+.titel-klein { font-size: 1.8rem; color: var(--leise); font-weight: 500; margin-bottom: 1.6rem; }
+.lader { width: 7rem; aspect-ratio: 1; border-radius: 50%; border: .5rem solid var(--linie); border-top-color: var(--akzent);
+  animation: drehen .9s linear infinite; }
+@keyframes drehen { to { transform: rotate(360deg); } }
+.haken { width: 8rem; aspect-ratio: 1; border-radius: 50%; background: var(--akzent); position: relative; animation: auf .35s ease-out; }
+.haken::after { content: ""; position: absolute; left: 2.5rem; top: 1.6rem; width: 2.2rem; height: 3.8rem;
+  border: solid var(--akzent_text); border-width: 0 .7rem .7rem 0; transform: rotate(45deg); }
+@keyframes auf { from { transform: scale(.6); opacity: 0; } }
+.symbol-pause { width: 8rem; aspect-ratio: 1; border-radius: 50%; border: .4rem solid var(--leise); position: relative; }
+.symbol-pause::before, .symbol-pause::after { content: ""; position: absolute; top: 2.3rem; width: .9rem; height: 2.6rem;
+  background: var(--leise); border-radius: .2rem; }
+.symbol-pause::before { left: 2.6rem; } .symbol-pause::after { right: 2.6rem; }
+
+/* Vorschau: das Foto der Gäste steht im Mittelpunkt */
+.karte-rahmen { height: 58vh; aspect-ratio: 3 / 2; max-width: 88vw; border-radius: .4rem; overflow: hidden;
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, .45), 0 0 0 1px var(--linie); background: var(--flaeche); }
+.karte-rahmen img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* Anzahl */
+.anzahl span { display: block; font-size: 18rem; font-weight: 600; line-height: 1; color: var(--akzent);
+  font-variant-numeric: tabular-nums; }
+
+/* ---------- Tastenleiste ---------- */
+.leiste { position: absolute; left: 0; right: 0; bottom: 0; height: 13rem; display: grid; grid-template-columns: 1fr 1fr 1fr;
+  align-items: center; padding: 0 4rem 1.5rem; }
+.taste { all: unset; display: flex; flex-direction: column; align-items: center; gap: .9rem; cursor: pointer;
+  color: var(--leise); font-size: 1.5rem; font-weight: 500; transition: opacity .2s; }
+.taste .knopf { width: 5.2rem; aspect-ratio: 1; border-radius: 50%; background: var(--flaeche); border: .16rem solid var(--linie);
+  transition: transform .08s, background .15s; }
+.taste.haupt { color: var(--text); font-size: 1.9rem; font-weight: 600; }
+.taste.haupt .knopf { width: 6.6rem; background: var(--akzent); border-color: var(--akzent);
+  box-shadow: 0 0 3rem color-mix(in srgb, var(--akzent) 40%, transparent); }
+.taste.leer { visibility: hidden; }
+.taste.still .knopf { border-color: color-mix(in srgb, var(--akzent) 35%, transparent); }
+.taste.aus { opacity: .3; cursor: default; }
+.taste.gedrueckt .knopf { transform: scale(.88); filter: brightness(.85); }
+.leiste.versteckt .taste { visibility: hidden; }
+
+/* Blitz bei der Aufnahme */
+.blitz { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 10; }
+.blitz.an { animation: blitz .6s ease-out; }
+@keyframes blitz { from { opacity: 1; } to { opacity: 0; } }
+
+/* «Noch da?» */
+.nochda { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(.6rem); }
+.nochda[hidden] { display: none; }
+.nochda-karte { text-align: center; }
+.nochda-zahl { font-size: 8rem; font-weight: 600; color: var(--akzent); margin-top: 1.5rem; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; } }

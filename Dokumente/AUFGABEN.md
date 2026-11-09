@@ -1,18 +1,24 @@
 # Aufgaben
 
 ## Erledigt
-- [x] Entwicklungsumgebung geprüft (2026-11-09)
-- [x] Projektordner `Dokumente\Projekte\Fotobox` angelegt
-- [x] Git installiert
-- [x] Kamera-Unterstützung der EOS 600D anhand der Dokumentation geprüft
-- [x] Analyse, Architektur und Plan erstellt
+- [x] Entwicklungsumgebung geprüft, Projektordner und Git eingerichtet (2026-11-09)
+- [x] Kamera EOS 600D anhand der Dokumentation geprüft
+- [x] Analyse, Architektur und Plan
+- [x] M1: Designvorschlag mit vier Themen und Schreibschrift, von dir freigegeben
+- [x] M2 (technisch): Gästeablauf mit Testbildern
+  - Start, Countdown, Aufnahme, Vorschau, Anzahl, simulierter Druck, Abschluss
+  - Fehleranzeigen, Inaktivität mit «Noch da?»
+- [x] Einfacher Betriebsbereich: PIN, Kontingent, Zähler, Druckprobleme lösen, Simulation, Thema und Veranstaltung, Fehlerprotokoll
+- [x] 21 automatische Tests, Browserprüfung durch Claude, Startdatei
 
 ## Offen
-- [ ] M1: Designvorschlag Startbildschirm → Feedback
-- [ ] M2: Gästeablauf mit Testbildern und simuliertem Drucker
-- [ ] M3: Echte Aufnahme mit der EOS 600D unter Windows
-- [ ] M4: Betreiberbereich
-- [ ] M5: Tests, README, Windows-Startdatei
+- [ ] **M2 abnehmen:** Du führst 10 Sitzungen durch und behebst einen simulierten Druckfehler
+- [ ] Verständnisfragen zu M2
+- [ ] Darstellung am BenQ prüfen (Vollbild F11, Lesbarkeit aus 1,5 m)
+- [ ] M3: Echte Aufnahme mit der EOS 600D unter Windows (digiCamControl prüfen, erst nach deiner Zustimmung installieren)
+- [ ] M4 vervollständigen: mehrere Veranstaltungen anlegen/auswählen, Export der Bilder, Löschen nur mit Bestätigung, PIN-Änderung in der Oberfläche
+- [ ] Kiosk-Modus: Browser startet automatisch im Vollbild ohne Adressleiste
+- [ ] Echte Tasten: USB-Tastencontroller wählen, der sich wie eine Tastatur meldet
 - [ ] M6: Drucker- und Plattformentscheid
 - [ ] Prüfen: USB-Stecker der 600D (Mini- oder Micro-USB?)
 - [ ] Prüfen: Netzteil-Lösung für die Kamera (z. B. Canon ACK-E8)

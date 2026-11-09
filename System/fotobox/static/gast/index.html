@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fotobox</title>
+<link rel="stylesheet" href="/static/schriften.css">
+<link rel="stylesheet" href="/static/gast/gast.css">
+</head>
+<body>
+<div class="buehne" id="buehne">
+  <!-- Hintergrund-Dekoration je nach Thema -->
+  <div class="licht"></div>
+  <div class="deko" data-deko="sonne"><i></i><i></i></div>
+  <div class="deko" data-deko="schnee" id="schnee"></div>
+  <div class="deko" data-deko="linie"><i></i></div>
+
+  <!-- 1. Start -->
+  <section class="ansicht" data-ansicht="start">
+    <header class="kopf">
+      <div class="anlass" data-feld="anlass"></div>
+      <div class="namen" data-feld="namen"></div>
+      <div class="datum" data-feld="datum_text"></div>
+    </header>
+    <div class="mitte"><div class="ring"><span>Bereit?</span></div></div>
+    <p class="aufruf">Drück eine Taste und lächle</p>
+  </section>
+
+  <!-- 2. Countdown -->
+  <section class="ansicht" data-ansicht="countdown">
+    <p class="hinweis-oben"><span class="pfeil-hoch"></span>Schau in die Kamera</p>
+    <div class="zahl" id="zahl">3</div>
+  </section>
+
+  <!-- 3. Aufnahme / Verarbeitung -->
+  <section class="ansicht" data-ansicht="laden">
+    <div class="lader"></div>
+    <p class="gross-text" id="laden-text">Dein Foto wird geladen …</p>
+  </section>
+
+  <!-- 4. Vorschau -->
+  <section class="ansicht" data-ansicht="vorschau">
+    <p class="titel-klein">So sieht deine Postkarte aus</p>
+    <div class="karte-rahmen"><img id="vorschau-bild" alt="Vorschau deiner Postkarte"></div>
+    <p class="unterzeile" id="vorschau-info"></p>
+  </section>
+
+  <!-- 5. Anzahl Abzüge -->
+  <section class="ansicht" data-ansicht="anzahl">
+    <p class="titel-klein">Wie viele Abzüge möchtest du?</p>
+    <div class="anzahl"><span id="anzahl">1</span></div>
+    <p class="unterzeile" id="anzahl-info"></p>
+  </section>
+
+  <!-- 6. Druck -->
+  <section class="ansicht" data-ansicht="druck">
+    <div class="lader"></div>
+    <p class="gross-text">Dein Foto wird gedruckt …</p>
+    <p class="unterzeile">Das dauert nur einen Moment.</p>
+  </section>
+
+  <!-- 7. Abschluss -->
+  <section class="ansicht" data-ansicht="fertig">
+    <div class="haken"></div>
+    <p class="gross-text" id="fertig-titel">Danke!</p>
+    <p class="unterzeile" id="fertig-text"></p>
+  </section>
+
+  <!-- Hinweise bei Problemen (ohne technische Details) -->
+  <section class="ansicht" data-ansicht="fehler">
+    <div class="symbol-pause"></div>
+    <p class="gross-text" id="fehler-titel">Kurze Pause</p>
+    <p class="unterzeile" id="fehler-text"></p>
+  </section>
+
+  <!-- Tastenleiste: links, Mitte, rechts – passt zu den drei echten Tasten -->
+  <footer class="leiste" id="leiste">
+    <button class="taste" data-taste="0"><span class="knopf"></span><span class="beschriftung"></span></button>
+    <button class="taste" data-taste="1"><span class="knopf"></span><span class="beschriftung"></span></button>
+    <button class="taste" data-taste="2"><span class="knopf"></span><span class="beschriftung"></span></button>
+  </footer>
+
+  <div class="blitz" id="blitz"></div>
+
+  <div class="nochda" id="nochda" hidden>
+    <div class="nochda-karte">
+      <p class="gross-text">Bist du noch da?</p>
+      <p class="unterzeile">Drück eine Taste, um weiterzumachen.</p>
+      <p class="nochda-zahl" id="nochda-zahl">10</p>
+    </div>
+  </div>
+</div>
+<script src="/static/gast/gast.js"></script>
+</body>
+</html>

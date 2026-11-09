@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fotobox Betrieb</title>
+<link rel="stylesheet" href="/static/schriften.css">
+<style>
+:root{--bg:#f4f3f0;--karte:#fff;--linie:#e2dfd9;--text:#1f1d1a;--leise:#6b665f;--akzent:#2d5bd7;
+  --ok:#1d7f4e;--ok-bg:#e3f4ea;--warn:#a5620b;--warn-bg:#fdf0dc;--fehler:#b4322a;--fehler-bg:#fbe5e3;--sim:#6b3fb5;--sim-bg:#efe8fa}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--text);font:15px/1.45 "Inter","Segoe UI",system-ui,sans-serif;padding:24px 16px 60px}
+.wrap{max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+h1{font-size:22px;font-weight:600}
+h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--leise);margin-bottom:12px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.karte{background:var(--karte);border:1px solid var(--linie);border-radius:12px;padding:18px}
+.voll{grid-column:1/-1}
+.zeile{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--linie)}
+.zeile:last-child{border-bottom:0}
+.zeile span:first-child{color:var(--leise)}
+.gross{font-size:34px;font-weight:600;font-variant-numeric:tabular-nums}
+.balken{height:8px;background:var(--linie);border-radius:99px;overflow:hidden;margin:10px 0 6px}
+.balken i{display:block;height:100%;background:var(--akzent)}
+.marke{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.m-erfolgreich{background:var(--ok-bg);color:var(--ok)} .m-fehlgeschlagen{background:var(--fehler-bg);color:var(--fehler)}
+.m-unbekannt{background:var(--warn-bg);color:var(--warn)} .m-warteschlange,.m-angefordert{background:#e6edfb;color:var(--akzent)}
+.m-ersetzt,.m-verworfen{background:#eee;color:var(--leise)} .m-sim{background:var(--sim-bg);color:var(--sim)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--linie);vertical-align:top}
+th{color:var(--leise);font-weight:500;font-size:12px}
+.tabelle{overflow-x:auto}
+button,select,input{font:inherit}
+button{padding:8px 14px;border-radius:8px;border:1px solid var(--linie);background:#fff;cursor:pointer;color:var(--text)}
+button.primaer{background:var(--akzent);border-color:var(--akzent);color:#fff}
+button.gefahr{color:var(--fehler)}
+button:disabled{opacity:.5;cursor:default}
+label{display:grid;gap:4px;font-size:13px;color:var(--leise)}
+input,select{padding:8px 10px;border:1px solid var(--linie);border-radius:8px;background:#fff;color:var(--text);width:100%}
+.formular{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));align-items:end}
+.problem{border-color:var(--fehler);box-shadow:0 0 0 3px var(--fehler-bg)}
+.hinweis{color:var(--leise);font-size:13px;margin-top:8px}
+pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12px;border-radius:8px;overflow:auto;max-height:280px;white-space:pre-wrap}
+#login{max-width:340px;margin:12vh auto;display:grid;gap:12px}
+#login input{font-size:24px;text-align:center;letter-spacing:.3em}
+.aktionen{display:flex;gap:6px;flex-wrap:wrap}
+.meldung{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 18px;border-radius:8px;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <form id="login" hidden>
+    <h1>Fotobox Betrieb</h1>
+    <label>PIN<input id="pin" type="password" inputmode="numeric" autocomplete="off" autofocus></label>
+    <button class="primaer">Anmelden</button>
+    <p class="hinweis" id="login-fehler"></p>
+  </form>
+
+  <main id="app" hidden>
+    <header>
+      <h1>Fotobox Betrieb</h1>
+      <div class="aktionen"><a href="/" target="_blank"><button>Gästeansicht öffnen</button></a><button id="abmelden">Abmelden</button></div>
+    </header>
+
+    <div class="grid">
+      <section class="karte" id="k-probleme" hidden>
+        <h2>Druckaufträge mit Handlungsbedarf</h2>
+        <div id="probleme"></div>
+      </section>
+
+      <section class="karte">
+        <h2>Druckkontingent</h2>
+        <div class="gross" id="verbleibend">–</div>
+        <div class="balken"><i id="balken"></i></div>
+        <div id="kontingent"></div>
+      </section>
+
+      <section class="karte">
+        <h2>Geräte</h2>
+        <div id="geraete"></div>
+      </section>
+
+      <section class="karte voll">
+        <h2>Veranstaltung</h2>
+        <form class="formular" id="f-veranstaltung">
+          <label>Anlass<input name="anlass"></label>
+          <label>Namen<input name="namen"></label>
+          <label>Datum (Text)<input name="datum_text"></label>
+          <label>Thema<select name="thema" id="thema"></select></label>
+          <button class="primaer">Speichern</button>
+        </form>
+        <p class="hinweis" id="v-info"></p>
+      </section>
+
+      <section class="karte voll">
+        <h2>Ablauf</h2>
+        <form class="formular" id="f-ablauf">
+          <label>Countdown (Sekunden)<input name="countdown_s" type="number" min="1" max="10"></label>
+          <label>Max. Wiederholungen<input name="max_wiederholungen" type="number" min="0" max="5"></label>
+          <label>Max. Abzüge pro Sitzung<input name="max_abzuege_pro_sitzung" type="number" min="1" max="5"></label>
+          <label>Inaktiv bis «Noch da?» (s)<input name="inaktiv_s" type="number" min="10" max="600"></label>
+          <label>Druckkontingent<input name="druckkontingent" type="number" min="0" max="5000"></label>
+          <button class="primaer">Speichern</button>
+        </form>
+      </section>
+
+      <section class="karte voll">
+        <h2>Simulation (für Tests)</h2>
+        <form class="formular" id="f-sim">
+          <label>Kamera<select name="sim_kamera_verhalten">
+            <option value="ok">funktioniert</option>
+            <option value="nicht_verbunden">nicht verbunden</option>
+            <option value="zeitueberschreitung">antwortet nicht (Zeitüberschreitung)</option></select></label>
+          <label>Nächster Druckauftrag<select name="sim_drucker_verhalten">
+            <option value="ok">erfolgreich</option>
+            <option value="naechster_fehlgeschlagen">schlägt fehl</option>
+            <option value="naechster_unbekannt">Status unbekannt</option></select></label>
+          <button class="primaer">Übernehmen</button>
+        </form>
+        <p class="hinweis">«Nächster Druckauftrag» gilt nur einmal und springt danach automatisch auf «erfolgreich» zurück.</p>
+      </section>
+
+      <section class="karte voll">
+        <h2>Letzte Druckaufträge</h2>
+        <div class="tabelle"><table><thead><tr><th>Zeit</th><th>Auftrag</th><th>Abzüge</th><th>Art</th><th>Status</th><th>Meldung</th></tr></thead>
+        <tbody id="auftraege"></tbody></table></div>
+      </section>
+
+      <section class="karte voll">
+        <h2>Fehlerprotokoll (letzte Einträge)</h2>
+        <pre id="protokoll"></pre>
+      </section>
+    </div>
+  </main>
+</div>
+<div class="meldung" id="meldung"></div>
+<script>
+'use strict';
+const $ = (s) => document.querySelector(s);
+const STATUS = {angefordert: 'angefordert', warteschlange: 'in Warteschlange', erfolgreich: 'erfolgreich',
+  fehlgeschlagen: 'fehlgeschlagen', unbekannt: 'Status unbekannt', ersetzt: 'ersetzt durch Nachdruck', verworfen: 'verworfen'};
+let formularGeladen = false;
+
+async function api(pfad, daten) {
+  const r = await fetch(pfad, daten === undefined ? {} : {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(daten)});
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401) { zeigeLogin(); throw j; }
+  if (!r.ok) throw j;
+  return j;
+}
+function meldung(t) { const m = $('#meldung'); m.textContent = t; m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 2500); }
+function esc(s) { return String(s ?? '').replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c])); }
+function zeile(a, b) { return `<div class="zeile"><span>${a}</span><span>${b}</span></div>`; }
+// Nur neu zeichnen, wenn sich etwas geändert hat – sonst verschwinden Knöpfe unter dem Mauszeiger
+function setzeHtml(sel, html) { const el = $(sel); if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; } }
+function marke(s) { return `<span class="marke m-${s}">${STATUS[s] || s}</span>`; }
+
+function zeigeLogin() { $('#app').hidden = true; $('#login').hidden = false; $('#pin').focus(); }
+
+$('#login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try { await api('/api/betrieb/anmelden', {pin: $('#pin').value}); $('#pin').value = ''; $('#login').hidden = true; laden(); }
+  catch { $('#login-fehler').textContent = 'PIN falsch.'; }
+});
+$('#abmelden').onclick = async () => { await api('/api/betrieb/abmelden', {}); zeigeLogin(); };
+
+async function laden() {
+  const d = await api('/api/betrieb/status');
+  $('#app').hidden = false;
+  const k = d.kontingent;
+  $('#verbleibend').textContent = `${k.verbleibend} von ${k.gesamt} übrig`;
+  $('#balken').style.width = Math.min(100, 100 * (k.gesamt - k.verbleibend) / Math.max(1, k.gesamt)) + '%';
+  $('#kontingent').innerHTML =
+    zeile('Gezählt wird', k.modus_simuliert ? '<span class="marke m-sim">simulierte Abzüge</span>' : 'echte Abzüge') +
+    zeile('Erfolgreich gedruckt (echt)', k.echt) +
+    zeile('Erfolgreich gedruckt (simuliert)', k.simuliert) +
+    zeile('Reserviert (offen oder unklar)', k.reserviert) +
+    zeile('Fehlgeschlagen (nicht gezählt)', k.fehlgeschlagen) +
+    zeile('Materialkosten bisher (CHF 0.15 / Abzug)', 'CHF ' + ((k.echt) * 0.15).toFixed(2));
+  const g = d.geraete;
+  $('#geraete').innerHTML =
+    zeile('Kamera', `${esc(g.kamera.name)} ${g.kamera.bereit ? '<span class="marke m-erfolgreich">bereit</span>' : '<span class="marke m-fehlgeschlagen">nicht bereit</span>'}`) +
+    zeile('Drucker', `${esc(g.drucker.name)} ${g.drucker.simuliert ? '<span class="marke m-sim">Simulation</span>' : ''}`) +
+    zeile('Freier Speicher', (g.speicher_frei_mb / 1000).toFixed(1) + ' GB') +
+    zeile('Sitzungen dieser Veranstaltung', d.veranstaltung.sitzungen);
+
+  const probleme = d.auftraege.filter((a) => a.status === 'fehlgeschlagen' || a.status === 'unbekannt');
+  $('#k-probleme').hidden = !probleme.length;
+  $('#k-probleme').classList.toggle('problem', probleme.length > 0);
+  setzeHtml('#probleme', probleme.map((a) => `
+    <div class="zeile"><span>${esc(a.erstellt.slice(11))} · ${a.abzuege}× ${marke(a.status)}<br><small>${esc(a.meldung)}</small></span>
+    <span class="aktionen">${a.status === 'fehlgeschlagen'
+      ? `<button class="primaer" data-a="${a.id}" data-x="nachdrucken">Nachdrucken</button><button class="gefahr" data-a="${a.id}" data-x="verwerfen">Verwerfen</button>`
+      : `<button data-a="${a.id}" data-x="wurde_gedruckt">Wurde gedruckt</button><button data-a="${a.id}" data-x="nicht_gedruckt">Wurde nicht gedruckt</button>`}
+    </span></div>`).join('') +
+    '<p class="hinweis">Bei «Status unbekannt»: am Drucker nachsehen, ob das Foto herausgekommen ist. Nichts wird automatisch nachgedruckt.</p>');
+
+  $('#auftraege').innerHTML = d.auftraege.map((a) => `<tr><td>${esc(a.erstellt.replace('T', ' '))}</td><td><small>${esc(a.id)}</small></td>
+    <td>${a.abzuege}</td><td>${a.simuliert ? '<span class="marke m-sim">Simulation</span>' : 'echt'}</td><td>${marke(a.status)}</td><td><small>${esc(a.meldung)}</small></td></tr>`).join('')
+    || '<tr><td colspan="6">Noch keine Druckaufträge.</td></tr>';
+  $('#protokoll').textContent = d.protokoll.join('') || 'Noch keine Einträge.';
+
+  if (!formularGeladen) {   // Formulare nur einmal füllen, damit Eingaben nicht überschrieben werden
+    formularGeladen = true;
+    const e = d.einstellungen;
+    $('#thema').innerHTML = Object.entries(d.themen).map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('');
+    for (const f of ['#f-veranstaltung', '#f-ablauf', '#f-sim']) {
+      for (const el of $(f).elements) if (el.name) el.value = (el.name in d.veranstaltung ? d.veranstaltung : e)[el.name];
+    }
+  }
+  $('#f-sim').elements.sim_drucker_verhalten.value = d.einstellungen.sim_drucker_verhalten;
+}
+
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-a]');
+  if (!b) return;
+  b.disabled = true;
+  try { await api(`/api/betrieb/auftrag/${b.dataset.a}/${b.dataset.x}`, {}); meldung('Erledigt'); }
+  catch { meldung('Aktion nicht möglich'); }
+  laden();
+});
+
+$('#f-veranstaltung').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target.elements;
+  await api('/api/betrieb/veranstaltung', {anlass: f.anlass.value, namen: f.namen.value, datum_text: f.datum_text.value});
+  await api('/api/betrieb/einstellungen', {thema: f.thema.value});
+  meldung('Gespeichert – gilt ab der nächsten Sitzung'); laden();
+});
+$('#f-ablauf').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const daten = {};
+  for (const el of e.target.elements) if (el.name) daten[el.name] = Number(el.value);
+  try { await api('/api/betrieb/einstellungen', daten); meldung('Gespeichert'); } catch { meldung('Ungültiger Wert'); }
+  laden();
+});
+$('#f-sim').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target.elements;
+  await api('/api/betrieb/einstellungen', {sim_kamera_verhalten: f.sim_kamera_verhalten.value, sim_drucker_verhalten: f.sim_drucker_verhalten.value});
+  meldung('Simulation übernommen'); laden();
+});
+
+laden().catch(() => {});
+setInterval(() => { if (!$('#app').hidden) laden().catch(() => {}); }, 3000);
+</script>
+</body>
+</html>
