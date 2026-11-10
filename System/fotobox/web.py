@@ -92,6 +92,10 @@ def erstelle_app(box: Fotobox) -> Flask:
     def livebild_start(sid):
         return jsonify({"livebild": box.livebild_starten(sid)})
 
+    @app.post("/api/sitzung/<sid>/fokus")
+    def fokus(sid):
+        return jsonify({"vorfokus": box.vorfokussieren(sid)})
+
     @app.get("/api/sitzung/<sid>/livebild.jpg")
     def livebild_bild(sid):
         from flask import Response

@@ -22,7 +22,8 @@
 - [x] **M3 abgenommen (2026-11-09):** schneller Modus in der Gästeansicht, Klick passt zum Countdown (dein Urteil), Originale 6,2 MB von der Canon (laut Protokoll)
 - [ ] Verständnisfragen zu M3
 - [x] **Livebild (2026-11-09):** Ausrichten-Bildschirm mit gespiegeltem Livebild und Postkarten-Rahmen, Countdown darüber. Das Livebild läuft nur während der Sitzung und stoppt nach dem Foto bzw. wenn 10 s lang niemand mehr Bilder abruft. Getestet mit Simulation und echter EOS 600D: Foto 1,7 s nach Auslösen.
-- [ ] Livebild von dir abnehmen: winken und prüfen, ob das Bild spürbar nachhinkt
+- [x] Livebild von dir abgenommen (2026-11-09)
+- [x] Vorab-Scharfstellen während des Countdowns («do LiveView_Focus», danach «capturenoaf»): Foto ab «0» in 1,8 s statt 3,9 s (2026-11-10). Bei Dunkelheit kann der Vorfokus misslingen → noch prüfen
 - [ ] Grünes Autofokus-Feld im Livebild: prüfen, ob es sich in digiCamControl ausblenden lässt
 - [ ] Scharfstellen: einmal mit AF auf Gastabstand scharfstellen, dann MF (Ablauf dokumentieren) oder `/capture` mit Autofokus testen
 - [ ] Kamera-Uhr stellen (steht auf März 2025)

@@ -208,6 +208,19 @@ class Fotobox:
         except KameraFehler as e:
             raise FotoboxFehler("kein_livebild", str(e)) from e
 
+    def vorfokussieren(self, sid: str) -> bool:
+        """Beim Start des Countdowns: Kamera schon scharfstellen lassen (nur mit laufendem Livebild)."""
+        with self._lock:
+            self._pruefe_aktiv(sid)
+        if not self._livebild_an:
+            return False
+        try:
+            self.kamera.vorfokussieren()
+            return True
+        except Exception:  # noqa: BLE001 – ohne Vorfokus stellt die Kamera beim Auslösen selbst scharf
+            log.exception("Vorfokussieren fehlgeschlagen")
+            return False
+
     def livebild_stoppen(self):
         if self._livebild_an:
             self._livebild_an = False

@@ -197,6 +197,13 @@ class Livebild(unittest.TestCase):
             self.assertFalse(self.box.livebild_starten(s["id"]))   # Kamera ohne Livebild: kein Fehler
         self.assertEqual(self.box.aufnehmen(s["id"])["aufnahme"], 1)
 
+    def test_vorfokus_nur_mit_livebild(self):
+        s = self.box.sitzung_starten()
+        self.assertFalse(self.box.vorfokussieren(s["id"]))        # ohne Livebild: nichts tun
+        self.box.livebild_starten(s["id"])
+        self.assertTrue(self.box.vorfokussieren(s["id"]))
+        self.assertEqual(self.box.aufnehmen(s["id"])["aufnahme"], 1)
+
     def test_rahmen_entspricht_postkarte(self):
         from fotobox.bild import ausschnitt
         a = ausschnitt(1800, 1200)

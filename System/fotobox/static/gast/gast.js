@@ -210,6 +210,8 @@ async function countdownUndAufnahme() {
 async function countdownStarten() {
   zeige('countdown');
   $('#countdown-text').textContent = 'Schau in die Kamera';
+  // Während der Countdown läuft, stellt die Kamera schon scharf – bei «0» löst sie sofort aus.
+  if ($('#countdown').classList.contains('mit-livebild')) api(`/api/sitzung/${sitzung}/fokus`, {}).catch(() => {});
   const zahl = $('#zahl');
   zahl.classList.remove('leer');
   for (let n = konfig.countdown_s; n >= 1; n--) {
