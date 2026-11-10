@@ -20,7 +20,7 @@ Legende: ✅ **getestet** (selbst ausprobiert) · 📄 **nur Doku** (laut offizi
 | Webserver digiCamControl nur lokal | ⚠️ lauscht auf allen Netzwerkadressen (0.0.0.0:5513). Die Firewall blockiert eingehend (Profil «Öffentlich», keine Erlaubnis-Regel). Von einem anderen Gerät aus nicht getestet. | – |
 | Online-Galerie Cloudflare R2 | ❔ Baustein fertig. Signatur mit botocore 1.43.127 verglichen (identisch). Mit echtem Konto noch nicht getestet. | ❔ |
 | **Canon EOS 600D unter Linux (gphoto2)** | – | ✅ **Vorstufe (2026-11-10): Ubuntu 26.04 in WSL 2 auf dem Laptop, Kamera über usbipd-win 5.3.0 weitergereicht, gphoto2 2.5.32, python-gphoto2 2.6.3.** Fotobox-Baustein im echten Ablauf: Foto nach 1,4–1,5 s. Kein echter Raspberry Pi, siehe unten |
-| Fotodrucker | ❔ noch nicht gewählt | ❔ noch nicht gewählt |
+| Fotodrucker **DNP DS620** (gewählt 2026-11-10) | 📄 offizieller DNP-Treiber. ❔ nicht getestet | 📄 Gutenprint 5.3.x mit CUPS-Backend «dnpds40» (laut Gutenprint-Unterlagen und Forum). Bekannte Punkte: DS620**A** ohne «Rewind», eine Firmware-Panne beim Rewind (2026), das Bild muss genau 4×6″ gross geliefert werden, sonst skaliert CUPS. ❔ nicht getestet |
 | Python 3.13, Flask 3.1.3, Pillow 13.0.0, waitress 3.0.2 | ✅ | ❔ |
 
 ## Beobachtungen echte Kamera (2026-11-09)
