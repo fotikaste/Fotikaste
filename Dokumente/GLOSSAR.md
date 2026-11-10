@@ -46,4 +46,10 @@
 | **Bucket** (Eimer) | Ein Speicherbereich beim Online-Speicher, wie ein Hauptordner | `fotobox-galerie` |
 | **API-Token / Zugangsschlüssel** | Benutzername (Access Key ID) und Passwort (Secret Access Key) für Programme | Damit darf die Fotobox Fotos in den Bucket legen |
 | **Signatur (SigV4)** | Rechnerischer Beweis, dass eine Anfrage vom Schlüsselbesitzer stammt, ohne das Geheimnis mitzuschicken | Jede Upload-Anfrage an Cloudflare wird so unterschrieben |
+| **WSL** (Windows-Subsystem für Linux) | Ein echtes Linux, das als Programm in Windows läuft | Damit testen wir gphoto2, ohne einen Raspberry Pi zu haben |
+| **Ubuntu** | Eine verbreitete Linux-Variante | Läuft bei dir in WSL. Raspberry Pi OS ist eng verwandt |
+| **usbipd-win** | Programm, das ein USB-Gerät von Windows an WSL weiterreicht | `usbipd attach --wsl --busid 2-1` gibt die Kamera an Linux, `detach` gibt sie zurück |
+| **sudo** | «Als Administrator ausführen» unter Linux, fragt nach deinem Linux-Passwort | `sudo apt-get install gphoto2` |
+| **apt** | Installationsprogramm von Ubuntu, ähnlich wie winget | Hat gphoto2 installiert |
+| **Fernauslöser (Remote Release)** | Befehl, der den Auslöser der Kamera per Kabel drückt, ohne dass sie nochmals scharfstellt | Unter Linux brachte das das Foto in ca. 1 s |
 | **Kiosk-Modus** | Browser im Vollbild ohne Adressleiste und Menüs | So sehen Gäste nur die Fotobox |
