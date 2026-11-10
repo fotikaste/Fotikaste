@@ -48,6 +48,11 @@ Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
 
 Foto ist ca. 1,4 s nach dem Auslösen auf dem PC. Der Modus «langsam» braucht 8–15 s, weil er die Verbindung jedes Mal neu aufbaut, und funktioniert nur, wenn die App **geschlossen** ist.
 
+## Kamera unter Linux / Raspberry Pi (gphoto2)
+Unter Linux steuert die Fotobox die Canon direkt über **gphoto2**, digiCamControl wird dort nicht gebraucht. Betriebsseite → «Kamera und Simulation» → **«Echte Canon – gphoto2»**. Unter Windows meldet diese Option nur «nicht installiert».
+- Einmalig in Linux: `sudo apt-get install gphoto2 python3-gphoto2 python3-venv`, dann eine Python-Umgebung mit `--system-site-packages` anlegen und `requirements.txt` installieren.
+- Test am Windows-PC über WSL: Kamera mit `usbipd attach --wsl --busid <Nummer>` an Linux geben (Nummer aus `usbipd list`). Zurückgeben mit `usbipd detach --busid <Nummer>`. Solange die Kamera bei Linux ist, sieht Windows sie nicht.
+
 ## Fotos fürs Handy (QR-Code)
 Nach dem Foto fragt die Fotobox: «Möchtest du dein Foto auch aufs Handy?». Bei «Ja» erscheint ein QR-Code mit einer langen Zufallsadresse. Nur wer den Code hat, findet das Foto.
 - **Ohne Internet** gibt es den QR-Code trotzdem. Die Fotobox lädt das Foto hoch, sobald wieder Internet da ist, und versucht es automatisch erneut.
@@ -72,7 +77,7 @@ Im Ordner `System` in PowerShell:
 ```
 .venv\Scripts\python.exe -m unittest -v
 ```
-Erwartet: `Ran 45 tests … OK`
+Erwartet: `Ran 55 tests … OK`
 
 ## Häufige Fehler
 | Problem | Lösung |

@@ -29,7 +29,7 @@ STANDARD_EINSTELLUNGEN = {
     "druck_hoehe_px": 1200,
     "druck_dpi": 300,
     # Simulation
-    "kamera_modus": "simuliert",       # simuliert | digicamcontrol_app (schnell) | digicamcontrol (langsam) | (später: gphoto2)
+    "kamera_modus": "simuliert",       # simuliert | digicamcontrol_app (schnell) | digicamcontrol (langsam) | gphoto2 (Linux/Pi)
     "livebild": True,                  # Livebild während der Sitzung zeigen (falls die Kamera es kann)
     "kamera_autofokus": False,        # False = ohne Scharfstellen auslösen (Objektiv auf MF stellen)
     "sim_kamera_verhalten": "ok",      # ok | nicht_verbunden | zeitueberschreitung

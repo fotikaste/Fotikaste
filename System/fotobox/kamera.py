@@ -330,6 +330,9 @@ def erstelle_kamera(modus: str, sim_verhalten, autofokus=lambda: False) -> Kamer
         return DigiCamControlAppKamera(autofokus)
     if modus == "digicamcontrol":
         return DigiCamControlKamera(autofokus)
+    if modus == "gphoto2":
+        from .kamera_gphoto2 import Gphoto2Kamera  # noqa: PLC0415 – vermeidet Ring-Import
+        return Gphoto2Kamera()
     return SimulierteKamera(sim_verhalten)
 
 

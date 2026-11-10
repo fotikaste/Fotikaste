@@ -38,6 +38,9 @@
 - [ ] Kamera-Uhr stellen (steht auf März 2025)
 - [x] M4 (technisch, 2026-11-09): Veranstaltungen mit eigenem Thema, Ordner und Kontingent anlegen und aktivieren. Export, Papierkorb-Löschen mit Bestätigung und PIN, PIN ändern, automatische Abmeldung nach 15 min. 30 Tests, Browserprüfung durch Claude.
 - [x] **M4 abgenommen (2026-11-09):** PIN geändert, Veranstaltung angelegt und gewechselt, Export mit 30 Originalen und 25 Postkarten (laut Protokoll)
+- [x] **Raspberry-Pi-Kamerafrage (2026-11-10):** gphoto2 in Ubuntu/WSL getestet. Baustein `Gphoto2Kamera` gebaut (Livebild, Vorfokus, Fernauslöser, Akkustand). Im echten Ablauf Foto nach 1,4–1,5 s. 55 Tests.
+- [ ] gphoto2: Kabel ziehen, Akku leer und Dauerbetrieb testen
+- [ ] gphoto2 auf echtem Raspberry Pi testen (nach Plattformentscheid), GVFS-Automount prüfen
 - [ ] Kiosk-Modus: Browser startet automatisch im Vollbild ohne Adressleiste
 - [ ] Echte Tasten: USB-Tastencontroller wählen, der sich wie eine Tastatur meldet
 - [ ] M6: Drucker- und Plattformentscheid

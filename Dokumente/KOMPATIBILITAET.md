@@ -19,7 +19,7 @@ Legende: ✅ **getestet** (selbst ausprobiert) · 📄 **nur Doku** (laut offizi
 | Livebild in der Gästeansicht (gespiegelt, mit Rahmen) | ✅ von Claude im Browser mit echter EOS 600D (2026-11-09). Foto im Ablauf: Kamera 1,7 s | ❔ |
 | Webserver digiCamControl nur lokal | ⚠️ lauscht auf allen Netzwerkadressen (0.0.0.0:5513). Die Firewall blockiert eingehend (Profil «Öffentlich», keine Erlaubnis-Regel). Von einem anderen Gerät aus nicht getestet. | – |
 | Online-Galerie Cloudflare R2 | ❔ Baustein fertig. Signatur mit botocore 1.43.127 verglichen (identisch). Mit echtem Konto noch nicht getestet. | ❔ |
-| **Canon EOS 600D unter Linux (gphoto2)** | – | ✅ **Vorstufe (2026-11-10): Ubuntu 26.04 in WSL 2 auf dem Laptop, Kamera über usbipd-win 5.3.0 weitergereicht, gphoto2 2.5.32, python-gphoto2 2.6.3.** Kein echter Raspberry Pi, siehe unten |
+| **Canon EOS 600D unter Linux (gphoto2)** | – | ✅ **Vorstufe (2026-11-10): Ubuntu 26.04 in WSL 2 auf dem Laptop, Kamera über usbipd-win 5.3.0 weitergereicht, gphoto2 2.5.32, python-gphoto2 2.6.3.** Fotobox-Baustein im echten Ablauf: Foto nach 1,4–1,5 s. Kein echter Raspberry Pi, siehe unten |
 | Fotodrucker | ❔ noch nicht gewählt | ❔ noch nicht gewählt |
 | Python 3.13, Flask 3.1.3, Pillow 13.0.0, waitress 3.0.2 | ✅ | ❔ |
 
@@ -41,6 +41,13 @@ Messprogramm mit python-gphoto2, Verbindung bleibt offen, Ziel «Internal RAM» 
 | Vorfokus im Livebild und danach Fernauslöser `eosremoterelease=Immediate` | **schnell:** Foto nach 1,0–1,4 s, Livebild danach sofort wieder da |
 | Schärfe | alle Varianten ähnlich (Sichtprüfung der Bildmitte durch Claude, wenig Kontrast im Raum) |
 
-**Fehler im Testprogramm:** Nach «Release Full» fehlte «Release None». Danach meldete die Kamera «I/O in progress». Ein neuer Aufruf funktionierte sofort wieder. Im echten Baustein den Auslöser immer loslassen.
+**Fehler im Testprogramm:** Beim Trennen am Schluss meldete die Kamera «I/O in progress». Die Ursache ist nicht sicher geklärt, vermutlich waren noch Kamera-Ereignisse offen. Ein neuer Aufruf funktionierte sofort wieder. Der Baustein leert deshalb die Ereignisse nach jedem Foto und vor dem Trennen.
+
+### Fotobox-Baustein `Gphoto2Kamera` mit echter Kamera (WSL, 2026-11-10)
+Die ganze Fotobox lief im Ubuntu (eigene Python-Umgebung `~/fotobox-venv`). Bedient wurde sie durch Claude im Browser unter Windows.
+- 4 Aufnahmen im normalen Gästeablauf mit Livebild und Countdown: **Kamera 1,4–1,5 s**, Postkarte 0,4 s, Originale 5,7 MB
+- Laut Protokoll wurde «per Fernauslöser nach Vorfokus» ausgelöst
+- Livebild gespiegelt mit Rahmen sichtbar
+- **Nicht getestet:** Kabel ziehen während des Betriebs, Akku leer, mehrere Stunden Dauerbetrieb, echter Raspberry Pi
 
 **Noch offen für den Raspberry Pi:** Geschwindigkeit auf echter Pi-Hardware, GVFS-Automount (ein Dateimanager, der die Kamera belegt), Vorfokus bei Dunkelheit, Dauerbetrieb über Stunden.
