@@ -9,6 +9,8 @@ from __future__ import annotations
 import logging
 import os
 import secrets
+
+import segno
 import time
 from pathlib import Path
 
@@ -73,6 +75,7 @@ def erstelle_app(box: Fotobox) -> Flask:
             "countdown_s": e["countdown_s"], "max_abzuege": e["max_abzuege_pro_sitzung"],
             "inaktiv_s": e["inaktiv_s"], "inaktiv_warnung_s": e["inaktiv_warnung_s"], "abschluss_s": e["abschluss_s"],
             "druck_verbleibend": box.kontingent()["verbleibend"],
+            "galerie_modus": e["galerie_modus"], "galerie_tage": e["galerie_tage"],
             "seitenverhaeltnis": e["druck_breite_px"] / e["druck_hoehe_px"],
             # Welcher Teil des Kamerabilds landet auf der Postkarte? (Anteile 0..1, mittig)
             "ausschnitt": ausschnitt(e["druck_breite_px"], e["druck_hoehe_px"]),
@@ -91,6 +94,19 @@ def erstelle_app(box: Fotobox) -> Flask:
     @app.post("/api/sitzung/<sid>/livebild")
     def livebild_start(sid):
         return jsonify({"livebild": box.livebild_starten(sid)})
+
+    @app.post("/api/sitzung/<sid>/handy")
+    def handy(sid):
+        """Foto für die Online-Galerie freigeben und QR-Code (als SVG-Grafik) zurückgeben."""
+        erg = box.galerie_freigeben(sid)
+        qr = segno.make(erg["url"], error="m")
+        return jsonify({**erg, "qr_svg": qr.svg_inline(scale=10, border=2, dark="#000", light="#fff"),
+                        "simuliert": box.galerie.simuliert})
+
+    @app.get("/galerie-sim/<path:pfad>")
+    def galerie_simulation(pfad):
+        """Nur für Tests: zeigt Fotos aus der simulierten Galerie (auf diesem PC)."""
+        return send_from_directory(box.daten / "galerie_simulation", pfad)
 
     @app.post("/api/sitzung/<sid>/fokus")
     def fokus(sid):

@@ -66,6 +66,25 @@
   </section>
 
   <!-- 7. Abschluss -->
+  <!-- Foto aufs Handy? -->
+  <section class="ansicht" data-ansicht="handy-frage">
+    <div class="handy-symbol"></div>
+    <p class="gross-text">Möchtest du dein Foto auch aufs Handy?</p>
+    <p class="unterzeile" id="handy-frage-text"></p>
+  </section>
+
+  <!-- QR-Code -->
+  <section class="ansicht" data-ansicht="handy">
+    <div class="handy-layout">
+      <div class="qr-rahmen"><div id="qr"></div><span class="qr-sim" id="qr-sim" hidden>Simulation – nur auf diesem PC</span></div>
+      <div class="handy-texte">
+        <p class="gross-text">Dein Foto fürs Handy</p>
+        <p class="unterzeile" id="handy-text"></p>
+        <p class="unterzeile" id="handy-druck"></p>
+      </div>
+    </div>
+  </section>
+
   <section class="ansicht" data-ansicht="fertig">
     <div class="haken"></div>
     <p class="gross-text" id="fertig-titel">Danke!</p>

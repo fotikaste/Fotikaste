@@ -221,6 +221,73 @@ class Livebild(unittest.TestCase):
         self.assertIn("ausschnitt", c.get("/api/konfig").json)
 
 
+class OnlineGalerie(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.daten = Path(self.tmp.name)
+        self.box = neue_box(self.daten)
+
+    def tearDown(self):
+        time.sleep(0.3)
+        self.box.store.schliessen()
+        self.tmp.cleanup()
+
+    def test_freigabe_liefert_unerratbare_adresse_und_laedt_hoch(self):
+        sid = sitzung_mit_foto(self.box)
+        erg = self.box.galerie_freigeben(sid)
+        self.assertTrue(erg["url"].startswith("http://127.0.0.1:8080/galerie-sim/"))
+        kennung = erg["url"].rsplit("/", 1)[1].removesuffix(".jpg")
+        self.assertGreaterEqual(len(kennung), 20)                       # lange Zufallskennung
+        self.box.galerie_abarbeiten(warten=True)
+        self.assertEqual(self.box.store.upload_zaehler()["online"], 1)
+        datei = self.daten / "galerie_simulation" / erg["url"].split("/galerie-sim/")[1]
+        self.assertTrue(datei.exists())
+        # Doppelte Freigabe derselben Sitzung: gleiche Adresse, kein zweiter Upload
+        self.assertEqual(self.box.galerie_freigeben(sid)["url"], erg["url"])
+        self.assertEqual(len(self.box.store.uploads()), 1)
+
+    def test_ohne_internet_wartet_der_upload(self):
+        self.box.store.setze_einstellung("sim_galerie_verhalten", "offline")
+        sid = sitzung_mit_foto(self.box)
+        erg = self.box.galerie_freigeben(sid)                           # QR-Code gibt es trotzdem
+        self.assertTrue(erg["url"])
+        self.box.galerie_abarbeiten(warten=True)
+        self.assertEqual(self.box.store.upload_zaehler()["wartend"], 1)
+        self.box.store.setze_einstellung("sim_galerie_verhalten", "ok")  # Internet wieder da
+        self.box.galerie_abarbeiten(warten=True)
+        self.assertEqual(self.box.store.upload_zaehler()["online"], 1)
+
+    def test_upload_ueberlebt_neustart(self):
+        self.box.store.setze_einstellung("sim_galerie_verhalten", "offline")
+        sid = sitzung_mit_foto(self.box)
+        self.box.galerie_freigeben(sid)
+        self.box.store.schliessen()
+        box2 = neue_box(self.daten)
+        box2.store.setze_einstellung("sim_galerie_verhalten", "ok")
+        box2.galerie_abarbeiten(warten=True)
+        self.assertEqual(box2.store.upload_zaehler()["online"], 1)
+        self.box = box2
+
+    def test_nur_waehrend_der_sitzung_und_nicht_wenn_aus(self):
+        sid = sitzung_mit_foto(self.box)
+        self.box.store.setze_einstellung("galerie_modus", "aus")
+        with self.assertRaises(FotoboxFehler):
+            self.box.galerie_freigeben(sid)
+        self.box.store.setze_einstellung("galerie_modus", "nachfrage")
+        self.box.sitzung_beenden(sid)
+        with self.assertRaises(FotoboxFehler):
+            self.box.galerie_freigeben(sid)                             # fremde Sitzung: nicht möglich
+
+    def test_qr_code_ueber_web(self):
+        c = erstelle_app(self.box).test_client()
+        sid = c.post("/api/sitzung", json={}).json["id"]
+        c.post(f"/api/sitzung/{sid}/aufnahme", json={})
+        r = c.post(f"/api/sitzung/{sid}/handy", json={})
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json["qr_svg"].startswith("<svg"))
+        self.assertTrue(r.json["simuliert"])
+
+
 class FalscheKamera(unittest.TestCase):
     def test_nur_canon_fotos_werden_akzeptiert(self):
         from fotobox.kamera import KameraFehler, pruefe_canon

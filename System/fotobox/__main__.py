@@ -43,7 +43,7 @@ def main():
     a = p.parse_args()
 
     protokoll_einrichten(a.daten)
-    box = Fotobox(a.daten)
+    box = Fotobox(a.daten, sim_galerie_url=f"http://127.0.0.1:{a.port}/galerie-sim")
     app = erstelle_app(box)
     url = f"http://127.0.0.1:{a.port}/"
     logging.getLogger("fotobox").info("Fotobox läuft: %s  (Betrieb: %sbetrieb)  – Beenden mit Strg+C", url, url)

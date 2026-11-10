@@ -123,6 +123,7 @@ async function startbildschirm() {
   sitzung = null;
   const bild = $('#vorschau-bild');
   bild.removeAttribute('src');           // Foto der vorherigen Gäste sofort entfernen
+  $('#qr').innerHTML = '';                 // ebenso ihren QR-Code
   try { konfig = await api('/api/konfig'); themaAnwenden(konfig); }
   catch { buehne.classList.add('bereit'); /* alte Konfiguration weiterverwenden */ }
   const los = {text: 'Start', los: starten};
@@ -312,11 +313,44 @@ function druckProblem() {
   autoTimer = setTimeout(() => beenden('beendet'), 20000);
 }
 
+// Abschluss: je nach Einstellung erst fragen, ob der Gast sein Foto aufs Handy möchte.
 function danke(gedruckt, n = 1) {
+  const modus = konfig.galerie_modus;
+  if (modus === 'immer') return handyQr(gedruckt, n);
+  if (modus !== 'nachfrage') return dankeAnzeigen(gedruckt, n);
+  $('#handy-frage-text').textContent =
+    `Du bekommst einen QR-Code. Das Foto ist dann ${konfig.galerie_tage} Tage online abrufbar – nur mit diesem Code.`;
+  zeige('handy-frage', [
+    {text: 'Nein, danke', los: () => dankeAnzeigen(gedruckt, n)},
+    {text: 'Ja, aufs Handy', los: () => handyQr(gedruckt, n)},
+    null,
+  ], {inaktiv: true});
+}
+
+async function handyQr(gedruckt, n) {
+  zeige('laden');
+  $('#laden-text').textContent = 'Einen Moment …';
+  try {
+    const erg = await api(`/api/sitzung/${sitzung}/handy`, {});
+    $('#qr').innerHTML = erg.qr_svg;                     // vom Server erzeugte Grafik
+    $('#qr-sim').hidden = !erg.simuliert;
+    $('#handy-text').textContent = `Mit der Handykamera scannen. Das Foto ist ${erg.tage} Tage online – nur mit diesem Code.`;
+    $('#handy-druck').textContent = gedruckt
+      ? (n === 1 ? 'Dein Ausdruck liegt unten im Fach.' : `Deine ${n} Ausdrucke liegen unten im Fach.`) : '';
+    zeige('handy', [null, {text: 'Fertig', los: () => beenden('beendet')}, null]);
+    autoTimer = setTimeout(() => beenden('beendet'), 60000);   // genug Zeit zum Scannen
+  } catch {
+    dankeAnzeigen(gedruckt, n, 'Fürs Handy hat es gerade leider nicht geklappt.');
+  }
+}
+
+function dankeAnzeigen(gedruckt, n = 1, zusatz = '') {
   $('#fertig-titel').textContent = 'Danke!';
   $('#fertig-text').textContent = gedruckt
     ? (n === 1 ? 'Bitte nimm dein Foto unten aus der Box.' : `Bitte nimm deine ${n} Fotos unten aus der Box.`)
     : 'Schön, dass du dabei warst.';
+  if (zusatz) $('#fertig-text').textContent += ' ' + zusatz;
+  $('#qr').innerHTML = '';                 // QR-Code der vorherigen Gäste nie stehen lassen
   zeige('fertig');
   autoTimer = setTimeout(() => beenden('beendet'), (gedruckt ? konfig.abschluss_s : 4) * 1000);
 }

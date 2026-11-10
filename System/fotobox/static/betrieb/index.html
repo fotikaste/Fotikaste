@@ -148,6 +148,22 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
       </section>
 
       <section class="karte voll">
+        <h2>Fotos fürs Handy (Online-Galerie)</h2>
+        <form class="formular" id="f-galerie">
+          <label>QR-Code für Gäste<select name="galerie_modus">
+            <option value="nachfrage">Gast wird gefragt (empfohlen)</option>
+            <option value="immer">immer anzeigen</option>
+            <option value="aus">aus</option></select></label>
+          <label>Tage online (Hinweis für Gäste)<input name="galerie_tage" type="number" min="1" max="365"></label>
+          <label>Simulation: Internet<select name="sim_galerie_verhalten">
+            <option value="ok">vorhanden</option>
+            <option value="offline">fehlt</option></select></label>
+          <button class="primaer">Übernehmen</button>
+        </form>
+        <p class="hinweis">Ohne Internet bekommen Gäste den QR-Code trotzdem. Die Fotobox lädt das Foto hoch, sobald wieder Internet da ist. Noch ist nur die Simulation eingebaut, der echte Online-Speicher folgt nach deinem Anbieter-Entscheid.</p>
+      </section>
+
+      <section class="karte voll">
         <h2>Letzte Druckaufträge</h2>
         <div class="tabelle"><table><thead><tr><th>Zeit</th><th>Auftrag</th><th>Abzüge</th><th>Art</th><th>Status</th><th>Meldung</th></tr></thead>
         <tbody id="auftraege"></tbody></table></div>
@@ -233,6 +249,8 @@ async function laden(hintergrund = false) {
   $('#geraete').innerHTML =
     zeile('Kamera', `${esc(g.kamera.name)} ${g.kamera.bereit ? '<span class="marke m-erfolgreich">bereit</span>' : '<span class="marke m-fehlgeschlagen">nicht bereit</span>'}`) +
     zeile('Drucker', `${esc(g.drucker.name)} ${g.drucker.simuliert ? '<span class="marke m-sim">Simulation</span>' : ''}`) +
+    zeile('Online-Galerie', `${esc(g.galerie.name)} ${g.galerie.bereit ? '<span class="marke m-erfolgreich">erreichbar</span>' : '<span class="marke m-unbekannt">offline</span>'}`) +
+    zeile('Fotos online / wartend / fehlgeschlagen', `${g.galerie.online} / ${g.galerie.wartend} / ${g.galerie.fehlgeschlagen}`) +
     zeile('Freier Speicher', (g.speicher_frei_mb / 1000).toFixed(1) + ' GB') +
     zeile('Sitzungen dieser Veranstaltung', d.veranstaltung.sitzungen);
 
@@ -257,7 +275,7 @@ async function laden(hintergrund = false) {
     const e = d.einstellungen;
     for (const s of document.querySelectorAll('.themenwahl'))
       s.innerHTML = Object.entries(d.themen).map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('');
-    for (const f of ['#f-veranstaltung', '#f-ablauf', '#f-sim']) {
+    for (const f of ['#f-veranstaltung', '#f-ablauf', '#f-sim', '#f-galerie']) {
       for (const el of $(f).elements) if (el.name) el.value = (el.name in d.veranstaltung ? d.veranstaltung : e)[el.name];
     }
   }
@@ -320,6 +338,17 @@ $('#f-neu').addEventListener('submit', async (e) => {
     formularGeladen = false;
     meldung('Veranstaltung angelegt');
   } catch (err) { meldung(err.text || 'Anlegen nicht möglich'); }
+  laden();
+});
+
+$('#f-galerie').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target.elements;
+  try {
+    await api('/api/betrieb/einstellungen', {galerie_modus: f.galerie_modus.value, galerie_tage: Number(f.galerie_tage.value),
+      sim_galerie_verhalten: f.sim_galerie_verhalten.value});
+    meldung('Übernommen');
+  } catch { meldung('Ungültiger Wert'); }
   laden();
 });
 

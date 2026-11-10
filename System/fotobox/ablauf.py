@@ -9,6 +9,7 @@ Hier wird entschieden, was erlaubt ist – unabhängig von der Oberfläche:
 from __future__ import annotations
 
 import logging
+import secrets
 import shutil
 import threading
 import time
@@ -16,6 +17,7 @@ from pathlib import Path
 
 from . import bild
 from .drucker import SimulierterDrucker, freier_speicher_mb
+from .galerie import GalerieFehler, SimulierteGalerie
 from .kamera import KameraFehler, SimulierteKamera, erstelle_kamera, mit_zeitlimit
 from .store import Store, jetzt as _jetzt
 
@@ -24,6 +26,8 @@ log = logging.getLogger("fotobox")
 KAMERA_ZEITLIMIT_S = 30  # muss grösser sein als das eigene Zeitlimit der echten Kamera (25 s)
 DRUCK_ZEITLIMIT_S = 120
 MIN_FREIER_SPEICHER_MB = 300
+UPLOAD_INTERVALL_S = 15      # so oft versucht die Fotobox, wartende Fotos hochzuladen
+MAX_UPLOAD_VERSUCHE = 200    # danach «fehlgeschlagen» (bei 15 s Abstand ca. 50 Minuten)
 
 
 class FotoboxFehler(Exception):
@@ -35,7 +39,8 @@ class FotoboxFehler(Exception):
 
 
 class Fotobox:
-    def __init__(self, daten: Path, kamera=None, drucker=None):
+    def __init__(self, daten: Path, kamera=None, drucker=None, galerie=None,
+                 sim_galerie_url="http://127.0.0.1:8080/galerie-sim"):
         self.daten = daten
         daten.mkdir(parents=True, exist_ok=True)
         self.store = Store(daten / "fotobox.db")
@@ -55,6 +60,11 @@ class Fotobox:
         self._livebild_an = False
         self._livebild_zuletzt = 0.0
         self.speicher_mb = lambda: freier_speicher_mb(self.daten)
+        self.galerie = galerie or SimulierteGalerie(
+            daten / "galerie_simulation", sim_galerie_url,
+            verhalten=lambda: self.store.einstellung("sim_galerie_verhalten"))
+        self._upload_lock = threading.Lock()
+        threading.Thread(target=self._galerie_arbeiter, daemon=True).start()
 
         # Kamera-Prüfung im Hintergrund (dauert bei echter Kamera ca. 3 s), damit der
         # Gast beim Start nicht warten muss: status() liest dann nur den Zwischenspeicher.
@@ -390,7 +400,58 @@ class Fotobox:
             self.store.setze_bilder_status(vid, "im_papierkorb")
         log.warning("Betreiber: Bilder der Veranstaltung %s in den Papierkorb verschoben", vid)
 
+    # ---------- Online-Galerie ----------
+    def galerie_freigeben(self, sid: str) -> dict:
+        """Gast möchte sein Foto aufs Handy: Upload-Auftrag anlegen und die Adresse für den
+        QR-Code sofort zurückgeben – auch wenn gerade kein Internet da ist."""
+        with self._lock:
+            s = self._pruefe_aktiv(sid)
+        if self.e("galerie_modus") == "aus":
+            raise FotoboxFehler("galerie_aus")
+        if not s["karte"]:
+            raise FotoboxFehler("keine_aufnahme")
+        # Lange Zufallskennung: Die Adresse lässt sich nicht erraten (ca. 128 Bit)
+        schluessel = f"{s['veranstaltung_id']}/{secrets.token_urlsafe(16)}.jpg"
+        u = self.store.upload_anlegen(sid, s["veranstaltung_id"], s["karte"], schluessel, self.galerie.url(schluessel))
+        threading.Thread(target=self.galerie_abarbeiten, daemon=True).start()  # sofort versuchen
+        log.info("Sitzung %s: Foto für die Online-Galerie freigegeben", sid)
+        return {"url": u["url"], "status": u["status"], "tage": int(self.e("galerie_tage"))}
+
+    def galerie_abarbeiten(self, warten: bool = False) -> int:
+        """Lädt alle wartenden Fotos hoch. Fehler (z. B. kein Internet) -> später erneut versuchen.
+        warten=False: läuft schon ein Durchgang, sofort zurückkehren (Hintergrund-Arbeiter)."""
+        if not self._upload_lock.acquire(blocking=warten, timeout=30 if warten else -1):
+            return 0  # läuft schon
+        hochgeladen = 0
+        try:
+            for u in self.store.uploads("wartend"):
+                try:
+                    self.galerie.hochladen(Path(u["datei"]), u["schluessel"])
+                except (GalerieFehler, OSError) as e:
+                    endgueltig = u["versuche"] + 1 >= MAX_UPLOAD_VERSUCHE
+                    self.store.upload_ergebnis(u["id"], "fehlgeschlagen" if endgueltig else "wartend", str(e)[:300])
+                    if endgueltig:
+                        log.error("Upload %s endgültig fehlgeschlagen: %s", u["id"], e)
+                    break  # ohne Internet die übrigen gar nicht erst versuchen
+                self.store.upload_ergebnis(u["id"], "online")
+                hochgeladen += 1
+        finally:
+            self._upload_lock.release()
+        if hochgeladen:
+            log.info("Online-Galerie: %d Foto(s) hochgeladen", hochgeladen)
+        return hochgeladen
+
+    def _galerie_arbeiter(self):
+        while True:
+            time.sleep(UPLOAD_INTERVALL_S)
+            try:
+                self.galerie_abarbeiten()
+            except Exception:  # noqa: BLE001 – z. B. Datenbank geschlossen beim Beenden
+                return
+
     def geraetestatus(self) -> dict:
         return {"kamera": {"name": self.kamera.name, "simuliert": self.kamera.simuliert, **self.kamera.status()},
                 "drucker": {"name": self.drucker.name, "simuliert": self.drucker.simuliert, **self.drucker.status()},
+                "galerie": {"name": self.galerie.name, "simuliert": self.galerie.simuliert, **self.galerie.status(),
+                            **self.store.upload_zaehler()},
                 "speicher_frei_mb": round(self.speicher_mb())}

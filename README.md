@@ -48,6 +48,12 @@ Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
 
 Foto ist ca. 1,4 s nach dem Auslösen auf dem PC. Der Modus «langsam» braucht 8–15 s, weil er die Verbindung jedes Mal neu aufbaut, und funktioniert nur, wenn die App **geschlossen** ist.
 
+## Fotos fürs Handy (QR-Code)
+Nach dem Foto fragt die Fotobox: «Möchtest du dein Foto auch aufs Handy?». Bei «Ja» erscheint ein QR-Code mit einer langen Zufallsadresse. Nur wer den Code hat, findet das Foto.
+- **Ohne Internet** gibt es den QR-Code trotzdem. Die Fotobox lädt das Foto hoch, sobald wieder Internet da ist, und versucht es automatisch erneut.
+- **Noch Simulation:** Die Fotos landen in `System\daten\galerie_simulation\`. Der QR-Code zeigt auf diesen PC und funktioniert auf einem Handy **nicht**. Ein echter Online-Speicher folgt nach dem Anbieter-Entscheid.
+- Einstellungen: Betriebsseite → «Fotos fürs Handy» (fragen / immer / aus, Tage online, Simulation ohne Internet).
+
 ## Beenden
 Das schwarze Fenster «Fotobox» schliessen oder darin **Strg+C** drücken. Danach den Browser schliessen.
 Prüfen, ob wirklich beendet: `http://127.0.0.1:8080/` lädt nicht mehr.
@@ -65,7 +71,7 @@ Im Ordner `System` in PowerShell:
 ```
 .venv\Scripts\python.exe -m unittest -v
 ```
-Erwartet: `Ran 35 tests … OK`
+Erwartet: `Ran 41 tests … OK`
 
 ## Häufige Fehler
 | Problem | Lösung |

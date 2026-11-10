@@ -24,6 +24,11 @@
 - [x] **Livebild (2026-11-09):** Ausrichten-Bildschirm mit gespiegeltem Livebild und Postkarten-Rahmen, Countdown darüber. Das Livebild läuft nur während der Sitzung und stoppt nach dem Foto bzw. wenn 10 s lang niemand mehr Bilder abruft. Getestet mit Simulation und echter EOS 600D: Foto 1,7 s nach Auslösen.
 - [x] Livebild von dir abgenommen (2026-11-09)
 - [x] Vorab-Scharfstellen während des Countdowns («do LiveView_Focus», danach «capturenoaf»): Foto ab «0» in 1,8 s statt 3,9 s (2026-11-10). Bei Dunkelheit kann der Vorfokus misslingen → noch prüfen
+- [x] **Online-Galerie, Teil 1 (2026-11-10):** Gast wird gefragt, ob er sein Foto aufs Handy möchte, und bekommt einen QR-Code mit unerratbarer Adresse. Upload-Warteschlange funktioniert ohne Internet und übersteht einen Neustart. Vorerst nur simulierter Speicher. 41 Tests, Browserprüfung durch Claude.
+- [ ] Online-Galerie, Teil 2: Anbieter wählen (Infomaniak oder Cloudflare R2), Konto durch dich, echten Upload einbauen, automatisches Löschen nach X Tagen beim Anbieter einrichten
+- [ ] Online-Galerie: Datenschutz-Hinweis für Gäste und Kunden formulieren (Speicherort, Dauer, Löschung). Keine Rechtsberatung, im Zweifel Fachperson fragen
+- [ ] Online-Galerie: Beim Löschen einer Veranstaltung auch die Online-Kopien löschen
+- [ ] Internet am Veranstaltungsort: mobiler Router oder Handy-Hotspot testen
 - [ ] Grünes Autofokus-Feld im Livebild: prüfen, ob es sich in digiCamControl ausblenden lässt
 - [ ] Scharfstellen: einmal mit AF auf Gastabstand scharfstellen, dann MF (Ablauf dokumentieren) oder `/capture` mit Autofokus testen
 - [ ] Kamera-Uhr stellen (steht auf März 2025)

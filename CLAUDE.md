@@ -18,13 +18,15 @@ Kamera und Drucker haben jeweils eine simulierte und echte Umsetzungen mit derse
 - Server lauscht nur auf 127.0.0.1.
 - Originalfotos nie verändern. Druckaufträge nie automatisch wiederholen.
 - Funktionierende Meilensteine mit verständlichen deutschen Commit-Nachrichten sichern.
-- Nicht bauen: Bezahlung, Cloud, Gesichtserkennung, Fernwartung, Online-Buchung, KI-Effekte.
+- Online-Galerie ist vom Benutzer gewünscht (2026-11-10); muss offline funktionieren (Warteschlange), Fotos nur über unerratbare Einzel-Links.
+- Nicht bauen: Bezahlung, Gesichtserkennung, Fernwartung, Online-Buchung, KI-Effekte.
 
 ## Code (System/fotobox/)
 - `store.py` SQLite (Einstellungen, Veranstaltungen, Sitzungen, Druckaufträge; `sitzung_id` UNIQUE = kein Doppeldruck)
 - `kamera.py` Kamera-Schnittstelle + `SimulierteKamera`; `mit_zeitlimit` gegen hängende Kameras
 - `drucker.py` Drucker-Schnittstelle + `SimulierterDrucker` (markierte Datei, Fehler/Unbekannt simulierbar)
 - `bild.py` Postkarte (Pillow), Vorschau, Simulationsmarke
+- `galerie.py` Online-Galerie-Schnittstelle + `SimulierteGalerie`; Upload-Warteschlange in `store.py` (Tabelle `uploads`), Arbeiter in `ablauf.py`
 - `themen.py` Themen (einzige Quelle für Farben/Schriften)
 - `ablauf.py` Sitzungsablauf und alle Regeln (Klasse `Fotobox`)
 - `web.py` Flask-Routen (Gäste `/`, Betrieb `/betrieb`, API `/api/...`); `__main__.py` Start mit waitress auf 127.0.0.1

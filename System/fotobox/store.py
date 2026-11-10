@@ -36,6 +36,11 @@ STANDARD_EINSTELLUNGEN = {
     "drucker_modus": "simuliert",
     "sim_drucker_verhalten": "ok",     # ok | naechster_fehlgeschlagen | naechster_unbekannt
     "sim_druck_dauer_s": 3,
+    # Online-Galerie (Fotos fürs Handy per QR-Code)
+    "galerie_modus": "nachfrage",      # aus | nachfrage (Gast entscheidet) | immer
+    "galerie_anbieter": "simuliert",   # simuliert | (später: echter Online-Speicher)
+    "galerie_tage": 30,                # so lange bleibt ein Foto online (Hinweis für Gäste)
+    "sim_galerie_verhalten": "ok",     # ok | offline (Simulation: kein Internet)
 }
 
 SCHEMA = """
@@ -52,6 +57,10 @@ CREATE TABLE IF NOT EXISTS druckauftraege (
     abzuege INTEGER NOT NULL, status TEXT NOT NULL, simuliert INTEGER NOT NULL,
     datei TEXT, meldung TEXT, erstellt TEXT NOT NULL, aktualisiert TEXT NOT NULL,
     nachdruck_von TEXT);
+CREATE TABLE IF NOT EXISTS uploads (
+    id TEXT PRIMARY KEY, sitzung_id TEXT NOT NULL UNIQUE, veranstaltung_id TEXT NOT NULL,
+    datei TEXT NOT NULL, schluessel TEXT NOT NULL, url TEXT NOT NULL, status TEXT NOT NULL,
+    versuche INTEGER NOT NULL DEFAULT 0, meldung TEXT, erstellt TEXT NOT NULL, aktualisiert TEXT NOT NULL);
 """
 # Hinweis: sitzung_id ist UNIQUE. Die Datenbank selbst verhindert so einen
 # zweiten Druckauftrag für dieselbe Sitzung (z. B. bei Doppeldruck auf «Drucken»).
@@ -65,6 +74,22 @@ CREATE TABLE IF NOT EXISTS druckauftraege (
 # ersetzt       -> fehlgeschlagener Auftrag, für den ein Nachdruck angelegt wurde
 # verworfen     -> Betreiber hat entschieden, nicht nachzudrucken
 DRUCK_STATUS = ("angefordert", "warteschlange", "erfolgreich", "fehlgeschlagen", "unbekannt", "ersetzt", "verworfen")
+
+
+class _Ergebnis:
+    """Bereits vollständig gelesenes Abfrageergebnis (verhält sich wie ein sqlite-Cursor)."""
+
+    def __init__(self, zeilen, rowcount):
+        self._zeilen, self.rowcount = zeilen, rowcount
+
+    def fetchone(self):
+        return self._zeilen[0] if self._zeilen else None
+
+    def fetchall(self):
+        return self._zeilen
+
+    def __iter__(self):
+        return iter(self._zeilen)
 
 
 def jetzt() -> str:
@@ -99,8 +124,12 @@ class Store:
             self._db.close()
 
     def _q(self, sql, args=()):
+        """Führt eine Abfrage aus und liest das Ergebnis vollständig, solange die Sperre gilt.
+        Wichtig, weil mehrere Hintergrund-Arbeiter (Druck, Kamera, Upload) dieselbe Verbindung
+        nutzen: Ein halb gelesenes Ergebnis könnte sonst von einer anderen Abfrage überschrieben werden."""
         with self._lock:
-            return self._db.execute(sql, args)
+            cur = self._db.execute(sql, args)
+            return _Ergebnis(cur.fetchall(), cur.rowcount)
 
     # ---------- Einstellungen ----------
     def einstellungen(self) -> dict:
@@ -229,6 +258,36 @@ class Store:
         cur = self._q("UPDATE druckauftraege SET status='unbekannt', meldung='Programm wurde während des Drucks beendet', "
                       "aktualisiert=? WHERE status IN ('angefordert', 'warteschlange')", (jetzt(),))
         return cur.rowcount
+
+    # ---------- Uploads in die Online-Galerie ----------
+    # status: wartend (noch nicht online) | online | fehlgeschlagen (nach vielen Versuchen)
+    def upload_anlegen(self, sitzung_id, veranstaltung_id, datei, schluessel, url) -> dict:
+        """Pro Sitzung höchstens ein Upload – ein zweiter Wunsch liefert den bestehenden zurück."""
+        with self._lock:
+            row = self._q("SELECT * FROM uploads WHERE sitzung_id=?", (sitzung_id,)).fetchone()
+            if row:
+                return dict(row)
+            t = jetzt()
+            uid = neue_id("U")
+            self._q("INSERT INTO uploads VALUES (?, ?, ?, ?, ?, ?, 'wartend', 0, NULL, ?, ?)",
+                    (uid, sitzung_id, veranstaltung_id, datei, schluessel, url, t, t))
+            return dict(self._q("SELECT * FROM uploads WHERE id=?", (uid,)).fetchone())
+
+    def uploads(self, status=None, limit=1000) -> list[dict]:
+        sql, args = "SELECT * FROM uploads", ()
+        if status:
+            sql, args = sql + " WHERE status=?", (status,)
+        return [dict(r) for r in self._q(sql + " ORDER BY erstellt LIMIT ?", (*args, limit))]
+
+    def upload_ergebnis(self, uid, status, meldung=None):
+        self._q("UPDATE uploads SET status=?, meldung=?, versuche=versuche+1, aktualisiert=? WHERE id=?",
+                (status, meldung, jetzt(), uid))
+
+    def upload_zaehler(self) -> dict:
+        z = {"wartend": 0, "online": 0, "fehlgeschlagen": 0}
+        for r in self._q("SELECT status, COUNT(*) n FROM uploads GROUP BY status"):
+            z[r["status"]] = r["n"]
+        return z
 
     def zaehler(self, veranstaltung_id=None) -> dict:
         """Gedruckte Abzüge, getrennt nach simuliert und echt. Offene/unklare Aufträge zählen
