@@ -38,7 +38,14 @@ STANDARD_EINSTELLUNGEN = {
     "sim_druck_dauer_s": 3,
     # Online-Galerie (Fotos fürs Handy per QR-Code)
     "galerie_modus": "nachfrage",      # aus | nachfrage (Gast entscheidet) | immer
-    "galerie_anbieter": "simuliert",   # simuliert | (später: echter Online-Speicher)
+    "galerie_anbieter": "simuliert",   # simuliert | r2 (Cloudflare R2)
+    # Cloudflare R2 – Werte aus dem Cloudflare-Dashboard (Geheimnis nie anzeigen/zurückgeben!)
+    "r2_konto_id": "",
+    "r2_bucket": "",
+    "r2_eu": True,                     # Bucket mit Speicherort «EU» (beim Anlegen festgelegt)
+    "r2_oeffentliche_url": "",         # z. B. die «Public Development URL» des Buckets
+    "r2_zugangs_id": "",
+    "r2_geheimnis": "",
     "galerie_tage": 30,                # so lange bleibt ein Foto online (Hinweis für Gäste)
     "sim_galerie_verhalten": "ok",     # ok | offline (Simulation: kein Internet)
 }

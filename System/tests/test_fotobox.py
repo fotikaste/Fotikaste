@@ -288,6 +288,67 @@ class OnlineGalerie(unittest.TestCase):
         self.assertTrue(r.json["simuliert"])
 
 
+class CloudflareR2(unittest.TestCase):
+    # Referenzwerte: identisch mit der offiziellen AWS-Bibliothek botocore 1.43.127 (geprüft 2026-11-10)
+    def test_signatur_wie_offizielle_bibliothek(self):
+        import hashlib
+        from datetime import datetime, timezone
+        from fotobox.galerie import signiere_v4
+        zeit = datetime(2026, 11, 10, 8, 30, 0, tzinfo=timezone.utc)
+        put = signiere_v4("PUT", "https://abc123.eu.r2.cloudflarestorage.com/fotobox-galerie/V-20261110-1/OyYKpu5cq-f1_TeH.jpg",
+                          {"content-type": "image/jpeg", "cache-control": "public, max-age=86400"},
+                          hashlib.sha256(b"\xff\xd8 bilddaten").hexdigest(), "BEISPIELZUGANG123",
+                          "beispielGeheimnis/abc+xyz", zeit=zeit)
+        self.assertTrue(put["authorization"].endswith(
+            "Signature=8e3d0bc80d8811076995f1ede754ff7203b63bc32ecfec150d4249d14fb2aad0"))
+        loeschen = signiere_v4("DELETE", "https://abc123.eu.r2.cloudflarestorage.com/fotobox-galerie/fotobox-verbindungstest/x.txt",
+                               {}, hashlib.sha256(b"").hexdigest(), "BEISPIELZUGANG123", "beispielGeheimnis/abc+xyz", zeit=zeit)
+        self.assertTrue(loeschen["authorization"].endswith(
+            "Signature=1decfa73666f4c2149397019618926a1fe6ef806418ec3adc9dd2b845dba388e"))
+
+    def test_hochladen_schickt_signierte_anfrage(self):
+        from fotobox.galerie import R2Galerie
+        g = R2Galerie("konto1", "fotobox-galerie", "ID1", "GEHEIM", "https://pub-test.r2.dev", eu=True)
+        self.assertEqual(g.url("V-1/abc.jpg"), "https://pub-test.r2.dev/V-1/abc.jpg")
+        with tempfile.TemporaryDirectory() as tmp:
+            datei = Path(tmp) / "k.jpg"
+            datei.write_bytes(b"\xff\xd8 test")
+            antwort = mock.MagicMock(status=200)
+            antwort.__enter__.return_value = antwort
+            with mock.patch("urllib.request.urlopen", return_value=antwort) as uo:
+                g.hochladen(datei, "V-1/abc.jpg")
+            req = uo.call_args[0][0]
+            self.assertEqual(req.get_method(), "PUT")
+            self.assertEqual(req.full_url, "https://konto1.eu.r2.cloudflarestorage.com/fotobox-galerie/V-1/abc.jpg")
+            self.assertTrue(req.get_header("Authorization").startswith("AWS4-HMAC-SHA256 Credential=ID1/"))
+            self.assertEqual(req.get_header("Content-type"), "image/jpeg")
+            self.assertNotIn("GEHEIM", str(req.headers))                 # Geheimnis wird nie verschickt
+
+    def test_unvollstaendiger_zugang(self):
+        from fotobox.galerie import GalerieFehler, R2Galerie
+        g = R2Galerie("", "b", "", "", "")
+        self.assertFalse(g.status()["bereit"])
+        with self.assertRaises(GalerieFehler):
+            g.loeschen("x")
+
+    def test_umschalten_und_geheimnis_bleibt_geheim(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            box = neue_box(Path(tmp))
+            c = erstelle_app(box).test_client()
+            c.post("/api/betrieb/anmelden", json={"pin": "1234"})
+            c.post("/api/betrieb/r2", json={"r2_konto_id": "k", "r2_bucket": "b", "r2_oeffentliche_url": "https://x.r2.dev",
+                                            "r2_zugangs_id": "id", "r2_geheimnis": "SEHRGEHEIM"})
+            c.post("/api/betrieb/r2", json={"r2_bucket": "b2", "r2_geheimnis": ""})   # leer = unverändert
+            self.assertEqual(box.store.einstellung("r2_geheimnis"), "SEHRGEHEIM")
+            c.post("/api/betrieb/einstellungen", json={"galerie_anbieter": "r2"})
+            self.assertEqual(box.galerie.name, "Cloudflare R2")
+            antwort = c.get("/api/betrieb/status").get_data(as_text=True)
+            self.assertNotIn("SEHRGEHEIM", antwort)
+            self.assertIn('"r2_geheimnis_gesetzt":true', antwort.replace(" ", ""))
+            self.assertEqual(c.post("/api/betrieb/einstellungen", json={"r2_geheimnis": "x"}).status_code, 400)
+            box.store.schliessen()
+
+
 class FalscheKamera(unittest.TestCase):
     def test_nur_canon_fotos_werden_akzeptiert(self):
         from fotobox.kamera import KameraFehler, pruefe_canon

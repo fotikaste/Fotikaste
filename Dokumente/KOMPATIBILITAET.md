@@ -18,6 +18,7 @@ Legende: ✅ **getestet** (selbst ausprobiert) · 📄 **nur Doku** (laut offizi
 | Auslösen während Livebild | ✅ Foto (5184×3456, Canon) nach 1,7 s da, Livebild läuft danach weiter | ❔ |
 | Livebild in der Gästeansicht (gespiegelt, mit Rahmen) | ✅ von Claude im Browser mit echter EOS 600D (2026-11-09). Foto im Ablauf: Kamera 1,7 s | ❔ |
 | Webserver digiCamControl nur lokal | ⚠️ lauscht auf allen Netzwerkadressen (0.0.0.0:5513). Die Firewall blockiert eingehend (Profil «Öffentlich», keine Erlaubnis-Regel). Von einem anderen Gerät aus nicht getestet. | – |
+| Online-Galerie Cloudflare R2 | ❔ Baustein fertig. Signatur mit botocore 1.43.127 verglichen (identisch). Mit echtem Konto noch nicht getestet. | ❔ |
 | Fotodrucker | ❔ noch nicht gewählt | ❔ noch nicht gewählt |
 | Python 3.13, Flask 3.1.3, Pillow 13.0.0, waitress 3.0.2 | ✅ | ❔ |
 

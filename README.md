@@ -51,7 +51,8 @@ Foto ist ca. 1,4 s nach dem Auslösen auf dem PC. Der Modus «langsam» braucht 
 ## Fotos fürs Handy (QR-Code)
 Nach dem Foto fragt die Fotobox: «Möchtest du dein Foto auch aufs Handy?». Bei «Ja» erscheint ein QR-Code mit einer langen Zufallsadresse. Nur wer den Code hat, findet das Foto.
 - **Ohne Internet** gibt es den QR-Code trotzdem. Die Fotobox lädt das Foto hoch, sobald wieder Internet da ist, und versucht es automatisch erneut.
-- **Noch Simulation:** Die Fotos landen in `System\daten\galerie_simulation\`. Der QR-Code zeigt auf diesen PC und funktioniert auf einem Handy **nicht**. Ein echter Online-Speicher folgt nach dem Anbieter-Entscheid.
+- **Echter Speicher:** Cloudflare R2. Zugangsdaten unter Betriebsseite → «Zugang Cloudflare R2» eintragen, dann «Verbindung testen» und bei «Online-Speicher» auf «Cloudflare R2» umstellen.
+- **Simulation:** Die Fotos landen in `System\daten\galerie_simulation\`. Der QR-Code zeigt auf diesen PC und funktioniert auf einem Handy **nicht**. Ein echter Online-Speicher folgt nach dem Anbieter-Entscheid.
 - Einstellungen: Betriebsseite → «Fotos fürs Handy» (fragen / immer / aus, Tage online, Simulation ohne Internet).
 
 ## Beenden
@@ -71,7 +72,7 @@ Im Ordner `System` in PowerShell:
 ```
 .venv\Scripts\python.exe -m unittest -v
 ```
-Erwartet: `Ran 41 tests … OK`
+Erwartet: `Ran 45 tests … OK`
 
 ## Häufige Fehler
 | Problem | Lösung |

@@ -25,7 +25,11 @@
 - [x] Livebild von dir abgenommen (2026-11-09)
 - [x] Vorab-Scharfstellen während des Countdowns («do LiveView_Focus», danach «capturenoaf»): Foto ab «0» in 1,8 s statt 3,9 s (2026-11-10). Bei Dunkelheit kann der Vorfokus misslingen → noch prüfen
 - [x] **Online-Galerie, Teil 1 (2026-11-10):** Gast wird gefragt, ob er sein Foto aufs Handy möchte, und bekommt einen QR-Code mit unerratbarer Adresse. Upload-Warteschlange funktioniert ohne Internet und übersteht einen Neustart. Vorerst nur simulierter Speicher. 41 Tests, Browserprüfung durch Claude.
-- [ ] Online-Galerie, Teil 2: Anbieter wählen (Infomaniak oder Cloudflare R2), Konto durch dich, echten Upload einbauen, automatisches Löschen nach X Tagen beim Anbieter einrichten
+- [x] Anbieter gewählt: **Cloudflare R2** (2026-11-10)
+- [x] R2-Baustein gebaut: Hochladen, Löschen, Verbindungstest. Signatur stimmt mit der offiziellen AWS-Bibliothek überein. Zugangsdaten auf der Betriebsseite, das Geheimnis wird nie angezeigt. 45 Tests.
+- [ ] Cloudflare-Konto, R2 aktivieren, Bucket (EU) anlegen, öffentliche Adresse, Löschregel 30 Tage, API-Token (deine Schritte)
+- [ ] Echten Verbindungstest und ersten echten Upload machen und mit dem Handy prüfen
+- [ ] Für den Echtbetrieb: eigene Domain statt r2.dev (r2.dev ist laut Cloudflare nur für Entwicklung gedacht und in der Geschwindigkeit begrenzt)
 - [ ] Online-Galerie: Datenschutz-Hinweis für Gäste und Kunden formulieren (Speicherort, Dauer, Löschung). Keine Rechtsberatung, im Zweifel Fachperson fragen
 - [ ] Online-Galerie: Beim Löschen einer Veranstaltung auch die Online-Kopien löschen
 - [ ] Internet am Veranstaltungsort: mobiler Router oder Handy-Hotspot testen

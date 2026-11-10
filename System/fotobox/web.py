@@ -18,6 +18,7 @@ from flask import Flask, jsonify, request, send_file, send_from_directory, sessi
 
 from .ablauf import Fotobox, FotoboxFehler
 from .bild import ausschnitt
+from .galerie import GalerieFehler, R2Galerie
 from .store import STANDARD_EINSTELLUNGEN
 from .themen import THEMEN, thema
 
@@ -26,7 +27,8 @@ log = logging.getLogger("fotobox")
 
 # Diese Einstellungen darf der Betreiber über die Betriebsseite ändern (mit Typ).
 # Die PIN gehört nicht dazu – sie hat eine eigene Funktion, die die alte PIN verlangt.
-AENDERBAR = {k: type(v) for k, v in STANDARD_EINSTELLUNGEN.items() if k != "betreiber_pin"}
+GEHEIM = {"betreiber_pin", "r2_geheimnis"}   # werden nie an den Browser zurückgegeben
+AENDERBAR = {k: type(v) for k, v in STANDARD_EINSTELLUNGEN.items() if k not in GEHEIM}
 ABMELDEN_NACH_S = 15 * 60  # automatische Abmeldung nach 15 Minuten ohne Aktivität
 
 
@@ -182,7 +184,9 @@ def erstelle_app(box: Fotobox) -> Flask:
     def b_status():
         v = box.store.aktive_veranstaltung()
         e = box.store.einstellungen()
-        e.pop("betreiber_pin", None)
+        e["r2_geheimnis_gesetzt"] = bool(e.get("r2_geheimnis"))
+        for k in GEHEIM:
+            e.pop(k, None)
         return jsonify({
             "geraete": box.geraetestatus(),
             "veranstaltung": {**v, "sitzungen": box.store.anzahl_sitzungen(v["id"])},
@@ -269,6 +273,34 @@ def erstelle_app(box: Fotobox) -> Flask:
             box.bilder_in_papierkorb(vid, str(d.get("bestaetigung", "")))
             return jsonify({"ok": True})
         return jsonify({"fehler": "aktion_unbekannt"}), 400
+
+    @app.post("/api/betrieb/r2")
+    def b_r2():
+        """Zugangsdaten für Cloudflare R2 speichern. Ein leeres Geheimnis-Feld lässt das bisherige stehen."""
+        d = request.get_json(silent=True) or {}
+        for k in ("r2_konto_id", "r2_bucket", "r2_oeffentliche_url", "r2_zugangs_id"):
+            if k in d:
+                box.store.setze_einstellung(k, str(d[k]).strip())
+        if "r2_eu" in d:
+            box.store.setze_einstellung("r2_eu", bool(d["r2_eu"]))
+        if str(d.get("r2_geheimnis", "")).strip():
+            box.store.setze_einstellung("r2_geheimnis", str(d["r2_geheimnis"]).strip())
+        log.info("Betreiber: Zugangsdaten Cloudflare R2 gespeichert")
+        return jsonify({"ok": True})
+
+    @app.post("/api/betrieb/r2/testen")
+    def b_r2_testen():
+        e = box.store.einstellungen()
+        g = R2Galerie(e["r2_konto_id"], e["r2_bucket"], e["r2_zugangs_id"], e["r2_geheimnis"],
+                      e["r2_oeffentliche_url"], eu=bool(e["r2_eu"]), zeitlimit_s=15)
+        try:
+            schritte = g.verbindung_testen()
+        except GalerieFehler as f:
+            log.warning("R2-Verbindungstest fehlgeschlagen: %s", f)
+            return jsonify({"ok": False, "schritte": [str(f)]})
+        ok = all("FEHLER" not in s for s in schritte)
+        log.info("R2-Verbindungstest: %s", "; ".join(schritte))
+        return jsonify({"ok": ok, "schritte": schritte})
 
     @app.post("/api/betrieb/pin")
     def b_pin():

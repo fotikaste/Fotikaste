@@ -17,7 +17,7 @@ from pathlib import Path
 
 from . import bild
 from .drucker import SimulierterDrucker, freier_speicher_mb
-from .galerie import GalerieFehler, SimulierteGalerie
+from .galerie import GalerieFehler, R2Galerie, SimulierteGalerie
 from .kamera import KameraFehler, SimulierteKamera, erstelle_kamera, mit_zeitlimit
 from .store import Store, jetzt as _jetzt
 
@@ -60,7 +60,8 @@ class Fotobox:
         self._livebild_an = False
         self._livebild_zuletzt = 0.0
         self.speicher_mb = lambda: freier_speicher_mb(self.daten)
-        self.galerie = galerie or SimulierteGalerie(
+        self._feste_galerie = galerie
+        self._sim_galerie = SimulierteGalerie(
             daten / "galerie_simulation", sim_galerie_url,
             verhalten=lambda: self.store.einstellung("sim_galerie_verhalten"))
         self._upload_lock = threading.Lock()
@@ -76,6 +77,17 @@ class Fotobox:
         n = self.store.unterbrochene_auftraege_markieren()
         if n:
             log.warning("%d Druckauftrag/-aufträge nach Neustart auf «unbekannt» gesetzt", n)
+
+    @property
+    def galerie(self):
+        """Welche Galerie gilt, entscheidet «galerie_anbieter» – umschaltbar ohne Neustart."""
+        if self._feste_galerie:
+            return self._feste_galerie
+        e = self.store.einstellungen()
+        if e["galerie_anbieter"] == "r2":
+            return R2Galerie(e["r2_konto_id"], e["r2_bucket"], e["r2_zugangs_id"], e["r2_geheimnis"],
+                             e["r2_oeffentliche_url"], eu=bool(e["r2_eu"]))
+        return self._sim_galerie
 
     @property
     def kamera(self):

@@ -150,6 +150,9 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
       <section class="karte voll">
         <h2>Fotos fürs Handy (Online-Galerie)</h2>
         <form class="formular" id="f-galerie">
+          <label>Online-Speicher<select name="galerie_anbieter">
+            <option value="simuliert">Simulation (Ordner auf diesem PC)</option>
+            <option value="r2">Cloudflare R2</option></select></label>
           <label>QR-Code für Gäste<select name="galerie_modus">
             <option value="nachfrage">Gast wird gefragt (empfohlen)</option>
             <option value="immer">immer anzeigen</option>
@@ -160,7 +163,19 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
             <option value="offline">fehlt</option></select></label>
           <button class="primaer">Übernehmen</button>
         </form>
-        <p class="hinweis">Ohne Internet bekommen Gäste den QR-Code trotzdem. Die Fotobox lädt das Foto hoch, sobald wieder Internet da ist. Noch ist nur die Simulation eingebaut, der echte Online-Speicher folgt nach deinem Anbieter-Entscheid.</p>
+        <p class="hinweis">Ohne Internet bekommen Gäste den QR-Code trotzdem. Die Fotobox lädt das Foto hoch, sobald wieder Internet da ist.</p>
+        <h2 style="margin-top:20px">Zugang Cloudflare R2</h2>
+        <form class="formular" id="f-r2">
+          <label>Konto-ID (Account ID)<input name="r2_konto_id" autocomplete="off"></label>
+          <label>Bucket-Name<input name="r2_bucket" autocomplete="off"></label>
+          <label>Speicherort<select name="r2_eu"><option value="true">EU (empfohlen)</option><option value="false">automatisch</option></select></label>
+          <label>Öffentliche Adresse (Public URL)<input name="r2_oeffentliche_url" placeholder="https://…" autocomplete="off"></label>
+          <label>Access Key ID<input name="r2_zugangs_id" autocomplete="off"></label>
+          <label>Secret Access Key<input name="r2_geheimnis" type="password" autocomplete="new-password" placeholder="leer lassen = unverändert"></label>
+          <button class="primaer">Speichern</button>
+          <button type="button" id="r2-testen">Verbindung testen</button>
+        </form>
+        <p class="hinweis" id="r2-info"></p>
       </section>
 
       <section class="karte voll">
@@ -278,6 +293,11 @@ async function laden(hintergrund = false) {
     for (const f of ['#f-veranstaltung', '#f-ablauf', '#f-sim', '#f-galerie']) {
       for (const el of $(f).elements) if (el.name) el.value = (el.name in d.veranstaltung ? d.veranstaltung : e)[el.name];
     }
+    const r2 = $('#f-r2').elements;   // Geheimnis wird nie angezeigt – nur, ob es gesetzt ist
+    for (const k of ['r2_konto_id', 'r2_bucket', 'r2_oeffentliche_url', 'r2_zugangs_id']) r2[k].value = e[k] || '';
+    r2.r2_eu.value = String(e.r2_eu);
+    r2.r2_geheimnis.value = '';
+    $('#r2-info').textContent = 'Secret Access Key: ' + (e.r2_geheimnis_gesetzt ? 'gespeichert' : 'fehlt noch');
   }
   $('#f-sim').elements.sim_drucker_verhalten.value = d.einstellungen.sim_drucker_verhalten;
 }
@@ -345,11 +365,32 @@ $('#f-galerie').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target.elements;
   try {
-    await api('/api/betrieb/einstellungen', {galerie_modus: f.galerie_modus.value, galerie_tage: Number(f.galerie_tage.value),
+    await api('/api/betrieb/einstellungen', {galerie_anbieter: f.galerie_anbieter.value,
+      galerie_modus: f.galerie_modus.value, galerie_tage: Number(f.galerie_tage.value),
       sim_galerie_verhalten: f.sim_galerie_verhalten.value});
     meldung('Übernommen');
   } catch { meldung('Ungültiger Wert'); }
   laden();
+});
+
+$('#f-r2').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target.elements;
+  try {
+    await api('/api/betrieb/r2', {r2_konto_id: f.r2_konto_id.value, r2_bucket: f.r2_bucket.value, r2_eu: f.r2_eu.value === 'true',
+      r2_oeffentliche_url: f.r2_oeffentliche_url.value, r2_zugangs_id: f.r2_zugangs_id.value, r2_geheimnis: f.r2_geheimnis.value});
+    f.r2_geheimnis.value = '';
+    formularGeladen = false;
+    meldung('Zugang gespeichert');
+  } catch { meldung('Speichern nicht möglich'); }
+  laden();
+});
+$('#r2-testen').addEventListener('click', async () => {
+  $('#r2-info').textContent = 'Teste Verbindung …';
+  try {
+    const erg = await api('/api/betrieb/r2/testen', {});
+    $('#r2-info').textContent = (erg.ok ? '✓ Verbindung funktioniert: ' : '✗ Problem: ') + erg.schritte.join(' · ');
+  } catch { $('#r2-info').textContent = '✗ Test nicht möglich'; }
 });
 
 $('#f-pin').addEventListener('submit', async (e) => {

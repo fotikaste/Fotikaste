@@ -42,4 +42,8 @@
 | **Online-Speicher / Object Storage** | Dateiablage im Internet, die Dateien über Adressen bereitstellt | Infomaniak (Genf) oder Cloudflare R2 als mögliche Anbieter |
 | **Upload-Warteschlange** | Liste von Fotos, die noch hochgeladen werden müssen | Ohne Internet bleibt ein Foto «wartend», bis wieder Verbindung da ist |
 | **Lifecycle-Regel** (Ablaufregel) | Einstellung beim Online-Speicher, die Dateien nach X Tagen automatisch löscht | Fotos verschwinden nach 30 Tagen von selbst |
+| **S3** | Weit verbreitete «Sprache» für Online-Speicher, die viele Anbieter verstehen | Unsere Fotobox spricht S3 mit Cloudflare R2. Ein Anbieterwechsel ist so einfach. |
+| **Bucket** (Eimer) | Ein Speicherbereich beim Online-Speicher, wie ein Hauptordner | `fotobox-galerie` |
+| **API-Token / Zugangsschlüssel** | Benutzername (Access Key ID) und Passwort (Secret Access Key) für Programme | Damit darf die Fotobox Fotos in den Bucket legen |
+| **Signatur (SigV4)** | Rechnerischer Beweis, dass eine Anfrage vom Schlüsselbesitzer stammt, ohne das Geheimnis mitzuschicken | Jede Upload-Anfrage an Cloudflare wird so unterschrieben |
 | **Kiosk-Modus** | Browser im Vollbild ohne Adressleiste und Menüs | So sehen Gäste nur die Fotobox |
