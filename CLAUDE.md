@@ -26,6 +26,8 @@ Kamera und Drucker haben jeweils eine simulierte und echte Umsetzungen mit derse
 - `kamera.py` Kamera-Schnittstelle + `SimulierteKamera`; `mit_zeitlimit` gegen hängende Kameras
 - `kamera_gphoto2.py` `Gphoto2Kamera` für Linux/Pi (python-gphoto2, offene Verbindung, Vorfokus + Fernauslöser). Test am PC über WSL + usbipd (Ubuntu-venv `~/fotobox-venv`)
 - `drucker.py` Drucker-Schnittstelle + `SimulierterDrucker` (markierte Datei, Fehler/Unbekannt simulierbar)
+- `drucker_cups.py` `CupsDrucker` (eigenes Mini-IPP über HTTP an 127.0.0.1:631, kein Zusatzpaket); Auswahl über `drucker_modus` = simuliert | cups
+- `raspberry/` Pi-Paket: `installieren.sh`, `fotobox.service`, `kiosk-start.sh`, `drucker_einrichten.sh` (LF-Zeilenenden, siehe .gitattributes). Anleitung `Dokumente/RASPBERRY_PI_EINRICHTEN.md`
 - `bild.py` Postkarte (Pillow), Vorschau, Simulationsmarke
 - `galerie.py` Online-Galerie-Schnittstelle + `SimulierteGalerie`; Upload-Warteschlange in `store.py` (Tabelle `uploads`), Arbeiter in `ablauf.py`
 - `themen.py` Themen (einzige Quelle für Farben/Schriften)

@@ -48,6 +48,10 @@ Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
 
 Foto ist ca. 1,4 s nach dem Auslösen auf dem PC. Der Modus «langsam» braucht 8–15 s, weil er die Verbindung jedes Mal neu aufbaut, und funktioniert nur, wenn die App **geschlossen** ist.
 
+## Raspberry Pi
+Einrichtung Schritt für Schritt: [Dokumente/RASPBERRY_PI_EINRICHTEN.md](Dokumente/RASPBERRY_PI_EINRICHTEN.md) – ein Befehl: `bash ~/fotobox/raspberry/installieren.sh`.
+Drucker dort: Betriebsseite → «Verwendeter Drucker» → «Echter Drucker über CUPS».
+
 ## Kamera unter Linux / Raspberry Pi (gphoto2)
 Unter Linux steuert die Fotobox die Canon direkt über **gphoto2**, digiCamControl wird dort nicht gebraucht. Betriebsseite → «Kamera und Simulation» → **«Echte Canon – gphoto2»**. Unter Windows meldet diese Option nur «nicht installiert».
 - Einmalig in Linux: `sudo apt-get install gphoto2 python3-gphoto2 python3-venv`, dann eine Python-Umgebung mit `--system-site-packages` anlegen und `requirements.txt` installieren.
@@ -77,7 +81,7 @@ Im Ordner `System` in PowerShell:
 ```
 .venv\Scripts\python.exe -m unittest -v
 ```
-Erwartet: `Ran 55 tests … OK`
+Erwartet: `Ran 66 tests … OK`
 
 ## Häufige Fehler
 | Problem | Lösung |

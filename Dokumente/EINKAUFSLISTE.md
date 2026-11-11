@@ -26,7 +26,10 @@ Schon vorhanden: Canon EOS 600D mit Objektiv, USB-Kabel zur Kamera, Monitor BenQ
 
 | Artikel | Wozu | Richtpreis |
 |---|---|---|
-| USB-Tasten-Bausatz (Encoder, meldet sich als Tastatur) + 3 grosse Taster | Die 3 Bedientasten für die Gäste | ca. CHF 20–40 |
+| **3 Taster TRU Components LAS4GQH, Variante 11E (tastend)** – gewählt 2026-11-11 | Die 3 Bedientasten, direkt am Raspberry Pi (GPIO) | im Shop prüfen |
+| Jumper-Kabel «Buchse» (Dupont, female), ca. 20–30 cm | Taster an die Stifte des Pi | ca. CHF 5 |
+| Kabelschuhe passend zu den Taster-Anschlüssen oder Lötkolben | Kabel am Taster befestigen | ca. CHF 5–10 |
+| Runde Klebe-Ringe um die Taster | Taster wirken grösser und sind leichter zu finden | ca. CHF 5 |
 | Mehrfachsteckdose mit Schalter | Ein Schalter für alles | ca. CHF 15 |
 | Mobiler Router mit SIM oder Handy-Hotspot | Internet vor Ort für die Online-Galerie | ab CHF 0 (Handy) bis ca. CHF 60 + Abo |
 | Gehäuse / Stativ für die ganze Fotobox | Aufbau beim Kunden | offen |

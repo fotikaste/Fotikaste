@@ -47,7 +47,9 @@ class Fotobox:
         self._feste_kamera = kamera
         self._sim_kamera = SimulierteKamera(lambda: self.store.einstellung("sim_kamera_verhalten"))
         self._echte_kameras = {}
-        self.drucker = drucker or SimulierterDrucker(
+        self._fester_drucker = drucker
+        self._echte_drucker = {}
+        self._sim_drucker = SimulierterDrucker(
             daten / "druck_simulation",
             verhalten=lambda: self.store.einstellung("sim_drucker_verhalten"),
             verhalten_zuruecksetzen=lambda: self.store.setze_einstellung("sim_drucker_verhalten", "ok"),
@@ -88,6 +90,19 @@ class Fotobox:
             return R2Galerie(e["r2_konto_id"], e["r2_bucket"], e["r2_zugangs_id"], e["r2_geheimnis"],
                              e["r2_oeffentliche_url"], eu=bool(e["r2_eu"]))
         return self._sim_galerie
+
+    @property
+    def drucker(self):
+        """Welcher Drucker gilt, entscheidet «drucker_modus» (simuliert | cups) – umschaltbar ohne Neustart."""
+        if self._fester_drucker:
+            return self._fester_drucker
+        if self.e("drucker_modus") != "cups":
+            return self._sim_drucker
+        schluessel = (self.e("drucker_name"), self.e("druck_medium"))
+        if schluessel not in self._echte_drucker:
+            from .drucker_cups import CupsDrucker  # noqa: PLC0415
+            self._echte_drucker[schluessel] = CupsDrucker(druckername=schluessel[0], medium=schluessel[1])
+        return self._echte_drucker[schluessel]
 
     @property
     def kamera(self):
@@ -278,20 +293,22 @@ class Fotobox:
 
     def _einreichen(self, auftrag: dict):
         did = auftrag["id"]
+        drucker = self.drucker  # derselbe Drucker auch fürs Beobachten, selbst wenn umgeschaltet wird
         try:
-            self.drucker.einreichen(did, Path(auftrag["datei"]), auftrag["abzuege"])
+            drucker.einreichen(did, Path(auftrag["datei"]), auftrag["abzuege"])
         except Exception as e:  # noqa: BLE001
             log.exception("Druckauftrag %s konnte nicht übergeben werden", did)
             self.store.setze_druckstatus(did, "fehlgeschlagen", f"Übergabe fehlgeschlagen: {e}")
             return
         self.store.setze_druckstatus(did, "warteschlange")
         log.info("Druckauftrag %s übergeben (%d Abzug/Abzüge)", did, auftrag["abzuege"])
-        threading.Thread(target=self._druck_beobachten, args=(did,), daemon=True).start()
+        threading.Thread(target=self._druck_beobachten, args=(did, drucker), daemon=True).start()
 
-    def _druck_beobachten(self, did: str):
+    def _druck_beobachten(self, did: str, drucker=None):
+        drucker = drucker or self.drucker
         ende = time.monotonic() + DRUCK_ZEITLIMIT_S
         while time.monotonic() < ende:
-            erg = self.drucker.ergebnis(did)
+            erg = drucker.ergebnis(did)
             if erg != "warteschlange":
                 meldung = {"fehlgeschlagen": "Drucker meldet Fehler",
                            "unbekannt": "Drucker liefert keinen eindeutigen Status"}.get(erg)

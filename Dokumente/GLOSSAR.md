@@ -52,4 +52,12 @@
 | **sudo** | «Als Administrator ausführen» unter Linux, fragt nach deinem Linux-Passwort | `sudo apt-get install gphoto2` |
 | **apt** | Installationsprogramm von Ubuntu, ähnlich wie winget | Hat gphoto2 installiert |
 | **Fernauslöser (Remote Release)** | Befehl, der den Auslöser der Kamera per Kabel drückt, ohne dass sie nochmals scharfstellt | Unter Linux brachte das das Foto in ca. 1 s |
+| **CUPS** | Das Drucksystem von Linux (und macOS). Verwaltet Drucker und Druckaufträge | Der DNP DS620 wird in CUPS unter dem Namen «DS620» eingerichtet |
+| **Gutenprint** | Freies Treiberpaket für viele Fotodrucker unter Linux | Enthält den Treiber für den DS620 |
+| **IPP** (Internet Printing Protocol) | Standard-Sprache, mit der Programme mit Druckern bzw. CUPS reden | Die Fotobox fragt per IPP: «Ist Auftrag 41 fertig?» |
+| **GPIO** | Die Steckstifte am Rand des Raspberry Pi, über die er Signale lesen und schalten kann | Die drei Taster hängen an GPIO17, GPIO27, GPIO22 |
+| **GND** (Ground, Masse) | Der «Minus»-Anschluss | Zweiter Anschluss jedes Tasters |
+| **config.txt** | Einstellungsdatei des Raspberry Pi, wird beim Einschalten gelesen | Dort steht, dass die Taster als Pfeil links / Enter / Pfeil rechts gelten |
+| **Dienst (systemd-Service)** | Programm, das Linux beim Einschalten automatisch startet und nach einem Absturz neu startet | `fotobox.service` |
+| **Terminal** | Fenster, in dem man Befehle eintippt | `bash installieren.sh` |
 | **Kiosk-Modus** | Browser im Vollbild ohne Adressleiste und Menüs | So sehen Gäste nur die Fotobox |

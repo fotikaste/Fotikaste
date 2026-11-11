@@ -9,6 +9,7 @@ html { font-size: min(1vw, 1.78vh); }
 }
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--ui); overflow: hidden;
   cursor: default; user-select: none; -webkit-user-select: none; }
+html.kiosk, html.kiosk * { cursor: none !important; }
 .buehne { position: relative; width: 100vw; height: 100vh; overflow: hidden; isolation: isolate; background: var(--bg);
   transition: background .4s, opacity .3s; opacity: 0; }
 .buehne.bereit { opacity: 1; }   /* erst zeigen, wenn das Thema geladen ist – kein Aufblitzen des falschen Themas */

@@ -90,7 +90,11 @@ function druecke(i) {
 }
 
 const TASTEN = {ArrowLeft: 0, '1': 0, a: 0, Enter: 1, ' ': 1, ArrowDown: 1, '2': 1, s: 1, ArrowRight: 2, '3': 2, d: 2};
+// Kiosk-Modus (Raspberry Pi): kein Mauszeiger. Betreiber mit Tastatur: Strg+Umschalt+B öffnet den Betrieb.
+try { if (new URLSearchParams(location.search).has('kiosk')) sessionStorage.setItem('kiosk', '1'); } catch (_) {}
+try { if (sessionStorage.getItem('kiosk')) document.documentElement.classList.add('kiosk'); } catch (_) {}
 document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'b') { location.href = '/betrieb'; return; }
   if (e.repeat) return;                  // gedrückt gehaltene Taste nicht wiederholen
   if (e.key in TASTEN) { e.preventDefault(); druecke(TASTEN[e.key]); }
 });

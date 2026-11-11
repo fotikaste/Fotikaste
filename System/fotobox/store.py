@@ -33,7 +33,9 @@ STANDARD_EINSTELLUNGEN = {
     "livebild": True,                  # Livebild während der Sitzung zeigen (falls die Kamera es kann)
     "kamera_autofokus": False,        # False = ohne Scharfstellen auslösen (Objektiv auf MF stellen)
     "sim_kamera_verhalten": "ok",      # ok | nicht_verbunden | zeitueberschreitung
-    "drucker_modus": "simuliert",
+    "drucker_modus": "simuliert",      # simuliert | cups (echter Drucker unter Linux / Raspberry Pi)
+    "drucker_name": "DS620",           # Name des Druckers in CUPS
+    "druck_medium": "w288h432",        # CUPS-Papiergrösse: 4x6 Zoll = 10x15 cm
     "sim_drucker_verhalten": "ok",     # ok | naechster_fehlgeschlagen | naechster_unbekannt
     "sim_druck_dauer_s": 3,
     # Online-Galerie (Fotos fürs Handy per QR-Code)

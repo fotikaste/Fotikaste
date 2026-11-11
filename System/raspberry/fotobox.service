@@ -1,0 +1,19 @@
+# Vorlage – installieren.sh ersetzt die @…@-Platzhalter und legt sie unter /etc/systemd/system/ ab.
+[Unit]
+Description=Fotobox
+After=network.target cups.service
+Wants=cups.service
+
+[Service]
+Type=simple
+User=@BENUTZER@
+WorkingDirectory=@SYSTEM@
+ExecStart=@VENV@/bin/python -m fotobox --port @PORT@ --daten @DATEN@ --kein-browser
+# Nach einem Absturz nach 3 s neu starten. Offene Druckaufträge werden dabei «unbekannt»
+# (nie automatisch wiederholt), der Betreiber entscheidet auf der Betriebsseite.
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -21,7 +21,11 @@ Legende: ✅ **getestet** (selbst ausprobiert) · 📄 **nur Doku** (laut offizi
 | Online-Galerie Cloudflare R2 | ❔ Baustein fertig. Signatur mit botocore 1.43.127 verglichen (identisch). Mit echtem Konto noch nicht getestet. | ❔ |
 | **Canon EOS 600D unter Linux (gphoto2)** | – | ✅ **Vorstufe (2026-11-10): Ubuntu 26.04 in WSL 2 auf dem Laptop, Kamera über usbipd-win 5.3.0 weitergereicht, gphoto2 2.5.32, python-gphoto2 2.6.3.** Fotobox-Baustein im echten Ablauf: Foto nach 1,4–1,5 s. Kein echter Raspberry Pi, siehe unten |
 | Fotodrucker **DNP DS620** (gewählt 2026-11-10) | 📄 offizieller DNP-Treiber. ❔ nicht getestet | 📄 Gutenprint 5.3.x mit CUPS-Backend «dnpds40» (laut Gutenprint-Unterlagen und Forum). Bekannte Punkte: DS620**A** ohne «Rewind», eine Firmware-Panne beim Rewind (2026), das Bild muss genau 4×6″ gross geliefert werden, sonst skaliert CUPS. ❔ nicht getestet |
-| Python 3.13, Flask 3.1.3, Pillow 13.0.0, waitress 3.0.2 | ✅ | ❔ |
+| Druckbaustein CUPS (`drucker_cups.py`, eigene IPP-Anbindung) | – | ✅ 2026-11-11: 11 automatische Tests (nachgebildetes CUPS). ✅ In Ubuntu/WSL gegen **ippeveprinter** (offizieller IPP-Testdrucker von CUPS 2.4.16): Auftrag mit 2 Kopien übergeben, Datei kam an, «erfolgreich» nach 11 s. Papiergrösse «w288h432» kennt der Testdrucker nicht (erwartet). ❔ echtes CUPS + DS620 |
+| Papiergrösse DS620 «w288h432» (10×15 cm) | – | ❔ Name aus der Gutenprint-Namensregel, im Treiber noch nicht nachgelesen. `drucker_einrichten.sh` prüft das am echten Drucker |
+| Installationsprogramm `raspberry/installieren.sh` | – | ✅ in Ubuntu/WSL ohne Administrator-Rechte geprüft: Syntax, Datenbank-Vorbelegung, Dienst-Vorlage (`systemd-analyze verify`), Startbefehl des Dienstes (Fotobox antwortet), Taster-Block in config.txt (zweimal ausgeführt = kein Doppel-Eintrag). ❔ Paketinstallation, Kiosk, raspi-config, GVFS, Taster auf echtem Pi |
+| Taster über `gpio-key` (Tastencodes 105 / 28 / 106) | – | 📄 Raspberry-Pi-Overlay-Dokumentation. ❔ nicht getestet |
+| Python 3.13, Flask 3.1.3, Pillow 13.0.0, waitress 3.0.2 | ✅ | ❔ (in Ubuntu/WSL mit Python 3.14 ✅) |
 
 ## Beobachtungen echte Kamera (2026-11-09)
 - Bei angeschlossenem USB-Kabel ist das Kamera-Display dunkel. Das ist normal (PC-Verbindungsmodus).

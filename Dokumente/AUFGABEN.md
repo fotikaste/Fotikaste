@@ -41,6 +41,12 @@
 - [x] **Raspberry-Pi-Kamerafrage (2026-11-10):** gphoto2 in Ubuntu/WSL getestet. Baustein `Gphoto2Kamera` gebaut (Livebild, Vorfokus, Fernauslöser, Akkustand). Im echten Ablauf Foto nach 1,4–1,5 s. 55 Tests.
 - [ ] gphoto2: Kabel ziehen, Akku leer und Dauerbetrieb testen
 - [ ] gphoto2 auf echtem Raspberry Pi testen (nach Plattformentscheid), GVFS-Automount prüfen
+- [x] **Raspberry-Pi-Paket vorbereitet (2026-11-11):** `System/raspberry/` mit Installationsprogramm, Autostart-Dienst, Kiosk-Browser, Taster an GPIO, Drucker-Einrichtung. Anleitung `Dokumente/RASPBERRY_PI_EINRICHTEN.md`. Auf echtem Pi noch nicht getestet.
+- [x] **Echter Druckbaustein CUPS (2026-11-11)** für den DNP DS620, auf der Betriebsseite wählbar. 66 Tests, gegen IPP-Testdrucker geprüft.
+- [ ] Erster echter Durchlauf auf dem Raspberry Pi (mit Claude zusammen)
+- [ ] DS620: Papiergrössen-Name im Treiber prüfen, ersten echten Druck machen, Zeitlimit (120 s) für 2 Abzüge prüfen
+- [ ] Sicherung des Projekts: USB-Stick oder GitHub (deine Wahl)
+- [ ] Export direkt auf USB-Stick am Raspberry Pi
 - [ ] Kiosk-Modus: Browser startet automatisch im Vollbild ohne Adressleiste
 - [ ] Echte Tasten: USB-Tastencontroller wählen, der sich wie eine Tastatur meldet
 - [ ] M6: Drucker- und Plattformentscheid

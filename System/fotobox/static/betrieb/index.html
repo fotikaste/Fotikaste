@@ -125,13 +125,17 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
       </section>
 
       <section class="karte voll">
-        <h2>Kamera und Simulation</h2>
+        <h2>Kamera, Drucker und Simulation</h2>
         <form class="formular" id="f-sim">
           <label>Verwendete Kamera<select name="kamera_modus">
             <option value="simuliert">Simulation (Testbilder)</option>
             <option value="digicamcontrol_app">Echte Canon – schnell (digiCamControl-App, empfohlen)</option>
             <option value="digicamcontrol">Echte Canon – langsam (ohne App, 8–15 s)</option>
             <option value="gphoto2">Echte Canon – gphoto2 (nur Linux / Raspberry Pi)</option></select></label>
+          <label>Verwendeter Drucker<select name="drucker_modus">
+            <option value="simuliert">Simulation (speichert Dateien)</option>
+            <option value="cups">Echter Drucker über CUPS (Linux / Raspberry Pi)</option></select></label>
+          <label>Druckername in CUPS<input name="drucker_name" maxlength="60"></label>
           <label>Livebild beim Ausrichten<select name="livebild">
             <option value="true">an</option>
             <option value="false">aus</option></select></label>
@@ -413,7 +417,8 @@ $('#f-sim').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target.elements;
   await api('/api/betrieb/einstellungen', {kamera_modus: f.kamera_modus.value, livebild: f.livebild.value === 'true',
-    sim_kamera_verhalten: f.sim_kamera_verhalten.value, sim_drucker_verhalten: f.sim_drucker_verhalten.value});
+    sim_kamera_verhalten: f.sim_kamera_verhalten.value, sim_drucker_verhalten: f.sim_drucker_verhalten.value,
+    drucker_modus: f.drucker_modus.value, drucker_name: f.drucker_name.value.trim() || 'DS620'});
   meldung('Simulation übernommen'); laden();
 });
 
