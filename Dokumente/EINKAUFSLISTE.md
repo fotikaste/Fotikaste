@@ -3,7 +3,7 @@
 Stand: 2026-11-10. **Preise sind Richtwerte** aus Online-Shops (teils in Euro oder veraltet). Vor dem Kauf im Shop prüfen.
 Nichts wird ohne deine Zustimmung gekauft.
 
-Schon vorhanden: Canon EOS 600D mit Objektiv, USB-Kabel zur Kamera, Monitor BenQ GL2450H.
+Schon vorhanden: Canon EOS 600D mit Objektiv, USB-Kabel zur Kamera, Monitor BenQ GL2450H, **neu (gekauft ca. 13.11.2026): Verbatim Portable 14" FHD Touch Monitor LIGHT** (1920×1080, Mini-HDMI, 2× USB-C, Touch).
 
 ## 1. Pflicht für die Fotobox
 
@@ -17,7 +17,7 @@ Schon vorhanden: Canon EOS 600D mit Objektiv, USB-Kabel zur Kamera, Monitor BenQ
 | 6 | **Raspberry Pi Active Cooler** | Kühlung im Dauerbetrieb | ca. CHF 7–10 | |
 | 7 | **Raspberry Pi SSD Kit 256 GB** | Speicher, robuster als eine Speicherkarte | ca. CHF 45–60 | Alternative: Speicherkarte 64 GB (Klasse A2), ca. CHF 15, ist aber weniger robust bei Stromausfall |
 | 8 | **Gehäuse für Pi 5** (passend zum SSD Kit) | Schutz | ca. CHF 10–20 | Muss Platz für Kühler und SSD haben |
-| 9 | **Micro-HDMI-auf-HDMI-Kabel** | Pi an den BenQ | ca. CHF 10 | Der Pi 5 hat kleine HDMI-Buchsen |
+| 9 | **Adapter Micro-HDMI (Stecker) auf HDMI (Buchse)**, z. B. BerryBase Official Raspberry Pi 4 Micro-HDMI Adapter, 23,5 cm | Pi an den neuen Monitor Verbatim 14" (Mini-HDMI), zusammen mit dem beim Monitor mitgelieferten Kabel Mini-HDMI → HDMI | ca. CHF 5–10 | Pi 5 hat **Micro**-HDMI, der Verbatim **Mini**-HDMI. Ein direktes Kabel Micro → Mini war bei Galaxus nicht zu finden |
 | 10 | **Netzteil für die Kamera (Akku-Attrappe, ACK-E8 oder kompatibel)** | Kamera läuft stundenlang ohne Akkuwechsel | Original ca. CHF 80, Nachbau ca. CHF 20–30 | Bei der Vermietung zählt Zuverlässigkeit, daher eher das Original oder ein bewährter Nachbau |
 
 **Summe Pflicht (grob):** mit neuem Drucker ca. CHF 1'150–1'600, davon fast drei Viertel für Drucker und Papier.
