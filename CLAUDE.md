@@ -29,6 +29,7 @@ Kamera und Drucker haben jeweils eine simulierte und echte Umsetzungen mit derse
 - `drucker_cups.py` `CupsDrucker` (eigenes Mini-IPP über HTTP an 127.0.0.1:631, kein Zusatzpaket); Auswahl über `drucker_modus` = simuliert | cups
 - `raspberry/` Pi-Paket: `installieren.sh`, `fotobox.service`, `kiosk-start.sh`, `drucker_einrichten.sh` (LF-Zeilenenden, siehe .gitattributes). Anleitung `Dokumente/RASPBERRY_PI_EINRICHTEN.md`
 - `bild.py` Postkarte (Pillow) mit Rahmen (`RAHMEN`, `layout`), Kartentext (`kartentexte`: eigener Text oder Namen/Datum), Vorschau, Simulationsmarke. Ränder/Text mind. 6 mm vom Rand (DS620-Beschnitt ca. 3 mm)
+- `usb.py` eingesteckte USB-Sticks finden (Linux /media/<benutzer>, Windows Wechseldatenträger); einziges erlaubtes Exportziel ausser dem Bilder-Ordner
 - `galerie.py` Online-Galerie-Schnittstelle + `SimulierteGalerie`; Upload-Warteschlange in `store.py` (Tabelle `uploads`), Arbeiter in `ablauf.py`
 - `deko.py` selbst gezeichnete Dekoration der Motiv-Rahmen (Konfetti, Schneeflocken, Ranken …), Supersampling, fester Zufall
 - `themen.py` Themen und `MOTIV_FARBEN` der Motiv-Rahmen (einzige Quelle für Farben/Schriften)

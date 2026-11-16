@@ -50,6 +50,7 @@ h3{font-size:13px;font-weight:600;margin:0 0 8px}
 .postkarte{grid-column:1/-1;display:grid;gap:24px;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);margin-top:12px;padding-top:16px;border-top:1px solid var(--linie)}
 @media (max-width:760px){.postkarte{grid-template-columns:1fr}}
 .rahmenwahl{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.exportziel{max-width:520px;margin-top:12px}
 .rahmengruppe{grid-column:1/-1;font-size:12px;color:var(--leise);margin-top:6px}
 .rahmengruppe:first-child{margin-top:0}
 .rahmenwahl label{display:block;position:relative;cursor:pointer;border:1px solid var(--linie);border-radius:10px;padding:8px;background:#fff;color:var(--text);transition:border-color .15s,box-shadow .15s}
@@ -138,7 +139,8 @@ label.haken input{width:auto}
         <h2>Alle Veranstaltungen</h2>
         <div class="tabelle"><table><thead><tr><th>Veranstaltung</th><th>Thema</th><th>Sitzungen</th><th>Abzüge</th><th>Aktionen</th></tr></thead>
         <tbody id="veranstaltungen"></tbody></table></div>
-        <p class="hinweis" id="export-info">Export kopiert Originale und Postkarten nach <span id="export-basis"></span>. Die Fotobox behält ihre eigenen Dateien.</p>
+        <label class="exportziel">Exportieren nach<select id="export-ziel"></select></label>
+        <p class="hinweis" id="export-info">Export kopiert Originale und Postkarten. Die Fotobox behält ihre eigenen Dateien.</p>
         <h2 style="margin-top:20px">Neue Veranstaltung</h2>
         <form class="formular" id="f-neu">
           <label>Anlass<input name="anlass" placeholder="z. B. Hochzeit"></label>
@@ -252,6 +254,7 @@ const $ = (s) => document.querySelector(s);
 const STATUS = {angefordert: 'angefordert', warteschlange: 'in Warteschlange', erfolgreich: 'erfolgreich',
   fehlgeschlagen: 'fehlgeschlagen', unbekannt: 'Status unbekannt', ersetzt: 'ersetzt durch Nachdruck', verworfen: 'verworfen'};
 let formularGeladen = false;
+let ordnerOeffnenMoeglich = false;
 
 // hintergrund=true: automatisches Aktualisieren zählt nicht als Aktivität (sonst nie automatische Abmeldung)
 async function api(pfad, daten, hintergrund = false) {
@@ -282,7 +285,16 @@ async function laden(hintergrund = false) {
   const d = await api('/api/betrieb/status', undefined, hintergrund);
   $('#app').hidden = false;
   $('#pin-warnung').hidden = !d.standard_pin;
-  $('#export-basis').textContent = d.export_basis;
+  const zielwahl = $('#export-ziel');
+  const optionen = [`<option value="">Dieses Gerät (${esc(d.export_basis)})</option>`].concat(d.usb_sticks.map((s) =>
+    `<option value="${esc(s.pfad)}">USB-Stick ${esc(s.name)} – ${(s.frei_mb / 1000).toFixed(1)} GB frei</option>`)).join('');
+  if (zielwahl.dataset.html !== optionen) {
+    const vorher = zielwahl.value;
+    zielwahl.innerHTML = optionen; zielwahl.dataset.html = optionen;
+    // neu eingesteckter Stick wird automatisch vorgewählt
+    zielwahl.value = d.usb_sticks.length ? (d.usb_sticks.some((s) => s.pfad === vorher) ? vorher : d.usb_sticks[0].pfad) : '';
+  }
+  ordnerOeffnenMoeglich = d.ordner_oeffnen_moeglich;
   setzeHtml('#veranstaltungen', d.veranstaltungen.map((v) => `<tr>
     <td><b>${esc(v.anlass)} ${esc(v.namen)}</b><br><small>${esc(v.datum_text)}</small>
       ${v.aktiv ? ' <span class="marke m-erfolgreich">aktiv</span>' : ''}
@@ -406,6 +418,7 @@ document.addEventListener('click', async (e) => {
   if (!b) return;
   const {v, x, name} = b.dataset;
   const daten = {};
+  if (x === 'exportieren') daten.ziel = $('#export-ziel').value;
   if (x === 'bilder_loeschen') {
     const best = prompt(`Alle Bilder von «${name}» in den Papierkorb verschieben?\n\nZum Bestätigen LÖSCHEN eingeben:`);
     if (best === null) return;
@@ -418,9 +431,11 @@ document.addEventListener('click', async (e) => {
     const erg = await api(`/api/betrieb/veranstaltung/${v}/${x}`, daten);
     if (x === 'exportieren') {
       $('#export-info').innerHTML = `Exportiert: ${erg.originale} Originale und ${erg.postkarten} Postkarten nach <b>${esc(erg.ordner)}</b> ` +
-        `<button id="ordner-oeffnen">Ordner öffnen</button>`;
-      $('#ordner-oeffnen').onclick = () => api(`/api/betrieb/veranstaltung/${v}/ordner_oeffnen`, {ordner: erg.ordner}).catch(() => meldung('Ordner nicht gefunden'));
-      meldung('Export fertig');
+        (erg.usb ? '<br><b>Fertig geschrieben – der USB-Stick darf jetzt abgezogen werden.</b>'
+          : (ordnerOeffnenMoeglich ? `<button id="ordner-oeffnen">Ordner öffnen</button>` : ''));
+      const knopf = $('#ordner-oeffnen');
+      if (knopf) knopf.onclick = () => api(`/api/betrieb/veranstaltung/${v}/ordner_oeffnen`, {ordner: erg.ordner}).catch(() => meldung('Ordner nicht gefunden'));
+      meldung(erg.usb ? 'Export auf USB-Stick fertig' : 'Export fertig');
     } else {
       meldung(x === 'aktivieren' ? 'Aktiviert – gilt ab der nächsten Sitzung' : 'Bilder liegen jetzt im Papierkorb');
       formularGeladen = false;   // Formular der aktiven Veranstaltung neu füllen

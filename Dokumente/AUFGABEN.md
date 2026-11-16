@@ -52,7 +52,8 @@
 - [ ] Dunkle Motiv-Rahmen (Party, Winter, Silvester) im Druck prüfen
 - [ ] DS620: CUPS meldet «erfolgreich» schon 2 s nach Übergabe → prüfen, ob «Papier leer» während des Drucks noch erkannt wird; Zeitlimit für 2 Abzüge prüfen
 - [ ] Sicherung des Projekts: USB-Stick oder GitHub (deine Wahl)
-- [ ] Export direkt auf USB-Stick am Raspberry Pi
+- [x] **Export auf USB-Stick (2026-11-16):** Auswahl «Exportieren nach» auf der Betriebsseite, nur eingesteckte Sticks erlaubt, danach `sync`. 85 Tests (auch unter Linux). ❔ mit echtem Stick am Pi
+- [x] Pi-Anleitung mit Checkliste, Monitor-Anschluss, USB-Export und Update-Ablauf (2026-11-16)
 - [ ] Kiosk-Modus: Browser startet automatisch im Vollbild ohne Adressleiste
 - [ ] Echte Tasten: USB-Tastencontroller wählen, der sich wie eine Tastatur meldet
 - [ ] M6: Drucker- und Plattformentscheid

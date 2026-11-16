@@ -33,7 +33,7 @@ Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
 | Kamera und Simulation | Echte Kamera oder Testbilder, Fehler simulieren |
 | Sicherheit | PIN ändern |
 
-**Bilder exportieren:** «Exportieren» kopiert Originale und Postkarten nach `Bilder\Fotobox-Export\<Veranstaltung>`. Die Fotobox behält ihre eigenen Dateien.
+**Bilder exportieren:** «Exportieren» kopiert Originale und Postkarten nach `Bilder\Fotobox-Export\<Veranstaltung>` oder, wenn einer eingesteckt ist, auf einen **USB-Stick** (Auswahl «Exportieren nach»). Die Fotobox behält ihre eigenen Dateien.
 **Bilder löschen:** geht nur bei einer nicht aktiven Veranstaltung und nur mit dem Wort LÖSCHEN und der PIN. Die Bilder landen in `System\daten\papierkorb\` und sind von dort wiederherstellbar. Endgültig löschen musst du sie selbst im Explorer.
 
 ## Echte Kamera (Canon EOS 600D) verwenden
@@ -81,7 +81,7 @@ Im Ordner `System` in PowerShell:
 ```
 .venv\Scripts\python.exe -m unittest -v
 ```
-Erwartet: `Ran 80 tests … OK`
+Erwartet: `Ran 85 tests … OK`
 
 ## Häufige Fehler
 | Problem | Lösung |

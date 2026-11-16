@@ -15,7 +15,7 @@
 #  7. Drei Taster an GPIO17 / GPIO27 / GPIO22 als Tasten Pfeil links / Enter / Pfeil rechts
 #  8. Drucker einrichten, falls der DNP DS620 schon eingesteckt und eingeschaltet ist
 #
-# Stand 2026-11-11: in Ubuntu (WSL) teilweise geprüft, auf echtem Raspberry Pi NOCH NICHT getestet.
+# Stand 2026-11-16: in Ubuntu (WSL) teilweise geprüft (Drucker-Teil mit echtem DS620), auf echtem Raspberry Pi NOCH NICHT getestet.
 set -euo pipefail
 
 HIER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

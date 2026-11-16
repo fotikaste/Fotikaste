@@ -21,6 +21,7 @@ from .bild import RAHMEN, ausschnitt, karte_zeichnen, kartentexte
 from .galerie import GalerieFehler, R2Galerie
 from .store import STANDARD_EINSTELLUNGEN
 from .themen import THEMEN, thema
+from .usb import auf_stick_schreiben_abschliessen, usb_sticks
 
 STATIC = Path(__file__).parent / "static"
 log = logging.getLogger("fotobox")
@@ -192,6 +193,8 @@ def erstelle_app(box: Fotobox) -> Flask:
             "veranstaltung": {**v, "sitzungen": box.store.anzahl_sitzungen(v["id"])},
             "veranstaltungen": box.store.veranstaltungen(),
             "export_basis": str(export_basis()),
+            "usb_sticks": usb_sticks(),
+            "ordner_oeffnen_moeglich": hasattr(os, "startfile"),
             "standard_pin": str(box.e("betreiber_pin")) == STANDARD_EINSTELLUNGEN["betreiber_pin"],
             "kontingent": box.kontingent(),
             "einstellungen": e,
@@ -306,12 +309,23 @@ def erstelle_app(box: Fotobox) -> Flask:
             box.veranstaltung_aktivieren(vid)
             return jsonify({"ok": True})
         if aktion == "exportieren":
-            return jsonify(box.exportieren(vid, export_basis()))
+            ziel = str(d.get("ziel") or "")
+            if not ziel:
+                return jsonify(box.exportieren(vid, export_basis()))
+            # Nur ein gerade eingesteckter USB-Stick ist erlaubt – nie ein beliebiger Pfad
+            stick = next((s for s in usb_sticks() if s["pfad"] == ziel), None)
+            if not stick:
+                return jsonify({"fehler": "stick_fehlt", "text": "USB-Stick nicht gefunden – eingesteckt?"}), 400
+            erg = box.exportieren(vid, Path(stick["pfad"]) / "Fotobox-Export")
+            auf_stick_schreiben_abschliessen()
+            return jsonify({**erg, "usb": True})
         if aktion == "ordner_oeffnen":
             ordner = Path(str(d.get("ordner", "")))
             # Nur Ordner innerhalb des Exportbereichs öffnen – nie beliebige Pfade
             if not ordner.is_dir() or export_basis().resolve() not in ordner.resolve().parents:
                 return jsonify({"fehler": "ordner_ungueltig"}), 400
+            if not hasattr(os, "startfile"):
+                return jsonify({"fehler": "nur_windows"}), 400
             os.startfile(str(ordner))  # nur Windows; öffnet den Explorer auf diesem PC
             return jsonify({"ok": True})
         if aktion == "bilder_loeschen":
