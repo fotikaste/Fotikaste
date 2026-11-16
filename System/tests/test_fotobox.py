@@ -208,7 +208,7 @@ class Livebild(unittest.TestCase):
         from fotobox.bild import ausschnitt
         a = ausschnitt(1800, 1200)
         self.assertAlmostEqual(a["w"], 1.0)
-        self.assertAlmostEqual(a["h"], 1.5 / (1716 / 948), places=3)   # Fotofeld 1716x948 Pixel
+        self.assertAlmostEqual(a["h"], 1.5 / (1656 / 888), places=3)   # Fotofeld 1656x888 Pixel (Rand 72)
         self.assertAlmostEqual(a["y"], (1 - a["h"]) / 2)
 
     def test_livebild_ueber_web(self):

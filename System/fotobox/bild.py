@@ -24,7 +24,9 @@ SCHRIFTEN = Path(__file__).parent / "static" / "fonts"
 
 
 def layout(breite: int, hoehe: int) -> dict:
-    rand = round(hoehe * 0.035)
+    # Rand 6 % (bei 10x15 cm ca. 6 mm). Der DS620 schneidet beim randlosen Druck ringsum ca. 3 mm ab,
+    # nicht ganz mittig (Test 2026-11-16). Bei 3,5 % blieb ein hauchdünner, ungleicher Rand übrig.
+    rand = round(hoehe * 0.06)
     fuss = round(hoehe * 0.14)
     return {"rand": rand, "fuss": fuss,
             "foto": (rand, rand, breite - rand, hoehe - rand - fuss)}
