@@ -45,7 +45,7 @@
 - [x] **Echter Druckbaustein CUPS (2026-11-11)** für den DNP DS620, auf der Betriebsseite wählbar. 66 Tests, gegen IPP-Testdrucker geprüft.
 - [ ] Erster echter Durchlauf auf dem Raspberry Pi (mit Claude zusammen)
 - [x] **DS620 erster echter Druck (2026-11-16, über Ubuntu/WSL):** Papiergrösse w288h432 bestätigt, Verzerrungsfehler gefunden und in `drucker_einrichten.sh` umgangen, 2. Testkarte richtig
-- [ ] DS620: echte Postkarte drucken. Der weisse Rand der Karte (3,6 mm) ist kaum grösser als der Beschnitt (ca. 3 mm) → prüfen, ob der Rand ungleich wirkt, sonst Rand vergrössern
+- [x] DS620: echte Postkarte gedruckt. Rand war zu schmal und ungleich → Rand auf 6 % vergrössert, gedruckt 4 / 4 / 4,3 mm (2026-11-16)
 - [ ] DS620: CUPS meldet «erfolgreich» schon 2 s nach Übergabe → prüfen, ob «Papier leer» während des Drucks noch erkannt wird; Zeitlimit für 2 Abzüge prüfen
 - [ ] Sicherung des Projekts: USB-Stick oder GitHub (deine Wahl)
 - [ ] Export direkt auf USB-Stick am Raspberry Pi
