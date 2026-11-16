@@ -32,6 +32,21 @@ echo "    Treiber: $TREIBER"
 sudo lpadmin -p "$NAME" -E -v "$URI" -m "$TREIBER" -o printer-error-policy=abort-job || exit 1
 sudo cupsenable "$NAME"; sudo cupsaccept "$NAME"
 
+# 3b) Fehler-Umgehung (gefunden 2026-11-16 mit echtem DS620, cups-filters 2.x):
+# Die Streifenformate 2x6, 3.375x6 und 3.75x6 haben dieselben Papiermasse wie 4x6. Der Bildfilter
+# nimmt dann den druckbaren Bereich von 2x6 (nur halbe Breite) → Bild halb so breit berechnet,
+# der Drucker zieht es auf doppelte Breite = verzerrt und abgeschnitten.
+# Lösung: diese drei Formate aus der Druckerbeschreibung (PPD) entfernen. Wir brauchen nur 10x15.
+PPD="/etc/cups/ppd/$NAME.ppd"
+STREIFEN='w144h432|w243h432|w270h432'
+if sudo grep -qE "^\*ImageableArea ($STREIFEN)[/:]" "$PPD" 2>/dev/null; then
+  NEU="$(mktemp --suffix=.ppd)"
+  sudo grep -vE "^\*[A-Za-z]+ ($STREIFEN)[/:]" "$PPD" > "$NEU"
+  sudo lpadmin -p "$NAME" -P "$NEU" || { rm -f "$NEU"; exit 1; }
+  rm -f "$NEU"
+  echo "    Streifenformate entfernt (Umgehung Verzerrungsfehler)"
+fi
+
 # 4) Papiergrösse 10x15 cm. Gutenprint nennt sie normalerweise «w288h432» (4x6 Zoll).
 GROESSEN="$(lpoptions -p "$NAME" -l 2>/dev/null | grep -i '^PageSize')"
 if echo "$GROESSEN" | grep -qw 'w288h432'; then

@@ -3,7 +3,7 @@
 Stand: 2026-11-10. **Preise sind Richtwerte** aus Online-Shops (teils in Euro oder veraltet). Vor dem Kauf im Shop prüfen.
 Nichts wird ohne deine Zustimmung gekauft.
 
-Schon vorhanden: Canon EOS 600D mit Objektiv, USB-Kabel zur Kamera, Monitor BenQ GL2450H, **neu (gekauft ca. 13.11.2026): Verbatim Portable 14" FHD Touch Monitor LIGHT** (1920×1080, Mini-HDMI, 2× USB-C, Touch).
+Schon vorhanden: Canon EOS 600D mit Objektiv, USB-Kabel zur Kamera, Monitor BenQ GL2450H, **neu (gekauft ca. 13.11.2026): Verbatim Portable 14" FHD Touch Monitor LIGHT** (1920×1080, Mini-HDMI, 2× USB-C, Touch), **Fotodrucker DNP DS620 mit Papier (angeschlossen 16.11.2026)**.
 
 ## 1. Pflicht für die Fotobox
 

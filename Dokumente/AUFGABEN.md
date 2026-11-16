@@ -44,7 +44,9 @@
 - [x] **Raspberry-Pi-Paket vorbereitet (2026-11-11):** `System/raspberry/` mit Installationsprogramm, Autostart-Dienst, Kiosk-Browser, Taster an GPIO, Drucker-Einrichtung. Anleitung `Dokumente/RASPBERRY_PI_EINRICHTEN.md`. Auf echtem Pi noch nicht getestet.
 - [x] **Echter Druckbaustein CUPS (2026-11-11)** für den DNP DS620, auf der Betriebsseite wählbar. 66 Tests, gegen IPP-Testdrucker geprüft.
 - [ ] Erster echter Durchlauf auf dem Raspberry Pi (mit Claude zusammen)
-- [ ] DS620: Papiergrössen-Name im Treiber prüfen, ersten echten Druck machen, Zeitlimit (120 s) für 2 Abzüge prüfen
+- [x] **DS620 erster echter Druck (2026-11-16, über Ubuntu/WSL):** Papiergrösse w288h432 bestätigt, Verzerrungsfehler gefunden und in `drucker_einrichten.sh` umgangen, 2. Testkarte richtig
+- [ ] DS620: echte Postkarte drucken. Der weisse Rand der Karte (3,6 mm) ist kaum grösser als der Beschnitt (ca. 3 mm) → prüfen, ob der Rand ungleich wirkt, sonst Rand vergrössern
+- [ ] DS620: CUPS meldet «erfolgreich» schon 2 s nach Übergabe → prüfen, ob «Papier leer» während des Drucks noch erkannt wird; Zeitlimit für 2 Abzüge prüfen
 - [ ] Sicherung des Projekts: USB-Stick oder GitHub (deine Wahl)
 - [ ] Export direkt auf USB-Stick am Raspberry Pi
 - [ ] Kiosk-Modus: Browser startet automatisch im Vollbild ohne Adressleiste
