@@ -22,7 +22,7 @@ Ziel: Pi einschalten → Fotobox startet von selbst im Vollbild, Kamera, Drucker
 
 Preise und Links: [EINKAUFSLISTE.md](EINKAUFSLISTE.md).
 
-## Schritt 1 – Raspberry Pi OS aufspielen (am Windows-PC)
+## Schritt 1 – Raspberry Pi OS aufspielen (am Windows-PC) – ✅ erledigt am 16.11.2026 auf SD-Karte 64 GB (Benutzer `fotobox`)
 1. Programm **Raspberry Pi Imager** von raspberrypi.com installieren und starten.
 2. **Gerät:** Raspberry Pi 5. **Betriebssystem:** «Raspberry Pi OS (64-bit)» (die Variante **mit Desktop**). **Speicher:** deine SSD bzw. Speicherkarte.
 3. Bei «Einstellungen anpassen»:

@@ -43,6 +43,7 @@
 - [ ] gphoto2 auf echtem Raspberry Pi testen (nach Plattformentscheid), GVFS-Automount prüfen
 - [x] **Raspberry-Pi-Paket vorbereitet (2026-11-11):** `System/raspberry/` mit Installationsprogramm, Autostart-Dienst, Kiosk-Browser, Taster an GPIO, Drucker-Einrichtung. Anleitung `Dokumente/RASPBERRY_PI_EINRICHTEN.md`. Auf echtem Pi noch nicht getestet.
 - [x] **Echter Druckbaustein CUPS (2026-11-11)** für den DNP DS620, auf der Betriebsseite wählbar. 66 Tests, gegen IPP-Testdrucker geprüft.
+- [x] **SD-Karte 64 GB beschrieben (2026-11-16):** Raspberry Pi Imager 2.0.12, Raspberry Pi OS (64-bit) für Pi 5, Hostname `fotobox`, Benutzer `fotobox`, Zeitzone Zürich, Tastatur ch, WLAN, SSH an, Raspberry Pi Connect aus
 - [ ] Erster echter Durchlauf auf dem Raspberry Pi (mit Claude zusammen)
 - [x] **DS620 erster echter Druck (2026-11-16, über Ubuntu/WSL):** Papiergrösse w288h432 bestätigt, Verzerrungsfehler gefunden und in `drucker_einrichten.sh` umgangen, 2. Testkarte richtig
 - [x] DS620: echte Postkarte gedruckt. Rand war zu schmal und ungleich → Rand auf 6 % vergrössert, gedruckt 4 / 4 / 4,3 mm (2026-11-16)
