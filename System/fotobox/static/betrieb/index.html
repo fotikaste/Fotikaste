@@ -46,6 +46,24 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
 #login{max-width:340px;margin:12vh auto;display:grid;gap:12px}
 #login input{font-size:24px;text-align:center;letter-spacing:.3em}
 .aktionen{display:flex;gap:6px;flex-wrap:wrap}
+h3{font-size:13px;font-weight:600;margin:0 0 8px}
+.postkarte{grid-column:1/-1;display:grid;gap:24px;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);margin-top:12px;padding-top:16px;border-top:1px solid var(--linie)}
+@media (max-width:760px){.postkarte{grid-template-columns:1fr}}
+.rahmenwahl{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.rahmenwahl label{display:block;position:relative;cursor:pointer;border:1px solid var(--linie);border-radius:10px;padding:8px;background:#fff;color:var(--text);transition:border-color .15s,box-shadow .15s}
+.rahmenwahl label:hover{border-color:#bdb7ae}
+.rahmenwahl input{position:absolute;opacity:0;pointer-events:none}
+.rahmenwahl label:has(input:checked){border-color:var(--akzent);box-shadow:0 0 0 3px #dbe4fb}
+.rahmenwahl label:has(input:focus-visible){outline:2px solid var(--akzent);outline-offset:2px}
+.rahmenwahl img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:4px;background:var(--bg);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.rahmenwahl b{display:block;font-size:13px;margin-top:8px}
+.rahmenwahl small{display:block;font-size:12px;color:var(--leise);line-height:1.35}
+.vorschau-gross{background:var(--bg);border-radius:10px;padding:16px;margin-bottom:16px}
+.vorschau-gross img{display:block;width:100%;aspect-ratio:3/2;border-radius:3px;box-shadow:0 4px 18px rgba(0,0,0,.18);transition:opacity .2s}
+.vorschau-gross img.laedt{opacity:.55}
+.kartentext{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));align-items:end}
+label.haken{display:flex;align-items:center;gap:8px;color:var(--text);font-size:14px}
+label.haken input{width:auto}
 .meldung{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 18px;border-radius:8px;display:none}
 </style>
 </head>
@@ -92,8 +110,26 @@ pre{font:12px/1.5 Consolas,monospace;background:#1f1d1a;color:#e8e4dc;padding:12
           <label>Datum (Text)<input name="datum_text"></label>
           <label>Thema<select name="thema" class="themenwahl"></select></label>
           <button class="primaer">Speichern</button>
+
+          <div class="postkarte">
+            <div>
+              <h3>Rahmen der Postkarte</h3>
+              <div class="rahmenwahl" id="rahmenwahl"></div>
+            </div>
+            <div>
+              <h3>Vorschau</h3>
+              <div class="vorschau-gross"><img id="karten-vorschau" alt="Vorschau der Postkarte"></div>
+              <h3>Text auf der Karte</h3>
+              <div class="kartentext">
+                <label>Zeile 1 (Schreibschrift)<input name="karte_zeile1" maxlength="80"></label>
+                <label>Zeile 2<input name="karte_zeile2" maxlength="80"></label>
+                <label class="haken"><input type="checkbox" name="karte_zeile2_aus"> Zeile 2 weglassen</label>
+              </div>
+              <p class="hinweis">Leer lassen = Namen und Datum der Veranstaltung (Grundeinstellung). Nur ausfüllen, wenn auf der Karte etwas anderes stehen soll.</p>
+            </div>
+          </div>
         </form>
-        <p class="hinweis">Änderungen gelten ab der nächsten Gästesitzung.</p>
+        <p class="hinweis">Änderungen gelten ab der nächsten Gästesitzung. Die Vorschau zeigt das neueste Foto dieser Veranstaltung.</p>
       </section>
 
       <section class="karte voll">
@@ -295,9 +331,19 @@ async function laden(hintergrund = false) {
     const e = d.einstellungen;
     for (const s of document.querySelectorAll('.themenwahl'))
       s.innerHTML = Object.entries(d.themen).map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('');
+    $('#rahmenwahl').innerHTML = d.rahmen.map(({id: k, ...r}) => `<label>
+      <input type="radio" name="rahmen" value="${k}"><img data-rahmen="${k}" alt="" loading="lazy">
+      <b>${esc(r.titel)}</b><small>${esc(r.text)}</small></label>`).join('');
     for (const f of ['#f-veranstaltung', '#f-ablauf', '#f-sim', '#f-galerie']) {
-      for (const el of $(f).elements) if (el.name) el.value = (el.name in d.veranstaltung ? d.veranstaltung : e)[el.name];
+      for (const el of $(f).elements) {
+        if (!el.name) continue;
+        const wert = (el.name in d.veranstaltung ? d.veranstaltung : e)[el.name];
+        if (el.type === 'radio') el.checked = el.value === (wert || 'klassisch');
+        else if (el.type === 'checkbox') el.checked = !!wert;
+        else el.value = wert;
+      }
     }
+    kartenVorschau(true);
     const r2 = $('#f-r2').elements;   // Geheimnis wird nie angezeigt – nur, ob es gesetzt ist
     for (const k of ['r2_konto_id', 'r2_bucket', 'r2_oeffentliche_url', 'r2_zugangs_id']) r2[k].value = e[k] || '';
     r2.r2_eu.value = String(e.r2_eu);
@@ -319,9 +365,35 @@ document.addEventListener('click', async (e) => {
 $('#f-veranstaltung').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target.elements;
-  await api('/api/betrieb/veranstaltung', {anlass: f.anlass.value, namen: f.namen.value, datum_text: f.datum_text.value, thema: f.thema.value});
+  await api('/api/betrieb/veranstaltung', {anlass: f.anlass.value, namen: f.namen.value, datum_text: f.datum_text.value, thema: f.thema.value,
+    rahmen: f.rahmen.value, karte_zeile1: f.karte_zeile1.value, karte_zeile2: f.karte_zeile2.value, karte_zeile2_aus: f.karte_zeile2_aus.checked});
   meldung('Gespeichert – gilt ab der nächsten Sitzung'); laden();
 });
+
+// Postkarten-Vorschau: zeigt die Formularwerte, bevor gespeichert wird
+function vorschauUrl(rahmen, breite) {
+  const f = $('#f-veranstaltung').elements;
+  return '/api/betrieb/kartenvorschau?' + new URLSearchParams({rahmen, breite, thema: f.thema.value,
+    namen: f.namen.value, datum_text: f.datum_text.value, karte_zeile1: f.karte_zeile1.value,
+    karte_zeile2: f.karte_zeile2.value, karte_zeile2_aus: f.karte_zeile2_aus.checked ? '1' : '0'});
+}
+let vorschauTimer;
+function kartenVorschau(sofort = false) {
+  clearTimeout(vorschauTimer);
+  vorschauTimer = setTimeout(() => {
+    const f = $('#f-veranstaltung').elements;
+    f.karte_zeile1.placeholder = f.namen.value || 'Namen';
+    f.karte_zeile2.placeholder = f.datum_text.value || 'Datum';
+    f.karte_zeile2.disabled = f.karte_zeile2_aus.checked;
+    const gross = $('#karten-vorschau');
+    gross.classList.add('laedt');
+    gross.onload = () => gross.classList.remove('laedt');
+    gross.src = vorschauUrl(f.rahmen.value || 'klassisch', 1200);
+    for (const img of document.querySelectorAll('#rahmenwahl img')) img.src = vorschauUrl(img.dataset.rahmen, 360);
+  }, sofort ? 0 : 400);
+}
+$('#f-veranstaltung').addEventListener('input', () => kartenVorschau());
+$('#f-veranstaltung').addEventListener('change', () => kartenVorschau());
 
 // Aktionen für Veranstaltungen
 document.addEventListener('click', async (e) => {

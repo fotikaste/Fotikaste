@@ -9,6 +9,13 @@
       "port": 8080
     },
     {
+      "name": "fotobox-test",
+      "runtimeExecutable": "C:\\Users\\timku\\Documents\\Projekte\\Fotobox\\System\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["-m", "fotobox", "--kein-browser", "--port", "8090", "--daten", "C:\\Users\\timku\\AppData\\Local\\Temp\\claude\\8350e65de2638800\\e9dadc21-daa4-48e4-81b3-35b53cf17016\\scratchpad\\testdaten"],
+      "cwd": "C:\\Users\\timku\\Documents\\Projekte\\Fotobox\\System",
+      "port": 8090
+    },
+    {
       "name": "designvorschlag",
       "runtimeExecutable": "py",
       "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1", "--directory", "C:\\Users\\timku\\Documents\\Projekte\\Fotobox\\Dokumente\\design"],

@@ -127,6 +127,15 @@ class Store:
             self._q("ALTER TABLE veranstaltungen ADD COLUMN thema TEXT")
         if "bilder_status" not in spalten:
             self._q("ALTER TABLE veranstaltungen ADD COLUMN bilder_status TEXT NOT NULL DEFAULT 'vorhanden'")
+        # Postkarte (2026-11-16): Rahmen und eigener Kartentext. Leer = Namen/Datum der Veranstaltung.
+        if "rahmen" not in spalten:
+            self._q("ALTER TABLE veranstaltungen ADD COLUMN rahmen TEXT NOT NULL DEFAULT 'klassisch'")
+        if "karte_zeile1" not in spalten:
+            self._q("ALTER TABLE veranstaltungen ADD COLUMN karte_zeile1 TEXT NOT NULL DEFAULT ''")
+        if "karte_zeile2" not in spalten:
+            self._q("ALTER TABLE veranstaltungen ADD COLUMN karte_zeile2 TEXT NOT NULL DEFAULT ''")
+        if "karte_zeile2_aus" not in spalten:
+            self._q("ALTER TABLE veranstaltungen ADD COLUMN karte_zeile2_aus INTEGER NOT NULL DEFAULT 0")
 
     def schliessen(self):
         with self._lock:
@@ -207,6 +216,10 @@ class Store:
     def aendere_veranstaltung(self, vid, anlass, namen, datum_text, thema=None):
         self._q("UPDATE veranstaltungen SET anlass=?, namen=?, datum_text=?, thema=COALESCE(?, thema) WHERE id=?",
                 (anlass, namen, datum_text, thema, vid))
+
+    def setze_karte(self, vid, rahmen, zeile1, zeile2, zeile2_aus):
+        self._q("UPDATE veranstaltungen SET rahmen=?, karte_zeile1=?, karte_zeile2=?, karte_zeile2_aus=? WHERE id=?",
+                (rahmen, zeile1, zeile2, int(bool(zeile2_aus)), vid))
 
     def setze_bilder_status(self, vid, status):
         self._q("UPDATE veranstaltungen SET bilder_status=? WHERE id=?", (status, vid))

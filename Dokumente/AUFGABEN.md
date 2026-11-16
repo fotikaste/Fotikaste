@@ -46,6 +46,8 @@
 - [ ] Erster echter Durchlauf auf dem Raspberry Pi (mit Claude zusammen)
 - [x] **DS620 erster echter Druck (2026-11-16, über Ubuntu/WSL):** Papiergrösse w288h432 bestätigt, Verzerrungsfehler gefunden und in `drucker_einrichten.sh` umgangen, 2. Testkarte richtig
 - [x] DS620: echte Postkarte gedruckt. Rand war zu schmal und ungleich → Rand auf 6 % vergrössert, gedruckt 4 / 4 / 4,3 mm (2026-11-16)
+- [x] **Postkarten-Rahmen (2026-11-16):** 5 Rahmen pro Veranstaltung wählbar, eigener Kartentext (leer = Namen/Datum), Vorschau auf der Betriebsseite. 79 Tests, Browserprüfung durch Claude mit Datenkopie
+- [ ] Rahmen von dir ausprobieren und einen davon auf dem DS620 drucken
 - [ ] DS620: CUPS meldet «erfolgreich» schon 2 s nach Übergabe → prüfen, ob «Papier leer» während des Drucks noch erkannt wird; Zeitlimit für 2 Abzüge prüfen
 - [ ] Sicherung des Projekts: USB-Stick oder GitHub (deine Wahl)
 - [ ] Export direkt auf USB-Stick am Raspberry Pi

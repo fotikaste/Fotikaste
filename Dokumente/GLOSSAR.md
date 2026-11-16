@@ -61,3 +61,7 @@
 | **Dienst (systemd-Service)** | Programm, das Linux beim Einschalten automatisch startet und nach einem Absturz neu startet | `fotobox.service` |
 | **Terminal** | Fenster, in dem man Befehle eintippt | `bash installieren.sh` |
 | **Kiosk-Modus** | Browser im Vollbild ohne Adressleiste und Menüs | So sehen Gäste nur die Fotobox |
+| **Rahmen** (der Postkarte) | Aufbau der Karte: wo das Foto liegt, wie breit der Rand ist, wo der Text steht. Farben und Schrift kommen vom Thema | «Sofortbild», «Randlos mit Band» |
+| **Passepartout** | Breiter Rand um ein Bild, oft mit feiner Linie, wie bei einem gerahmten Foto | Rahmen «Passepartout» |
+| **Beschnitt** | Was der Drucker beim randlosen Druck am Kartenrand abschneidet (beim DS620 ca. 3 mm) | Darum steht Text mind. 6 mm vom Rand |
+| **Vorschau** (Betriebsseite) | Bild der Postkarte mit den Werten im Formular, noch bevor gespeichert wird | Text ändern → Vorschau zeigt es sofort |

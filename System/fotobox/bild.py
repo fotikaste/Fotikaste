@@ -2,7 +2,8 @@
 
 Das Original wird nur gelesen, nie verändert. Die Postkarte ist eine neue Datei.
 
-Layout «Postkarte quer» (Beispielformat 10x15 cm, 300 dpi = 1800x1200 Pixel):
+Mehrere Rahmen (Aufbau der Karte), siehe RAHMEN. Beispiel «klassisch»
+(10x15 cm, 300 dpi = 1800x1200 Pixel):
   ┌──────────────────────────────┐
   │  Rand                         │
   │  ┌─────────────────────────┐  │
@@ -23,22 +24,57 @@ from .themen import thema
 SCHRIFTEN = Path(__file__).parent / "static" / "fonts"
 
 
-def layout(breite: int, hoehe: int) -> dict:
-    # Rand 6 % (bei 10x15 cm ca. 6 mm). Der DS620 schneidet beim randlosen Druck ringsum ca. 3 mm ab,
-    # nicht ganz mittig (Test 2026-11-16). Bei 3,5 % blieb ein hauchdünner, ungleicher Rand übrig.
-    rand = round(hoehe * 0.06)
-    fuss = round(hoehe * 0.14)
-    return {"rand": rand, "fuss": fuss,
-            "foto": (rand, rand, breite - rand, hoehe - rand - fuss)}
+# Rahmen = Aufbau der Postkarte. Farben und Schrift kommen weiterhin vom Thema (themen.py).
+# Wichtig für den DNP DS620 (Test 2026-11-16): Er schneidet beim randlosen Druck ringsum ca. 3 mm ab,
+# nicht ganz mittig. Deshalb: weisse Ränder mind. ca. 6 mm, Text mind. ca. 6 mm vom Kartenrand.
+RAHMEN = {
+    "klassisch": {"titel": "Klassisch", "text": "Schmaler Rand, Namen darunter"},
+    "sofortbild": {"titel": "Sofortbild", "text": "Breiter Streifen unten, grosse Schrift"},
+    "passepartout": {"titel": "Passepartout", "text": "Breiter Rand mit feiner Linie ums Foto"},
+    "randlos_band": {"titel": "Randlos mit Band", "text": "Foto bis zum Rand, Namen im Band unten"},
+    "randlos_verlauf": {"titel": "Randlos mit Verlauf", "text": "Ganzes Foto, Namen hell auf dunklem Verlauf"},
+}
+STANDARD_RAHMEN = "klassisch"
+
+
+def layout(breite: int, hoehe: int, rahmen: str = STANDARD_RAHMEN) -> dict:
+    """Wo liegt das Foto, wo der Text? Alle Masse relativ zur Kartenhöhe, damit jede Grösse passt.
+    foto/text: (x0, y0, x1, y1). name_y/datum_y: Anteil der Texthöhe. name_gr/datum_gr: Anteil der Kartenhöhe."""
+    H, W = hoehe, breite
+    if rahmen == "sofortbild":
+        r = round(H * 0.065)
+        fuss = round(H * 0.25)
+        return {"foto": (r, r, W - r, H - fuss), "text": (r, H - fuss, W - r, H - round(H * 0.03)),
+                "name_y": 0.45, "datum_y": 0.80, "name_gr": 0.095, "datum_gr": 0.026}
+    if rahmen == "passepartout":
+        r = round(H * 0.09)
+        fuss = round(H * 0.17)
+        y1 = H - round(H * 0.05) - fuss
+        return {"foto": (r, r, W - r, y1), "text": (r, y1, W - r, H - round(H * 0.05)),
+                "name_y": 0.52, "datum_y": 0.86, "name_gr": 0.068, "datum_gr": 0.021,
+                "linie": round(H * 0.016)}   # feine Linie mit kleinem Abstand ums Foto
+    if rahmen == "randlos_band":
+        fuss = round(H * 0.20)
+        return {"foto": (0, 0, W, H - fuss), "text": (0, H - fuss, W, H - round(H * 0.06)),
+                "name_y": 0.47, "datum_y": 0.88, "name_gr": 0.075, "datum_gr": 0.023}
+    if rahmen == "randlos_verlauf":
+        return {"foto": (0, 0, W, H), "text": (0, round(H * 0.76), W, H - round(H * 0.06)),
+                "name_y": 0.45, "datum_y": 0.88, "name_gr": 0.085, "datum_gr": 0.025,
+                "verlauf": round(H * 0.42), "hell": True}
+    # klassisch: Rand 6 % (ca. 6 mm), Fusszeile 14 %
+    r = round(H * 0.06)
+    fuss = round(H * 0.14)
+    return {"foto": (r, r, W - r, H - r - fuss), "text": (r, H - r - fuss, W - r, H - r),
+            "name_y": 0.45, "datum_y": 0.88, "name_gr": fuss * 0.48 / H, "datum_gr": fuss * 0.15 / H}
 
 
 KAMERA_SEITENVERHAELTNIS = 3 / 2  # Canon EOS 600D (5184x3456) und ihr Livebild (1056x704)
 
 
-def ausschnitt(breite: int, hoehe: int, kamera=KAMERA_SEITENVERHAELTNIS) -> dict:
+def ausschnitt(breite: int, hoehe: int, rahmen: str = STANDARD_RAHMEN, kamera=KAMERA_SEITENVERHAELTNIS) -> dict:
     """Welcher Teil des Kamerabilds kommt auf die Postkarte? Gleiche Rechnung wie ImageOps.fit
     (mittig zuschneiden). Ergebnis als Anteile 0..1 – für den Rahmen im Livebild."""
-    x0, y0, x1, y1 = layout(breite, hoehe)["foto"]
+    x0, y0, x1, y1 = layout(breite, hoehe, rahmen)["foto"]
     ziel = (x1 - x0) / (y1 - y0)
     if ziel > kamera:   # Foto-Feld ist breiter: oben und unten wird abgeschnitten
         w, h = 1.0, kamera / ziel
@@ -47,31 +83,76 @@ def ausschnitt(breite: int, hoehe: int, kamera=KAMERA_SEITENVERHAELTNIS) -> dict
     return {"x": (1 - w) / 2, "y": (1 - h) / 2, "w": w, "h": h}
 
 
-def postkarte(original: Path, ziel: Path, *, breite: int, hoehe: int, dpi: int,
-              thema_name: str, namen: str, datum_text: str) -> Path:
+def kartentexte(v: dict) -> tuple[str, str]:
+    """Text auf der Karte: eigener Text, sonst Namen und Datum der Veranstaltung (Grundeinstellung)."""
+    z1 = (v.get("karte_zeile1") or "").strip() or v.get("namen", "")
+    z2 = "" if v.get("karte_zeile2_aus") else ((v.get("karte_zeile2") or "").strip() or v.get("datum_text", ""))
+    return z1, z2
+
+
+def _passende_schrift(d: ImageDraw.ImageDraw, text: str, datei: Path, groesse: int, max_breite: float):
+    """Schrift so gross wie gewünscht, aber höchstens so breit wie Platz da ist (lange eigene Texte)."""
+    while True:
+        f = ImageFont.truetype(str(datei), groesse)
+        if groesse <= 12 or d.textlength(text, font=f) <= max_breite:
+            return f
+        groesse = int(groesse * 0.93)
+
+
+def karte_zeichnen(foto: Image.Image, *, breite: int, hoehe: int, thema_name: str,
+                   zeile1: str, zeile2: str, rahmen: str = STANDARD_RAHMEN) -> Image.Image:
+    """Baut die Postkarte als Bild (ohne zu speichern) – auch für die Vorschau auf der Betriebsseite."""
     t = thema(thema_name)
-    lay = layout(breite, hoehe)
+    lay = layout(breite, hoehe, rahmen)
     karte = Image.new("RGB", (breite, hoehe), t["karte"]["bg"])
 
+    x0, y0, x1, y1 = lay["foto"]
+    # ImageOps.fit schneidet mittig auf das Zielseitenverhältnis zu
+    karte.paste(ImageOps.fit(foto, (x1 - x0, y1 - y0), Image.LANCZOS, centering=(0.5, 0.5)), (x0, y0))
+    d = ImageDraw.Draw(karte)
+
+    if lay.get("linie"):
+        a = lay["linie"]
+        d.rectangle((x0 - a, y0 - a, x1 + a - 1, y1 + a - 1), outline=t["karte"]["text"], width=max(2, hoehe // 400))
+
+    if lay.get("verlauf"):
+        # dunkler Verlauf von unten, damit heller Text auf jedem Foto lesbar bleibt
+        h = lay["verlauf"]
+        maske = Image.linear_gradient("L").resize((breite, h)).point(lambda v: int(v * 0.78))
+        dunkel = Image.new("RGB", (breite, h), (12, 10, 8))
+        unten = karte.crop((0, hoehe - h, breite, hoehe))
+        karte.paste(Image.composite(dunkel, unten, maske), (0, hoehe - h))
+        d = ImageDraw.Draw(karte)
+
+    hell = lay.get("hell")
+    farbe_name = "#ffffff" if hell else t["karte"]["name"]
+    farbe_text = "#e9e4dc" if hell else t["karte"]["text"]
+    tx0, ty0, tx1, ty1 = lay["text"]
+    th = ty1 - ty0
+    platz = min(tx1 - tx0, breite - 2 * hoehe * 0.07) * 0.92   # mind. ca. 6 mm Abstand zum Kartenrand
+    mitte_x = breite / 2
+
+    # Schreibschriften stehen sehr eng: doppelte Leerzeichen geben «&» etwas Luft
+    namen_text = (zeile1 or "").strip().replace(" ", "  ")
+    zeile2 = (zeile2 or "").strip()
+    if namen_text:
+        f = _passende_schrift(d, namen_text, SCHRIFTEN / t["schrift"], round(hoehe * lay["name_gr"]), platz)
+        y = ty0 + th * (lay["name_y"] if zeile2 else (lay["name_y"] + lay["datum_y"]) / 2 - 0.05)
+        d.text((mitte_x, y), namen_text, font=f, fill=farbe_name, anchor="mm")
+    if zeile2:
+        f = _passende_schrift(d, zeile2, SCHRIFTEN / "Inter.ttf", round(hoehe * lay["datum_gr"]), platz)
+        y = ty0 + th * (lay["datum_y"] if namen_text else (lay["name_y"] + lay["datum_y"]) / 2)
+        d.text((mitte_x, y), zeile2, font=f, fill=farbe_text, anchor="mm")
+    return karte
+
+
+def postkarte(original: Path, ziel: Path, *, breite: int, hoehe: int, dpi: int,
+              thema_name: str, namen: str, datum_text: str, rahmen: str = STANDARD_RAHMEN) -> Path:
+    """namen = 1. Textzeile (Schreibschrift), datum_text = 2. Zeile. Leer = Zeile weglassen."""
     with Image.open(original) as foto:
         foto = ImageOps.exif_transpose(foto).convert("RGB")
-        x0, y0, x1, y1 = lay["foto"]
-        # ImageOps.fit schneidet mittig auf das Zielseitenverhältnis zu
-        foto = ImageOps.fit(foto, (x1 - x0, y1 - y0), Image.LANCZOS, centering=(0.5, 0.5))
-        karte.paste(foto, (x0, y0))
-
-    d = ImageDraw.Draw(karte)
-    fuss_oben = hoehe - lay["rand"] - lay["fuss"]
-    name_font = ImageFont.truetype(str(SCHRIFTEN / t["schrift"]), round(lay["fuss"] * 0.48))
-    text_font = ImageFont.truetype(str(SCHRIFTEN / "Inter.ttf"), round(lay["fuss"] * 0.15))
-    nur_name = not datum_text
-    # Schreibschriften stehen sehr eng: doppelte Leerzeichen geben «&» etwas Luft
-    namen_text = (namen or "").replace(" ", "  ")
-    d.text((breite / 2, fuss_oben + lay["fuss"] * (0.55 if nur_name else 0.45)), namen_text,
-           font=name_font, fill=t["karte"]["name"], anchor="mm")
-    if datum_text:
-        d.text((breite / 2, fuss_oben + lay["fuss"] * 0.88), datum_text, font=text_font,
-               fill=t["karte"]["text"], anchor="mm")
+        karte = karte_zeichnen(foto, breite=breite, hoehe=hoehe, thema_name=thema_name,
+                               zeile1=namen, zeile2=datum_text, rahmen=rahmen)
 
     ziel.parent.mkdir(parents=True, exist_ok=True)
     tmp = ziel.with_suffix(".tmp")

@@ -201,9 +201,10 @@ class Fotobox:
             t1 = time.monotonic()
             try:
                 vorschau.parent.mkdir(parents=True, exist_ok=True)
+                zeile1, zeile2 = bild.kartentexte(v)
                 bild.postkarte(original, karte, breite=int(self.e("druck_breite_px")),
                                hoehe=int(self.e("druck_hoehe_px")), dpi=int(self.e("druck_dpi")),
-                               thema_name=v["thema"], namen=v["namen"], datum_text=v["datum_text"])
+                               thema_name=v["thema"], namen=zeile1, datum_text=zeile2, rahmen=v.get("rahmen") or "klassisch")
                 bild.vorschau(karte, vorschau)
             except OSError as e:
                 log.exception("Speichern fehlgeschlagen in %s", sid)

@@ -17,7 +17,7 @@ from pathlib import Path
 from flask import Flask, jsonify, request, send_file, send_from_directory, session
 
 from .ablauf import Fotobox, FotoboxFehler
-from .bild import ausschnitt
+from .bild import RAHMEN, ausschnitt, karte_zeichnen, kartentexte
 from .galerie import GalerieFehler, R2Galerie
 from .store import STANDARD_EINSTELLUNGEN
 from .themen import THEMEN, thema
@@ -80,7 +80,7 @@ def erstelle_app(box: Fotobox) -> Flask:
             "galerie_modus": e["galerie_modus"], "galerie_tage": e["galerie_tage"],
             "seitenverhaeltnis": e["druck_breite_px"] / e["druck_hoehe_px"],
             # Welcher Teil des Kamerabilds landet auf der Postkarte? (Anteile 0..1, mittig)
-            "ausschnitt": ausschnitt(e["druck_breite_px"], e["druck_hoehe_px"]),
+            "ausschnitt": ausschnitt(e["druck_breite_px"], e["druck_hoehe_px"], v.get("rahmen") or "klassisch"),
         })
 
     @app.post("/api/sitzung")
@@ -196,6 +196,7 @@ def erstelle_app(box: Fotobox) -> Flask:
             "kontingent": box.kontingent(),
             "einstellungen": e,
             "themen": {k: t["titel"] for k, t in THEMEN.items()},
+            "rahmen": [{"id": k, **r} for k, r in RAHMEN.items()],   # Liste: Reihenfolge bleibt
             "auftraege": box.store.druckauftraege(limit=30),
             "protokoll": protokoll_ende(box.daten / "protokoll" / "fotobox.log", 40),
         })
@@ -234,10 +235,57 @@ def erstelle_app(box: Fotobox) -> Flask:
         t = d.get("thema")
         if t is not None and t not in THEMEN:
             return jsonify({"fehler": "thema_unbekannt"}), 400
+        r = d.get("rahmen", v.get("rahmen") or "klassisch")
+        if r not in RAHMEN:
+            return jsonify({"fehler": "rahmen_unbekannt"}), 400
         box.store.aendere_veranstaltung(v["id"], d.get("anlass", v["anlass"]), d.get("namen", v["namen"]),
                                         d.get("datum_text", v["datum_text"]), t)
+        box.store.setze_karte(v["id"], r, str(d.get("karte_zeile1", v["karte_zeile1"])).strip()[:80],
+                              str(d.get("karte_zeile2", v["karte_zeile2"])).strip()[:80],
+                              bool(d.get("karte_zeile2_aus", v["karte_zeile2_aus"])))
         log.info("Betreiber: Veranstaltung %s geändert", v["id"])
         return jsonify({"ok": True})
+
+    _beispiel = {"pfad": None, "bild": None}
+
+    def beispielfoto():
+        """Neuestes Foto der aktiven Veranstaltung (verkleinert, zwischengespeichert), sonst ein Platzhalter."""
+        from PIL import Image, ImageDraw, ImageOps
+        v = box.store.aktive_veranstaltung()
+        fotos = sorted(box.ordner(v["id"], "originale").glob("*.jpg"), key=lambda p: p.stat().st_mtime)
+        pfad = fotos[-1] if fotos else None
+        if _beispiel["bild"] is None or _beispiel["pfad"] != pfad:
+            if pfad:
+                with Image.open(pfad) as f:
+                    bild = ImageOps.exif_transpose(f).convert("RGB")
+                    bild.thumbnail((1500, 1500))
+            else:
+                bild = Image.linear_gradient("L").rotate(90).resize((1500, 1000)).convert("RGB")
+                bild = Image.blend(bild, Image.new("RGB", bild.size, (190, 160, 130)), 0.6)
+                ImageDraw.Draw(bild).text((750, 500), "Beispielfoto", fill="white", anchor="mm",
+                                          font_size=90)
+            _beispiel.update(pfad=pfad, bild=bild)
+        return _beispiel["bild"]
+
+    @app.get("/api/betrieb/kartenvorschau")
+    def b_kartenvorschau():
+        """Vorschau der Postkarte mit den Werten aus dem Formular (noch nicht gespeichert)."""
+        import io
+        a = request.args
+        v = {**box.store.aktive_veranstaltung(), **{k: a[k] for k in
+             ("namen", "datum_text", "karte_zeile1", "karte_zeile2") if k in a}}
+        v["karte_zeile2_aus"] = a.get("karte_zeile2_aus") == "1"
+        rahmen = a.get("rahmen") if a.get("rahmen") in RAHMEN else "klassisch"
+        thema_name = a.get("thema") if a.get("thema") in THEMEN else v["thema"]
+        b = min(1800, max(200, int(a.get("breite", 900)) if str(a.get("breite", "")).isdigit() else 900))
+        h = round(b * box.e("druck_hoehe_px") / box.e("druck_breite_px"))
+        z1, z2 = kartentexte(v)
+        karte = karte_zeichnen(beispielfoto(), breite=b, hoehe=h, thema_name=thema_name,
+                               zeile1=z1, zeile2=z2, rahmen=rahmen)
+        puffer = io.BytesIO()
+        karte.save(puffer, "JPEG", quality=85)
+        puffer.seek(0)
+        return send_file(puffer, mimetype="image/jpeg", max_age=0)
 
     @app.post("/api/betrieb/veranstaltungen")
     def b_neue_veranstaltung():
