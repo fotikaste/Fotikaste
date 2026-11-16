@@ -50,6 +50,8 @@ h3{font-size:13px;font-weight:600;margin:0 0 8px}
 .postkarte{grid-column:1/-1;display:grid;gap:24px;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);margin-top:12px;padding-top:16px;border-top:1px solid var(--linie)}
 @media (max-width:760px){.postkarte{grid-template-columns:1fr}}
 .rahmenwahl{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.rahmengruppe{grid-column:1/-1;font-size:12px;color:var(--leise);margin-top:6px}
+.rahmengruppe:first-child{margin-top:0}
 .rahmenwahl label{display:block;position:relative;cursor:pointer;border:1px solid var(--linie);border-radius:10px;padding:8px;background:#fff;color:var(--text);transition:border-color .15s,box-shadow .15s}
 .rahmenwahl label:hover{border-color:#bdb7ae}
 .rahmenwahl input{position:absolute;opacity:0;pointer-events:none}
@@ -331,7 +333,10 @@ async function laden(hintergrund = false) {
     const e = d.einstellungen;
     for (const s of document.querySelectorAll('.themenwahl'))
       s.innerHTML = Object.entries(d.themen).map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('');
-    $('#rahmenwahl').innerHTML = d.rahmen.map(({id: k, ...r}) => `<label>
+    const GRUPPEN = {schlicht: 'Schlicht · Farben und Schrift vom Thema', motiv: 'Motiv · eigene Farben, Schrift und Dekoration'};
+    let letzteGruppe = '';
+    $('#rahmenwahl').innerHTML = d.rahmen.map(({id: k, ...r}) => (r.gruppe !== letzteGruppe
+      ? `<p class="rahmengruppe">${esc(GRUPPEN[letzteGruppe = r.gruppe] || r.gruppe)}</p>` : '') + `<label>
       <input type="radio" name="rahmen" value="${k}"><img data-rahmen="${k}" alt="" loading="lazy">
       <b>${esc(r.titel)}</b><small>${esc(r.text)}</small></label>`).join('');
     for (const f of ['#f-veranstaltung', '#f-ablauf', '#f-sim', '#f-galerie']) {

@@ -65,3 +65,5 @@
 | **Passepartout** | Breiter Rand um ein Bild, oft mit feiner Linie, wie bei einem gerahmten Foto | Rahmen «Passepartout» |
 | **Beschnitt** | Was der Drucker beim randlosen Druck am Kartenrand abschneidet (beim DS620 ca. 3 mm) | Darum steht Text mind. 6 mm vom Rand |
 | **Vorschau** (Betriebsseite) | Bild der Postkarte mit den Werten im Formular, noch bevor gespeichert wird | Text ändern → Vorschau zeigt es sofort |
+| **Motiv-Rahmen** | Rahmen mit eigener Dekoration, Farbe und Schrift für einen Anlass | «Hochzeit · Blütenranke», «Party · Konfetti» |
+| **Supersampling** | Doppelt so gross zeichnen und dann verkleinern, damit Kanten weich statt treppig werden | So entstehen die Schneeflocken und Blätter |

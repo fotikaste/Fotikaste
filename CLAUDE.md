@@ -30,7 +30,8 @@ Kamera und Drucker haben jeweils eine simulierte und echte Umsetzungen mit derse
 - `raspberry/` Pi-Paket: `installieren.sh`, `fotobox.service`, `kiosk-start.sh`, `drucker_einrichten.sh` (LF-Zeilenenden, siehe .gitattributes). Anleitung `Dokumente/RASPBERRY_PI_EINRICHTEN.md`
 - `bild.py` Postkarte (Pillow) mit Rahmen (`RAHMEN`, `layout`), Kartentext (`kartentexte`: eigener Text oder Namen/Datum), Vorschau, Simulationsmarke. Ränder/Text mind. 6 mm vom Rand (DS620-Beschnitt ca. 3 mm)
 - `galerie.py` Online-Galerie-Schnittstelle + `SimulierteGalerie`; Upload-Warteschlange in `store.py` (Tabelle `uploads`), Arbeiter in `ablauf.py`
-- `themen.py` Themen (einzige Quelle für Farben/Schriften)
+- `deko.py` selbst gezeichnete Dekoration der Motiv-Rahmen (Konfetti, Schneeflocken, Ranken …), Supersampling, fester Zufall
+- `themen.py` Themen und `MOTIV_FARBEN` der Motiv-Rahmen (einzige Quelle für Farben/Schriften)
 - `ablauf.py` Sitzungsablauf und alle Regeln (Klasse `Fotobox`)
 - `web.py` Flask-Routen (Gäste `/`, Betrieb `/betrieb`, API `/api/...`); `__main__.py` Start mit waitress auf 127.0.0.1
 - `static/gast/`, `static/betrieb/` Oberflächen (reines HTML/CSS/JS), `static/fonts/` lokale OFL-Schriften

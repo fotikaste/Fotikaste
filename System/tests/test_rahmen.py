@@ -31,7 +31,7 @@ class Layouts(unittest.TestCase):
 
     def test_weisse_raender_breit_genug(self):
         # Rahmen mit weissem Rand: mind. ca. 6 mm, sonst wirkt der ungleiche Beschnitt
-        for r in ("klassisch", "sofortbild", "passepartout"):
+        for r in ("klassisch", "sofortbild", "passepartout") + tuple(k for k, v in RAHMEN.items() if v["gruppe"] == "motiv"):
             x0, y0, x1, _ = layout(W, H, r)["foto"]
             self.assertGreaterEqual(min(x0, y0, W - x1), SICHER - 1, r)
 
@@ -51,6 +51,21 @@ class Layouts(unittest.TestCase):
         # Am linken und rechten Rand (6 mm) darf keine Schrift stehen
         for streifen in (unten.crop((0, 0, SICHER, unten.height)), unten.crop((W - SICHER, 0, W, unten.height))):
             self.assertGreater(min(streifen.tobytes()), 200)
+
+    def test_motivrahmen_bringen_eigene_farben(self):
+        from fotobox.themen import MOTIV_FARBEN
+        foto = Image.new("RGB", (900, 600), (128, 128, 128))
+        for r, v in RAHMEN.items():
+            if v["gruppe"] != "motiv":
+                continue
+            self.assertIn(r, MOTIV_FARBEN)
+            a = karte_zeichnen(foto, breite=W, hoehe=H, thema_name="minimal", zeile1="A", zeile2="B", rahmen=r)
+            b = karte_zeichnen(foto, breite=W, hoehe=H, thema_name="winter", zeile1="A", zeile2="B", rahmen=r)
+            self.assertEqual(a.tobytes(), b.tobytes(), f"{r}: Thema darf Motiv-Rahmen nicht verändern")
+            # Mitte des Fotos bleibt frei von Dekoration
+            x0, y0, x1, y1 = layout(W, H, r)["foto"]
+            mitte = a.crop((x0 + (x1 - x0) // 4, y0 + (y1 - y0) // 4, x1 - (x1 - x0) // 4, y1 - (y1 - y0) // 4))
+            self.assertEqual(mitte.getextrema(), ((128, 128),) * 3, r)
 
     def test_unbekannter_rahmen_ist_klassisch(self):
         self.assertEqual(layout(W, H, "gibtsnicht"), layout(W, H, "klassisch"))

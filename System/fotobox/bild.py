@@ -19,7 +19,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-from .themen import thema
+from .deko import deko_ebene
+from .themen import MOTIV_FARBEN, thema
 
 SCHRIFTEN = Path(__file__).parent / "static" / "fonts"
 
@@ -28,11 +29,19 @@ SCHRIFTEN = Path(__file__).parent / "static" / "fonts"
 # Wichtig für den DNP DS620 (Test 2026-11-16): Er schneidet beim randlosen Druck ringsum ca. 3 mm ab,
 # nicht ganz mittig. Deshalb: weisse Ränder mind. ca. 6 mm, Text mind. ca. 6 mm vom Kartenrand.
 RAHMEN = {
-    "klassisch": {"titel": "Klassisch", "text": "Schmaler Rand, Namen darunter"},
-    "sofortbild": {"titel": "Sofortbild", "text": "Breiter Streifen unten, grosse Schrift"},
-    "passepartout": {"titel": "Passepartout", "text": "Breiter Rand mit feiner Linie ums Foto"},
-    "randlos_band": {"titel": "Randlos mit Band", "text": "Foto bis zum Rand, Namen im Band unten"},
-    "randlos_verlauf": {"titel": "Randlos mit Verlauf", "text": "Ganzes Foto, Namen hell auf dunklem Verlauf"},
+    # Schlicht: Farben und Schrift vom Thema
+    "klassisch": {"titel": "Klassisch", "text": "Schmaler Rand, Namen darunter", "gruppe": "schlicht"},
+    "sofortbild": {"titel": "Sofortbild", "text": "Breiter Streifen unten, grosse Schrift", "gruppe": "schlicht"},
+    "passepartout": {"titel": "Passepartout", "text": "Breiter Rand mit feiner Linie ums Foto", "gruppe": "schlicht"},
+    "randlos_band": {"titel": "Randlos mit Band", "text": "Foto bis zum Rand, Namen im Band unten", "gruppe": "schlicht"},
+    "randlos_verlauf": {"titel": "Randlos mit Verlauf", "text": "Ganzes Foto, Namen hell auf dunklem Verlauf", "gruppe": "schlicht"},
+    # Motiv: eigene Farben, Schrift und Dekoration (themen.MOTIV_FARBEN, deko.py)
+    "bluetenranke": {"titel": "Hochzeit · Blütenranke", "text": "Zarte Zweige, Blüten und Goldlinie", "gruppe": "motiv"},
+    "konfetti": {"titel": "Party · Konfetti", "text": "Bunte Konfetti auf dunklem Grund", "gruppe": "motiv"},
+    "geburtstag": {"titel": "Geburtstag · Ballons", "text": "Fröhliche Ballons in den Ecken", "gruppe": "motiv"},
+    "sommerfrische": {"titel": "Sommer · Sonne & Palmen", "text": "Sonne, Palmwedel und Wellen", "gruppe": "motiv"},
+    "winterzauber": {"titel": "Winter · Schneeflocken", "text": "Schneeflocken auf Nachtblau", "gruppe": "motiv"},
+    "sternennacht": {"titel": "Silvester · Feuerwerk", "text": "Goldenes Feuerwerk und Funkeln", "gruppe": "motiv"},
 }
 STANDARD_RAHMEN = "klassisch"
 
@@ -41,6 +50,12 @@ def layout(breite: int, hoehe: int, rahmen: str = STANDARD_RAHMEN) -> dict:
     """Wo liegt das Foto, wo der Text? Alle Masse relativ zur Kartenhöhe, damit jede Grösse passt.
     foto/text: (x0, y0, x1, y1). name_y/datum_y: Anteil der Texthöhe. name_gr/datum_gr: Anteil der Kartenhöhe."""
     H, W = hoehe, breite
+    if RAHMEN.get(rahmen, {}).get("gruppe") == "motiv":
+        # breiter Rand für die Dekoration (ca. 8,5 mm), Fusszeile 19 %
+        r = round(H * 0.085)
+        fuss = round(H * 0.19)
+        return {"foto": (r, r, W - r, H - fuss), "text": (r, H - fuss, W - r, H - round(H * 0.05)),
+                "name_y": 0.39, "datum_y": 0.84, "name_gr": 0.070, "datum_gr": 0.023, "motiv": rahmen}
     if rahmen == "sofortbild":
         r = round(H * 0.065)
         fuss = round(H * 0.25)
@@ -104,6 +119,9 @@ def karte_zeichnen(foto: Image.Image, *, breite: int, hoehe: int, thema_name: st
     """Baut die Postkarte als Bild (ohne zu speichern) – auch für die Vorschau auf der Betriebsseite."""
     t = thema(thema_name)
     lay = layout(breite, hoehe, rahmen)
+    motiv = MOTIV_FARBEN.get(lay.get("motiv"))
+    if motiv:   # Motiv-Rahmen: eigene Farben und Schrift statt Thema
+        t = {**t, "schrift": motiv["schrift"], "karte": {"bg": motiv["bg"], "name": motiv["name"], "text": motiv["text"]}}
     karte = Image.new("RGB", (breite, hoehe), t["karte"]["bg"])
 
     x0, y0, x1, y1 = lay["foto"]
@@ -122,6 +140,11 @@ def karte_zeichnen(foto: Image.Image, *, breite: int, hoehe: int, thema_name: st
         dunkel = Image.new("RGB", (breite, h), (12, 10, 8))
         unten = karte.crop((0, hoehe - h, breite, hoehe))
         karte.paste(Image.composite(dunkel, unten, maske), (0, hoehe - h))
+        d = ImageDraw.Draw(karte)
+
+    if motiv:
+        ebene = deko_ebene(lay["motiv"], breite, hoehe, lay, motiv)
+        karte.paste(ebene, (0, 0), ebene)
         d = ImageDraw.Draw(karte)
 
     hell = lay.get("hell")

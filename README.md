@@ -27,7 +27,7 @@ Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
 |---|---|
 | Druckaufträge mit Handlungsbedarf | Fehlgeschlagene Aufträge nachdrucken oder verwerfen, unklare als «gedruckt» oder «nicht gedruckt» markieren |
 | Druckkontingent | Verbleibende Abzüge der aktiven Veranstaltung, getrennt nach echt und simuliert |
-| Aktive Veranstaltung | Anlass, Namen, Datum und Thema der laufenden Veranstaltung ändern. **Rahmen der Postkarte** wählen (Klassisch, Sofortbild, Passepartout, Randlos mit Band, Randlos mit Verlauf) und bei Bedarf **eigenen Text auf der Karte** eintragen. Leer = Namen und Datum der Veranstaltung. Die Vorschau zeigt die Karte sofort |
+| Aktive Veranstaltung | Anlass, Namen, Datum und Thema der laufenden Veranstaltung ändern. **Rahmen der Postkarte** wählen: 5 schlichte (Farben vom Thema) und 6 Motiv-Rahmen mit eigener Dekoration (Hochzeit, Party, Geburtstag, Sommer, Winter, Silvester) und bei Bedarf **eigenen Text auf der Karte** eintragen. Leer = Namen und Datum der Veranstaltung. Die Vorschau zeigt die Karte sofort |
 | Alle Veranstaltungen | Neue Veranstaltung anlegen, aktivieren, Bilder exportieren, Bilder löschen |
 | Ablauf | Countdown, Wiederholungen, Abzüge pro Sitzung, Inaktivität, Kontingent |
 | Kamera und Simulation | Echte Kamera oder Testbilder, Fehler simulieren |
@@ -81,7 +81,7 @@ Im Ordner `System` in PowerShell:
 ```
 .venv\Scripts\python.exe -m unittest -v
 ```
-Erwartet: `Ran 79 tests … OK`
+Erwartet: `Ran 80 tests … OK`
 
 ## Häufige Fehler
 | Problem | Lösung |

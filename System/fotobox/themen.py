@@ -44,5 +44,23 @@ THEMEN = {
 }
 
 
+# Motiv-Rahmen der Postkarte: bringen eigene Farben und Schrift mit (unabhängig vom Thema der Gästeansicht).
+# bg = Kartenhintergrund, name = 1. Zeile, text = 2. Zeile, deko = Farben der Dekoration (siehe deko.py)
+MOTIV_FARBEN = {
+    "konfetti": {"bg": "#1d1838", "name": "#ffffff", "text": "#c9c3e6", "schrift": "Pacifico-Regular.ttf",
+                 "deko": ["#ff5d8f", "#ffd23f", "#3ddbd9", "#9b5de5", "#00c47a", "#ff8c42"]},
+    "winterzauber": {"bg": "#0e1a2b", "name": "#ffffff", "text": "#9db0c8", "schrift": "PinyonScript-Regular.ttf",
+                     "deko": ["#eef4fb", "#9fc6ee"]},
+    "sommerfrische": {"bg": "#fff4e4", "name": "#e2512f", "text": "#7d6458", "schrift": "Pacifico-Regular.ttf",
+                      "deko": ["#ffc24a", "#ff8a3d", "#2f9e6e", "#28b5a8"]},
+    "bluetenranke": {"bg": "#fbf7f1", "name": "#3b3226", "text": "#8a7a66", "schrift": "GreatVibes-Regular.ttf",
+                     "deko": ["#c8a45c", "#8fa67c", "#e7b3ad"]},
+    "geburtstag": {"bg": "#fff8ef", "name": "#d64550", "text": "#7d6458", "schrift": "Pacifico-Regular.ttf",
+                   "deko": ["#ff5d6c", "#ffc93c", "#4cb8f5", "#8ad16f", "#b57cf2"]},
+    "sternennacht": {"bg": "#121019", "name": "#e9c97e", "text": "#b9ad95", "schrift": "GreatVibes-Regular.ttf",
+                     "deko": ["#e3b96b", "#f4e2b8", "#ffffff"]},
+}
+
+
 def thema(name: str) -> dict:
     return THEMEN.get(name, THEMEN["elegant"])
