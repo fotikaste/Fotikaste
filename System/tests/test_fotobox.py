@@ -285,6 +285,9 @@ class OnlineGalerie(unittest.TestCase):
         r = c.post(f"/api/sitzung/{sid}/handy", json={})
         self.assertEqual(r.status_code, 200)
         self.assertTrue(r.json["qr_svg"].startswith("<svg"))
+        # Grafik muss sich einpassen lassen (viewBox, keine feste Pixelgrösse) – sonst wird sie abgeschnitten
+        self.assertIn("viewBox=", r.json["qr_svg"])
+        self.assertNotIn('width="', r.json["qr_svg"].split(">", 1)[0])
         self.assertTrue(r.json["simuliert"])
 
 

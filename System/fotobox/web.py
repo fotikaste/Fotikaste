@@ -103,7 +103,9 @@ def erstelle_app(box: Fotobox) -> Flask:
         """Foto für die Online-Galerie freigeben und QR-Code (als SVG-Grafik) zurückgeben."""
         erg = box.galerie_freigeben(sid)
         qr = segno.make(erg["url"], error="m")
-        return jsonify({**erg, "qr_svg": qr.svg_inline(scale=10, border=2, dark="#000", light="#fff"),
+        # omitsize: nur «viewBox» statt fester Pixelgrösse – sonst schneidet der Browser lange (grosse)
+        # QR-Codes ab, statt sie in das Feld einzupassen (Fehler gefunden 2026-11-17 mit echtem R2-Link)
+        return jsonify({**erg, "qr_svg": qr.svg_inline(scale=10, border=2, dark="#000", light="#fff", omitsize=True),
                         "simuliert": box.galerie.simuliert})
 
     @app.get("/galerie-sim/<path:pfad>")
