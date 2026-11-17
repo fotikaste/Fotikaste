@@ -29,6 +29,7 @@ Legende: ✅ **getestet** (selbst ausprobiert) · 📄 **nur Doku** (laut offizi
 | Export auf USB-Stick (`usb.py`) | ✅ 5 automatische Tests (nachgebildeter Stick). ❔ mit echtem Stick unter Windows | ✅ Tests unter Ubuntu/WSL. ❔ echter Stick, automatisches Einhängen im Kiosk-Betrieb |
 | Ganze Testreihe unter Linux | – | ✅ 85 Tests in Ubuntu/WSL mit Python 3.14 (2026-11-16) |
 | Monitor Verbatim 14" am Pi (Bild über Micro-HDMI-Adapter, Touch über USB) | – | ❔ nicht getestet |
+| CUPS schläft nach 60 s Leerlauf (Socket-Aktivierung) | – | ⚠️ am echten Pi 2026-11-17: erster Druck «CUPS nicht erreichbar». In Ubuntu nachgestellt: Anschluss 127.0.0.1:631 tot, solange CUPS schläft; über `/run/cups/cups.sock` wird es geweckt (✅ «bereit»). Druckbaustein nutzt jetzt den Socket. ❔ Druck am Pi nach dem Update |
 | ~~Taster über `gpio-key`~~ | – | entfällt (2026-11-17): Bedienung nur per Touchscreen |
 | Gästeoberfläche per Touch-Knöpfen | ✅ ganzer Ablauf im Browser von Claude mit Maus geklickt (1600×900, Simulation, 2026-11-17). ❔ echter Finger auf dem Verbatim | ❔ |
 | Python 3.13, Flask 3.1.3, Pillow 13.0.0, waitress 3.0.2 | ✅ | ❔ (in Ubuntu/WSL mit Python 3.14 ✅) |
