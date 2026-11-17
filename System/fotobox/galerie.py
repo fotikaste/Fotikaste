@@ -165,7 +165,10 @@ class R2Galerie(Galerie):
         self._anfrage("PUT", schluessel, inhalt, {"content-type": "text/plain"})
         schritte.append("Hochladen: ok")
         try:
-            with urllib.request.urlopen(self.url(schluessel), timeout=self.zeitlimit_s) as r:
+            # Cloudflare sperrt öffentliche Abrufe ohne Browser-Kennung (getestet 2026-11-17: ohne → 403,
+            # mit «Mozilla/5.0 …» → 200). Handys schicken sie immer mit – der Test muss es auch tun.
+            abruf = urllib.request.Request(self.url(schluessel), headers={"User-Agent": "Mozilla/5.0 (Fotobox Verbindungstest)"})
+            with urllib.request.urlopen(abruf, timeout=self.zeitlimit_s) as r:
                 gleich = r.read() == inhalt
             schritte.append("Öffentlicher Abruf: ok" if gleich else "Öffentlicher Abruf: falscher Inhalt")
         except (urllib.error.URLError, OSError) as e:
