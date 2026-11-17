@@ -22,8 +22,10 @@
       <div class="namen" data-feld="namen"></div>
       <div class="datum" data-feld="datum_text"></div>
     </header>
-    <div class="mitte"><div class="ring"><span>Bereit?</span></div></div>
-    <p class="aufruf">Drück eine Taste und lächle</p>
+    <div class="mitte">
+      <button class="start-knopf" id="start-knopf"><span class="kamera-symbol"></span>Foto machen</button>
+    </div>
+    <p class="aufruf">Tippe auf den Knopf, um zu starten</p>
   </section>
 
   <!-- 2. Countdown -->
@@ -98,11 +100,12 @@
     <p class="unterzeile" id="fehler-text"></p>
   </section>
 
-  <!-- Tastenleiste: links, Mitte, rechts – passt zu den drei echten Tasten -->
+  <!-- Knöpfe auf dem Bildschirm (Touch): Nebenaktion links, Hauptaktion in der Mitte (gross, farbig), Nebenaktion rechts.
+       Nicht benötigte Knöpfe verschwinden ganz. -->
   <footer class="leiste" id="leiste">
-    <button class="taste" data-taste="0"><span class="knopf"></span><span class="beschriftung"></span></button>
-    <button class="taste" data-taste="1"><span class="knopf"></span><span class="beschriftung"></span></button>
-    <button class="taste" data-taste="2"><span class="knopf"></span><span class="beschriftung"></span></button>
+    <button class="taste" data-taste="0"><span class="beschriftung"></span></button>
+    <button class="taste" data-taste="1"><span class="beschriftung"></span></button>
+    <button class="taste" data-taste="2"><span class="beschriftung"></span></button>
   </footer>
 
   <div class="blitz" id="blitz"></div>
@@ -110,7 +113,7 @@
   <div class="nochda" id="nochda" hidden>
     <div class="nochda-karte">
       <p class="gross-text">Bist du noch da?</p>
-      <p class="unterzeile">Drück eine Taste, um weiterzumachen.</p>
+      <p class="unterzeile">Tippe auf den Bildschirm, um weiterzumachen.</p>
       <p class="nochda-zahl" id="nochda-zahl">10</p>
     </div>
   </div>

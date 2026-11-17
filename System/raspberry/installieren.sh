@@ -12,7 +12,7 @@
 #  4. Dienst «fotobox»: startet beim Einschalten automatisch und nach einem Absturz neu
 #  5. Kiosk: Browser im Vollbild ohne Leisten, Desktop-Anmeldung automatisch, kein Bildschirmschoner
 #  6. Kamera-Sperre lösen: Linux soll die Kamera nicht als «Speicherkarte» öffnen (GVFS)
-#  7. Drei Taster an GPIO17 / GPIO27 / GPIO22 als Tasten Pfeil links / Enter / Pfeil rechts
+#  7. Alte Taster-Einträge entfernen (seit 2026-11-17 Bedienung nur per Touchscreen)
 #  8. Drucker einrichten, falls der DNP DS620 schon eingesteckt und eingeschaltet ist
 #
 # Stand 2026-11-16: in Ubuntu (WSL) teilweise geprüft (Drucker-Teil mit echtem DS620), auf echtem Raspberry Pi NOCH NICHT getestet.
@@ -120,25 +120,14 @@ else
 fi
 pkill -f gvfsd-gphoto2 >/dev/null 2>&1 || true
 
-schritt "7/8 Taster an den GPIO-Stiften"
+schritt "7/8 Alte Taster-Einträge entfernen (Bedienung jetzt per Touchscreen)"
 CONFIG=""
 for k in /boot/firmware/config.txt /boot/config.txt; do [ -f "$k" ] && CONFIG="$k" && break; done
-if [ "$IST_PI" -eq 1 ] && [ -n "$CONFIG" ]; then
-  # gpio-key (offizielles Overlay): Taster zwischen GPIO und GND, interner Pull-up, gedrückt = Taste unten.
-  # Linux-Tastencodes: 105 = Pfeil links, 28 = Enter, 106 = Pfeil rechts
-  # Kommentare in config.txt nur auf eigenen Zeilen (nicht hinter einem Eintrag)
+if [ -n "$CONFIG" ] && grep -q '^# fotobox-taster-anfang' "$CONFIG" 2>/dev/null; then
   sudo sed -i '/^# fotobox-taster-anfang/,/^# fotobox-taster-ende/d' "$CONFIG"
-  printf '%s\n' \
-    '# fotobox-taster-anfang (links = Stift 11, Mitte = Stift 13, rechts = Stift 15, Minus = Stift 9)' \
-    '[all]' \
-    'dtoverlay=gpio-key,gpio=17,keycode=105,label="LINKS"' \
-    'dtoverlay=gpio-key,gpio=27,keycode=28,label="MITTE"' \
-    'dtoverlay=gpio-key,gpio=22,keycode=106,label="RECHTS"' \
-    '# fotobox-taster-ende' \
-    | sudo tee -a "$CONFIG" >/dev/null
-  ok "Taster in $CONFIG eingetragen – wirksam nach dem Neustart"
+  ok "Taster-Block aus $CONFIG entfernt"
 else
-  hinweis "Kein Raspberry Pi erkannt – Taster übersprungen"
+  ok "Keine Taster-Einträge vorhanden – nichts zu tun"
 fi
 
 schritt "8/8 Drucker DNP DS620"

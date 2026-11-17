@@ -1,6 +1,6 @@
 # Fotobox
 
-Eigene Fotobox-Software für die Vermietung: Gäste drücken eine Taste, lächeln und erhalten eine Postkarte (10×15 cm).
+Eigene Fotobox-Software für die Vermietung: Gäste tippen auf «Foto machen», lächeln und erhalten eine Postkarte (10×15 cm).
 
 **Stand:** Prototyp mit simulierter Kamera (Testbilder) und simuliertem Drucker (speichert Dateien). Echte Kamera und echter Drucker folgen.
 
@@ -11,13 +11,13 @@ Doppelklick auf **`Fotobox starten.bat`** (in diesem Ordner).
 - Vollbild im Browser: **F11**
 
 ## Bedienen (Gäste)
-Drei Tasten: **links · Mitte · rechts**. Zum Testen am PC:
+Bedienung per **Touchscreen** (seit 17.11.2026, keine physischen Tasten). Gäste tippen auf die Knöpfe am Bildschirm:
+der grosse, farbige Knopf ist immer die Hauptaktion (z. B. «Foto machen», «Countdown starten», «Drucken»).
+Auf der Startseite startet auch ein Tipp irgendwo auf den Bildschirm.
 
-| Echte Taste (später) | Tastatur | Maus |
-|---|---|---|
-| links | Pfeil links oder `1` | auf den linken Kreis klicken |
-| Mitte (Hauptaktion) | Leertaste, Enter oder `2` | auf den mittleren Kreis klicken |
-| rechts | Pfeil rechts oder `3` | auf den rechten Kreis klicken |
+Zum Testen am PC: mit der Maus klicken, oder Tastatur: Enter/Leertaste = Hauptknopf, Pfeil links/rechts = Knopf links/rechts.
+
+**Betriebsseite ohne Tastatur:** auf der Startseite die Namen oben **3 Sekunden gedrückt halten** (danach PIN). Mit Tastatur: Strg+Umschalt+B.
 
 ## Betriebsbereich
 `http://127.0.0.1:8080/betrieb` – **Standard-PIN: 1234**. Ändere sie unter «Sicherheit», bevor du die Fotobox vermietest. Solange sie aktiv ist, zeigt die Seite oben eine rote Warnung.
@@ -44,7 +44,7 @@ Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
    Die Fotobox startet die digiCamControl-App automatisch minimiert in der Taskleiste. **Nicht schliessen**, sie hält die Verbindung zur Kamera offen.
    Nach dem Start etwa 20 s warten, bis die Betriebsseite «Kamera bereit» zeigt.
 
-**Livebild:** In digiCamControl unter File → Settings → Webserver «Use web server» und «Allow interaction via webserver» einschalten (Port 5513) und die App neu starten. Danach sehen Gäste sich gespiegelt mit dem Postkarten-Rahmen und starten den Countdown mit der mittleren Taste. Abschalten: Betriebsseite → «Livebild beim Ausrichten: aus». Fehlt das Livebild, läuft der Countdown wie früher ohne Bild.
+**Livebild:** In digiCamControl unter File → Settings → Webserver «Use web server» und «Allow interaction via webserver» einschalten (Port 5513) und die App neu starten. Danach sehen Gäste sich gespiegelt mit dem Postkarten-Rahmen und starten den Countdown mit dem Knopf «Countdown starten». Abschalten: Betriebsseite → «Livebild beim Ausrichten: aus». Fehlt das Livebild, läuft der Countdown wie früher ohne Bild.
 
 Foto ist ca. 1,4 s nach dem Auslösen auf dem PC. Der Modus «langsam» braucht 8–15 s, weil er die Verbindung jedes Mal neu aufbaut, und funktioniert nur, wenn die App **geschlossen** ist.
 

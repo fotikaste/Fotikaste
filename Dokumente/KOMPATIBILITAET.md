@@ -29,7 +29,8 @@ Legende: ✅ **getestet** (selbst ausprobiert) · 📄 **nur Doku** (laut offizi
 | Export auf USB-Stick (`usb.py`) | ✅ 5 automatische Tests (nachgebildeter Stick). ❔ mit echtem Stick unter Windows | ✅ Tests unter Ubuntu/WSL. ❔ echter Stick, automatisches Einhängen im Kiosk-Betrieb |
 | Ganze Testreihe unter Linux | – | ✅ 85 Tests in Ubuntu/WSL mit Python 3.14 (2026-11-16) |
 | Monitor Verbatim 14" am Pi (Bild über Micro-HDMI-Adapter, Touch über USB) | – | ❔ nicht getestet |
-| Taster über `gpio-key` (Tastencodes 105 / 28 / 106) | – | 📄 Raspberry-Pi-Overlay-Dokumentation. ❔ nicht getestet |
+| ~~Taster über `gpio-key`~~ | – | entfällt (2026-11-17): Bedienung nur per Touchscreen |
+| Gästeoberfläche per Touch-Knöpfen | ✅ ganzer Ablauf im Browser von Claude mit Maus geklickt (1600×900, Simulation, 2026-11-17). ❔ echter Finger auf dem Verbatim | ❔ |
 | Python 3.13, Flask 3.1.3, Pillow 13.0.0, waitress 3.0.2 | ✅ | ❔ (in Ubuntu/WSL mit Python 3.14 ✅) |
 
 ## Beobachtungen echte Kamera (2026-11-09)

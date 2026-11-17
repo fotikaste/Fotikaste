@@ -26,10 +26,7 @@ Schon vorhanden: Canon EOS 600D mit Objektiv, USB-Kabel zur Kamera, Monitor BenQ
 
 | Artikel | Wozu | Richtpreis |
 |---|---|---|
-| **3 Taster TRU Components LAS4GQH, Variante 11E (tastend)** – gewählt 2026-11-11 | Die 3 Bedientasten, direkt am Raspberry Pi (GPIO) | im Shop prüfen |
-| Jumper-Kabel «Buchse» (Dupont, female), ca. 20–30 cm | Taster an die Stifte des Pi | ca. CHF 5 |
-| Kabelschuhe passend zu den Taster-Anschlüssen oder Lötkolben | Kabel am Taster befestigen | ca. CHF 5–10 |
-| Runde Klebe-Ringe um die Taster | Taster wirken grösser und sind leichter zu finden | ca. CHF 5 |
+| ~~3 Taster, Jumper-Kabel, Kabelschuhe, Klebe-Ringe~~ | **Nicht mehr nötig** (2026-11-17): Bedienung nur noch per Touchscreen | – |
 | Mehrfachsteckdose mit Schalter | Ein Schalter für alles | ca. CHF 15 |
 | Mobiler Router mit SIM oder Handy-Hotspot | Internet vor Ort für die Online-Galerie | ab CHF 0 (Handy) bis ca. CHF 60 + Abo |
 | Gehäuse / Stativ für die ganze Fotobox | Aufbau beim Kunden | offen |
@@ -38,4 +35,4 @@ Schon vorhanden: Canon EOS 600D mit Objektiv, USB-Kabel zur Kamera, Monitor BenQ
 1. Drucker + Papier + Drucker-Kabel (das grösste Risiko zuerst testen, auch schon am Windows-PC)
 2. Raspberry Pi mit Zubehör (Nr. 4–9)
 3. Kamera-Netzteil
-4. Tasten und Rest
+4. Rest (Mehrfachsteckdose, Internet vor Ort, Gehäuse)

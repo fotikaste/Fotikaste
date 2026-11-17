@@ -82,7 +82,7 @@ label.haken input{width:auto}
   <main id="app" hidden>
     <header>
       <h1>Fotobox Betrieb</h1>
-      <div class="aktionen"><a href="/" target="_blank"><button>Gästeansicht öffnen</button></a><button id="abmelden">Abmelden</button></div>
+      <div class="aktionen"><a href="/" target="_blank" id="zur-gaesteansicht"><button>Gästeansicht öffnen</button></a><button id="abmelden">Abmelden</button></div>
     </header>
 
     <p class="karte problem" id="pin-warnung" hidden style="margin-bottom:16px">
@@ -254,6 +254,13 @@ const $ = (s) => document.querySelector(s);
 const STATUS = {angefordert: 'angefordert', warteschlange: 'in Warteschlange', erfolgreich: 'erfolgreich',
   fehlgeschlagen: 'fehlgeschlagen', unbekannt: 'Status unbekannt', ersetzt: 'ersetzt durch Nachdruck', verworfen: 'verworfen'};
 let formularGeladen = false;
+// Kiosk (Raspberry Pi, nur Touch): zurück zur Gästeansicht im selben Fenster, ohne Tastatur
+try {
+  if (sessionStorage.getItem('kiosk')) {
+    const z = document.getElementById('zur-gaesteansicht');
+    z.removeAttribute('target'); z.querySelector('button').textContent = 'Zurück zur Gästeansicht';
+  }
+} catch (_) {}
 let ordnerOeffnenMoeglich = false;
 
 // hintergrund=true: automatisches Aktualisieren zählt nicht als Aktivität (sonst nie automatische Abmeldung)

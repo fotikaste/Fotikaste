@@ -1,7 +1,7 @@
 # Fotobox – Projektregeln für Claude
 
 ## Ziel
-Zuverlässige, selbst gebaute Fotobox zur Vermietung. Lokale Anwendung mit Browser-Oberfläche für Gäste (Vollbild, 3 physische Tasten) und einem PIN-geschützten Betreiberbereich. Funktioniert ohne Internet.
+Zuverlässige, selbst gebaute Fotobox zur Vermietung. Lokale Anwendung mit Browser-Oberfläche für Gäste (Vollbild, Bedienung per Touchscreen – seit 2026-11-17 keine physischen Tasten) und einem PIN-geschützten Betreiberbereich. Funktioniert ohne Internet.
 
 ## Ordner
 - `Dokumente/` – Analyse, Glossar, Lernnotizen, Aufgaben, Kompatibilität, Designvorschlag

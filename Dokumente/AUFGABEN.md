@@ -56,7 +56,8 @@
 - [x] **Export auf USB-Stick (2026-11-16):** Auswahl «Exportieren nach» auf der Betriebsseite, nur eingesteckte Sticks erlaubt, danach `sync`. 85 Tests (auch unter Linux). ❔ mit echtem Stick am Pi
 - [x] Pi-Anleitung mit Checkliste, Monitor-Anschluss, USB-Export und Update-Ablauf (2026-11-16)
 - [ ] Kiosk-Modus: Browser startet automatisch im Vollbild ohne Adressleiste
-- [ ] Echte Tasten: USB-Tastencontroller wählen, der sich wie eine Tastatur meldet
+- [x] **Bedienung nur per Touchscreen (2026-11-17, dein Entscheid nach Test mit einer Testperson):** keine physischen Tasten. Startseite mit grossem Knopf «Foto machen» (auch Tipp irgendwo startet), Knöpfe mit Beschriftung im Knopf, einheitlich «Tippe auf …». Betriebsseite ohne Tastatur: Namen 3 s gedrückt halten. GPIO-Taster aus dem Pi-Installationsprogramm entfernt
+- [ ] Touch am echten Pi mit dem Verbatim prüfen
 - [ ] M6: Drucker- und Plattformentscheid
 - [ ] Prüfen: USB-Stecker der 600D (Mini- oder Micro-USB?)
 - [ ] Prüfen: Netzteil-Lösung für die Kamera (z. B. Canon ACK-E8)

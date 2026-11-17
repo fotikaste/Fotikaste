@@ -1,6 +1,6 @@
 # Raspberry Pi einrichten
 
-Ziel: Pi einschalten → Fotobox startet von selbst im Vollbild, Kamera, Drucker und Taster funktionieren.
+Ziel: Pi einschalten → Fotobox startet von selbst im Vollbild, Kamera, Drucker und Touchscreen funktionieren.
 
 > **Stand 2026-11-16:** Diese Anleitung und das Installationsprogramm sind **auf einem echten Raspberry Pi noch nicht getestet**.
 > Geprüft in Ubuntu auf dem Laptop: Kamera über gphoto2, Drucker-Einrichtung mit dem **echten DS620** (inkl. Testdrucke), Teile des Installationsprogramms (siehe `KOMPATIBILITAET.md`).
@@ -69,25 +69,14 @@ Die Zeile «Streifenformate entfernt» ist wichtig: Ohne sie druckt Linux die Ka
 Zeigt das Programm «ACHTUNG: w288h432 nicht in der Liste», die angezeigte Liste an Claude schicken.
 Danach in der Betriebsseite unter «Kamera, Drucker und Simulation» prüfen: Drucker = «Echter Drucker über CUPS», Name `DS620`.
 
-## Schritt 5 – Taster anschliessen (Pi ausgeschaltet und Netzteil gezogen!)
-Jeder Taster hat zwei Anschlüsse: einer an den GPIO-Stift, der andere an Minus (GND). Die drei Minus-Anschlüsse dürfen zusammen an einen GND-Stift.
-
-| Taster | Stift (Pin-Nummer) | Name | Wirkt wie |
-|---|---|---|---|
-| links | **11** | GPIO17 | Pfeil links |
-| Mitte | **13** | GPIO27 | Enter |
-| rechts | **15** | GPIO22 | Pfeil rechts |
-| alle drei (zweiter Anschluss) | **9** (oder 14) | GND | Minus |
-
-Stift 1 ist der mit der eckigen Lötstelle, die Nummern laufen im Zickzack: ungerade Zahlen auf der Innenreihe, gerade auf der Aussenreihe (Bild: Suche nach «Raspberry Pi 5 pinout»).
-
-⚠️ **Nie** an Stift 2 oder 4 (5 V) oder 1 oder 17 (3,3 V) anschliessen. Taster TRU LAS4GQH: die Variante **11E = tastend** verwenden.
-Die LED der Taster (24 V) wird **nicht** an den Pi angeschlossen.
+## Schritt 5 – Touchscreen prüfen
+Seit 17.11.2026 gibt es **keine physischen Tasten** mehr: Gäste bedienen alles am Touchscreen.
+Nach dem Neustart auf «Foto machen» tippen. Reagiert nichts: USB-Kabel des Monitors (Touch) prüfen, siehe «Wenn etwas nicht geht».
 
 ## Bedienung im Alltag
 - **Einschalten:** Steckdose an → nach ca. 1 Minute läuft die Fotobox.
-- **Betriebsseite:** Tastatur anschliessen und **Strg + Umschalt + B** drücken. Zurück zur Gästeansicht: **Strg + W** (schliesst den Betriebs-Tab).
-- **Ausschalten:** am sichersten mit Tastatur: Strg+Alt+T (Terminal) → `sudo poweroff`, warten bis die grüne Lampe aus ist, dann Strom aus. Einfach den Strom ziehen geht meistens gut, eine SSD ist dabei robuster als eine Speicherkarte.
+- **Betriebsseite (ohne Tastatur):** auf der Startseite die **Namen oben 3 Sekunden gedrückt halten**, dann PIN eintippen. Zurück: Knopf **«Zurück zur Gästeansicht»** oben rechts. Mit Tastatur geht auch Strg + Umschalt + B.
+- **Ausschalten:** am sichersten mit Tastatur (oder per SSH vom Laptop): Strg+Alt+T (Terminal) → `sudo poweroff`, warten bis die grüne Lampe aus ist, dann Strom aus. Einfach den Strom ziehen geht meistens gut, eine SSD ist dabei robuster als eine Speicherkarte.
 - **Fotos auf USB-Stick:** Stick einstecken, ca. 5 s warten, Betriebsseite → «Alle Veranstaltungen» → «Exportieren nach: USB-Stick …» (wird automatisch vorgewählt) → «Exportieren». Erst abziehen, wenn «darf jetzt abgezogen werden» erscheint.
 - **Fotos auf dem Pi:** liegen in `/home/<name>/fotobox-daten/veranstaltungen/` (Originale nie verändert).
 
@@ -103,7 +92,6 @@ Die LED der Taster (24 V) wird **nicht** an den Pi angeschlossen.
 | Schwarzer Bildschirm, kein Browser | Tastatur: Strg+Alt+T öffnet ein Terminal → `systemctl status fotobox` |
 | «Kamera nicht bereit» | Kamera an? Kabel? Dann `gphoto2 --auto-detect` im Terminal |
 | Drucker nicht bereit | `lpstat -p DS620` im Terminal; Papier und Farbband prüfen |
-| Taster reagieren nicht | Anschluss prüfen; im Terminal `grep fotobox-taster -A5 /boot/firmware/config.txt` |
 | Bild hat schwarze Ränder links/rechts | Pi-Menü → Einstellungen → Screen Configuration: Auflösung **1920×1080** wählen |
 | Touch reagiert nicht | USB-C-Kabel des Monitors am Pi eingesteckt? Es muss die **Daten**-Buchse am Monitor sein |
 | Kein USB-Stick bei «Exportieren nach» | Stick ab- und wieder einstecken, 5 s warten, Seite neu laden. Format FAT32 oder exFAT |
@@ -116,5 +104,5 @@ Die LED der Taster (24 V) wird **nicht** an den Pi angeschlossen.
 - Zeile in `~/.config/labwc/autostart` (Kiosk-Browser)
 - Automatische Desktop-Anmeldung, Bildschirmschoner aus (über raspi-config)
 - GVFS-Kameradienst für deinen Benutzer abgeschaltet
-- Block «fotobox-taster» in `/boot/firmware/config.txt`
+- Entfernt den Block «fotobox-taster» aus `/boot/firmware/config.txt`, falls eine frühere Version ihn eingetragen hat (Tasten werden nicht mehr gebraucht)
 - Benutzer in den Gruppen `lpadmin` und `plugdev`

@@ -1,5 +1,6 @@
-// Gästeoberfläche der Fotobox.
-// Jede Ansicht legt fest, was die drei Tasten (links, Mitte, rechts) bewirken.
+// Gästeoberfläche der Fotobox – Bedienung per Touchscreen (seit 2026-11-17 keine physischen Tasten mehr).
+// Jede Ansicht legt fest, welche Knöpfe erscheinen: links (Nebenaktion), Mitte (Hauptaktion), rechts (Nebenaktion).
+// Die Tastatur (Pfeile, Enter) funktioniert zum Testen am PC weiterhin.
 // Die eigentlichen Regeln (Wiederholungen, Doppeldruck, Kontingent) prüft zusätzlich der Server.
 'use strict';
 
@@ -53,23 +54,25 @@ function schneeErzeugen() {
   }
 }
 
-// ---------------- Ansichten und Tasten ----------------
-// t = [links, mitte, rechts]; jede Taste: {text, los, aus} oder null (unsichtbar)
+// ---------------- Ansichten und Knöpfe ----------------
+// t = [links, mitte, rechts]; jeder Knopf: {text, los, aus} oder null (nicht angezeigt)
 function zeige(name, t = [null, null, null], {inaktiv = false} = {}) {
   clearTimeout(autoTimer);
   if (name !== 'countdown') liveStop();   // Livebild nur beim Ausrichten und im Countdown
   for (const el of document.querySelectorAll('.ansicht')) el.classList.toggle('sichtbar', el.dataset.ansicht === name);
   ansicht = name;
+  buehne.dataset.ansicht = name;
   belegung = t;
+  $('#leiste').classList.remove('versteckt');
   tasten.forEach((el, i) => {
     const b = t[i];
     el.classList.toggle('leer', !b);
     el.classList.toggle('haupt', i === 1 && !!b);
     el.classList.toggle('aus', !!(b && b.aus));
-    el.classList.remove('gedrueckt', 'still');
+    el.classList.remove('gedrueckt');
     el.querySelector('.beschriftung').textContent = b ? b.text : '';
   });
-  // Kurze Eingabesperre nach jedem Wechsel: Ein doppelter Tastendruck darf nicht
+  // Kurze Eingabesperre nach jedem Wechsel: Ein doppeltes Antippen darf nicht
   // versehentlich auch die nächste Ansicht bestätigen.
   gesperrt = true;
   clearTimeout(sperrTimer);
@@ -79,7 +82,7 @@ function zeige(name, t = [null, null, null], {inaktiv = false} = {}) {
 }
 
 function druecke(i) {
-  // Während «Noch da?» sichtbar ist, bestätigt jede Taste nur die Anwesenheit
+  // Während «Noch da?» sichtbar ist, bestätigt jede Berührung nur die Anwesenheit
   if (!$('#nochda').hidden) { nochdaSchliessen(); return; }
   inaktivNeuStarten();
   const b = belegung[i];
@@ -98,8 +101,24 @@ document.addEventListener('keydown', (e) => {
   if (e.repeat) return;                  // gedrückt gehaltene Taste nicht wiederholen
   if (e.key in TASTEN) { e.preventDefault(); druecke(TASTEN[e.key]); }
 });
-tasten.forEach((el, i) => el.addEventListener('click', () => druecke(i)));
+tasten.forEach((el, i) => el.addEventListener('click', (e) => { e.stopPropagation(); druecke(i); }));
 document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// Startseite: der grosse Knopf – oder ein Tipp irgendwo auf den Bildschirm – startet.
+// «Noch da?»: ein Tipp irgendwo bestätigt die Anwesenheit.
+buehne.addEventListener('click', () => {
+  if (!$('#nochda').hidden) { nochdaSchliessen(); return; }
+  if (ansicht === 'start' && !betriebGeoeffnet) druecke(1);
+});
+
+// Betreiber ohne Tastatur: Namen oben auf der Startseite 3 Sekunden gedrückt halten → Betriebsseite (mit PIN).
+let betriebTimer = null, betriebGeoeffnet = false;
+const kopf = $('.kopf');
+kopf.addEventListener('pointerdown', () => {
+  clearTimeout(betriebTimer);
+  betriebTimer = setTimeout(() => { betriebGeoeffnet = true; location.href = '/betrieb'; }, 3000);
+});
+for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) kopf.addEventListener(ev, () => clearTimeout(betriebTimer));
 
 // ---------------- Inaktivität ----------------
 function inaktivNeuStarten() {
@@ -130,9 +149,9 @@ async function startbildschirm() {
   $('#qr').innerHTML = '';                 // ebenso ihren QR-Code
   try { konfig = await api('/api/konfig'); themaAnwenden(konfig); }
   catch { buehne.classList.add('bereit'); /* alte Konfiguration weiterverwenden */ }
-  const los = {text: 'Start', los: starten};
-  zeige('start', [{text: '', los: starten}, los, {text: '', los: starten}]);
-  tasten[0].classList.add('still'); tasten[2].classList.add('still');
+  // Auf der Startseite gibt es nur den grossen Knopf in der Mitte (keine Knopfleiste unten)
+  zeige('start', [null, {text: 'Foto machen', los: starten}, null]);
+  $('#leiste').classList.add('versteckt');
 }
 
 async function starten() {
@@ -202,11 +221,11 @@ async function countdownUndAufnahme() {
   if (!mitLive) return countdownStarten();
   rahmenSetzen();
   $('#countdown').classList.add('mit-livebild');
-  $('#countdown-text').textContent = 'Stellt euch in den Rahmen';
+  $('#countdown-text').textContent = 'Stellt euch in den Rahmen – dann auf «Countdown starten» tippen';
   liveSchleife();
   zeige('countdown', [
     {text: 'Abbrechen', los: () => beenden('abgebrochen')},
-    {text: 'Los!', los: countdownStarten},
+    {text: 'Countdown starten', los: countdownStarten},
     null,
   ], {inaktiv: true});
 }
@@ -272,8 +291,7 @@ function vorschau(wiederholungenUebrig) {
   const druckMoeglich = konfig.druck_verbleibend > 0;
   $('#vorschau-info').textContent = druckMoeglich ? '' : 'Drucken ist gerade leider nicht möglich.';
   zeige('vorschau', [
-    {text: wiederholungenUebrig > 0 ? 'Nochmal' : 'Nochmal (aufgebraucht)', aus: wiederholungenUebrig <= 0,
-     los: countdownUndAufnahme},
+    wiederholungenUebrig > 0 ? {text: 'Nochmal', los: countdownUndAufnahme} : null,
     {text: 'Drucken', aus: !druckMoeglich, los: () => (konfig.max_abzuege > 1 ? anzahlWaehlen() : drucken(1))},
     {text: 'Fertig', los: () => danke(false)},
   ], {inaktiv: true});
@@ -284,9 +302,9 @@ function anzahlWaehlen(n = 1) {
   $('#anzahl').textContent = n;
   $('#anzahl-info').textContent = `Höchstens ${max} ${max === 1 ? 'Abzug' : 'Abzüge'}`;
   zeige('anzahl', [
-    {text: 'Weniger', aus: n <= 1, los: () => anzahlWaehlen(n - 1)},
-    {text: `${n} drucken`, los: () => drucken(n)},
-    {text: 'Mehr', aus: n >= max, los: () => anzahlWaehlen(n + 1)},
+    {text: '−  Weniger', aus: n <= 1, los: () => anzahlWaehlen(n - 1)},
+    {text: n === 1 ? '1 Abzug drucken' : `${n} Abzüge drucken`, los: () => drucken(n)},
+    {text: 'Mehr  +', aus: n >= max, los: () => anzahlWaehlen(n + 1)},
   ], {inaktiv: true});
 }
 
