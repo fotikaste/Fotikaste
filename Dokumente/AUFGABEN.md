@@ -29,7 +29,9 @@
 - [x] R2-Baustein gebaut: Hochladen, Löschen, Verbindungstest. Signatur stimmt mit der offiziellen AWS-Bibliothek überein. Zugangsdaten auf der Betriebsseite, das Geheimnis wird nie angezeigt. 45 Tests.
 - [x] **Entscheid 2026-11-17:** Online-Galerie über Cloudflare R2 bleibt (Alternativen geprüft: eigenes Fotobox-WLAN, nur Stick – beide verworfen, R2 ist für Gäste am attraktivsten)
 - [x] Cloudflare-Konto, R2 aktiviert, Bucket «fotikiste» (EU), öffentliche r2.dev-Adresse, API-Token (2026-11-17). Domain momntbox.ch gewählt, aber noch nicht gekauft (vor der ersten Vermietung)
-- [ ] Echten Verbindungstest und ersten echten Upload machen und mit dem Handy prüfen
+- [x] Echter Verbindungstest und erster echter Upload, mit deinem Handy geprüft und heruntergeladen (2026-11-17)
+- [ ] Lifecycle-Regel «30 Tage löschen» beim Bucket «fotikiste» bestätigen
+- [ ] Vor der ersten Vermietung: Domain momntbox.ch kaufen und mit dem Bucket verbinden (r2.dev ist gedrosselt)
 - [ ] Für den Echtbetrieb: eigene Domain statt r2.dev (r2.dev ist laut Cloudflare nur für Entwicklung gedacht und in der Geschwindigkeit begrenzt)
 - [ ] Online-Galerie: Datenschutz-Hinweis für Gäste und Kunden formulieren (Speicherort, Dauer, Löschung). Keine Rechtsberatung, im Zweifel Fachperson fragen
 - [ ] Online-Galerie: Beim Löschen einer Veranstaltung auch die Online-Kopien löschen
