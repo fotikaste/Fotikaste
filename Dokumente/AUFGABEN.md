@@ -47,7 +47,7 @@
 - [x] **Raspberry-Pi-Paket vorbereitet (2026-11-11):** `System/raspberry/` mit Installationsprogramm, Autostart-Dienst, Kiosk-Browser, Taster an GPIO, Drucker-Einrichtung. Anleitung `Dokumente/RASPBERRY_PI_EINRICHTEN.md`. Auf echtem Pi noch nicht getestet.
 - [x] **Echter Druckbaustein CUPS (2026-11-11)** für den DNP DS620, auf der Betriebsseite wählbar. 66 Tests, gegen IPP-Testdrucker geprüft.
 - [x] **SD-Karte 64 GB beschrieben (2026-11-16):** Raspberry Pi Imager 2.0.12, Raspberry Pi OS (64-bit) für Pi 5, Hostname `fotobox`, Benutzer `fotobox`, Zeitzone Zürich, Tastatur ch, WLAN, SSH an, Raspberry Pi Connect aus
-- [ ] Erster echter Durchlauf auf dem Raspberry Pi (2026-11-17, läuft): Installation, Autostart/Kiosk, Touch, Kamera gphoto2 ✅, Drucker eingerichtet ✅, Druck scheiterte an schlafendem CUPS → behoben, per Klick-Datei «Fotobox aktualisieren.sh» aktualisiert, **Druck am Pi ✅**. Offen: Cloudflare am Pi, PIN ändern
+- [ ] Erster echter Durchlauf auf dem Raspberry Pi (2026-11-17, läuft): Installation, Autostart/Kiosk, Touch, Kamera gphoto2 ✅, Drucker eingerichtet ✅, Druck scheiterte an schlafendem CUPS → behoben, per Klick-Datei «Fotobox aktualisieren.sh» aktualisiert, **Druck am Pi ✅**, **Cloudflare am Pi ✅** (eigener Token «fotobox-pi», QR mit Handy geprüft). Offen: PIN ändern
 - [ ] Pi: Foto kommt «einige Sekunden» nach der 0 (am Laptop 1,4 s) – Protokoll ansehen (Vorfokus? Pi langsamer?)
 - [ ] Pi: offizielles 27-W-Netzteil kaufen (jetzt Pi-4-Netzteil 3 A, USB gedrosselt)
 - [x] **DS620 erster echter Druck (2026-11-16, über Ubuntu/WSL):** Papiergrösse w288h432 bestätigt, Verzerrungsfehler gefunden und in `drucker_einrichten.sh` umgangen, 2. Testkarte richtig
