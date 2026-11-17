@@ -12,12 +12,15 @@ Wichtig für die Regeln der Fotobox:
     Zeitlimit abläuft → «unbekannt». Grund: Ein wartender CUPS-Auftrag kann später doch noch drucken;
     würden wir «fehlgeschlagen» melden, gäbe es mit dem Nachdruck womöglich zwei Karten.
 
-Stand 2026-11-11: mit automatischen Tests (nachgebildeter IPP-Server) geprüft.
-Mit echtem CUPS und echtem DS620 noch NICHT getestet.
+Stand 2026-11-17: mit echtem CUPS + DS620 in Ubuntu/WSL und auf dem Pi eingerichtet. Verbindung bevorzugt
+über /run/cups/cups.sock (weckt CUPS auf), sonst über 127.0.0.1:631.
 """
 from __future__ import annotations
 
 import getpass
+import http.client
+import os
+import socket
 import struct
 import threading
 import time
@@ -26,6 +29,27 @@ import urllib.request
 from pathlib import Path
 
 from .drucker import DruckFehler, Drucker
+
+# CUPS auf Raspberry Pi OS / Debian / Ubuntu wird von systemd nur bei Bedarf gestartet («socket activation»)
+# und beendet sich nach 60 s Leerlauf (IdleExitTimeout 60). Geweckt wird es NUR über diese Datei-Verbindung,
+# nicht über den Netzwerk-Anschluss 127.0.0.1:631. Darum sprechen wir CUPS bevorzugt hierüber an.
+# (Gefunden 2026-11-17 am echten Pi: «CUPS nicht erreichbar», obwohl lpstat funktionierte.)
+CUPS_SOCKET = "/run/cups/cups.sock"
+
+
+class _UnixHTTPConnection(http.client.HTTPConnection):
+    """HTTP über eine Unix-Datei-Verbindung (nur Linux)."""
+
+    def __init__(self, pfad: str, timeout: float):
+        super().__init__("localhost", timeout=timeout)
+        self._pfad = pfad
+
+    def connect(self):
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        s.settimeout(self.timeout)
+        s.connect(self._pfad)
+        self.sock = s
+
 
 # ---------- minimales IPP (RFC 8010 / 8011) ----------
 GRUPPE_OPERATION, GRUPPE_JOB, GRUPPE_ENDE = 0x01, 0x02, 0x03
@@ -128,11 +152,12 @@ class CupsDrucker(Drucker):
     simuliert = False
 
     def __init__(self, druckername="DS620", medium="w288h432", server="http://127.0.0.1:631",
-                 zeitlimit_s=10, pfad=None):
+                 zeitlimit_s=10, pfad=None, socket_pfad=CUPS_SOCKET):
         self.druckername = druckername
         self.pfad = pfad or f"/printers/{druckername}"   # anderer Pfad nur für Tests mit ippeveprinter
         self.medium = medium
         self.server = server.rstrip("/")
+        self.socket_pfad = socket_pfad   # None = immer über Netzwerk-Anschluss (z. B. Tests)
         self.zeitlimit_s = zeitlimit_s
         self.name = f"Echter Drucker «{druckername}» über CUPS"
         self._jobs: dict[str, int] = {}
@@ -156,6 +181,8 @@ class CupsDrucker(Drucker):
         basis = (_attr(T_CHARSET, "attributes-charset", "utf-8")
                  + _attr(T_SPRACHE, "attributes-natural-language", "de"))
         roh = ipp_anfrage(operation, nr, basis + op_attr, job_attr, daten)
+        if self.socket_pfad and hasattr(socket, "AF_UNIX") and os.path.exists(self.socket_pfad):
+            return self._auswerten(*self._ueber_socket(roh, zeitlimit or self.zeitlimit_s))
         anfrage = urllib.request.Request(f"{self.server}{self.pfad}", data=roh,
                                          headers={"Content-Type": "application/ipp"}, method="POST")
         try:
@@ -168,6 +195,24 @@ class CupsDrucker(Drucker):
             if sys.platform.startswith("win"):
                 raise DruckFehler("CUPS nicht erreichbar – gibt es nur unter Linux / Raspberry Pi") from e
             raise DruckFehler("CUPS nicht erreichbar – läuft der Druckdienst? (sudo systemctl start cups)") from e
+        return self._auswerten(status, attr)
+
+    def _ueber_socket(self, roh: bytes, zeitlimit: float) -> tuple[int, dict]:
+        """IPP-Anfrage über /run/cups/cups.sock – weckt CUPS bei Bedarf automatisch auf."""
+        verbindung = _UnixHTTPConnection(self.socket_pfad, zeitlimit)
+        try:
+            verbindung.request("POST", self.pfad, body=roh, headers={"Content-Type": "application/ipp"})
+            antwort = verbindung.getresponse()
+            inhalt = antwort.read()
+            if antwort.status >= 400:
+                raise DruckFehler(f"CUPS antwortet mit HTTP {antwort.status}")
+            return ipp_antwort_lesen(inhalt)
+        except OSError as e:
+            raise DruckFehler(f"CUPS nicht erreichbar über {self.socket_pfad} ({e})") from e
+        finally:
+            verbindung.close()
+
+    def _auswerten(self, status: int, attr: dict) -> dict:
         if status >= 0x0400:
             text = (attr.get("status-message") or [""])[0]
             if status == 0x0406:

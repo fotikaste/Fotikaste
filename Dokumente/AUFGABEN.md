@@ -47,7 +47,9 @@
 - [x] **Raspberry-Pi-Paket vorbereitet (2026-11-11):** `System/raspberry/` mit Installationsprogramm, Autostart-Dienst, Kiosk-Browser, Taster an GPIO, Drucker-Einrichtung. Anleitung `Dokumente/RASPBERRY_PI_EINRICHTEN.md`. Auf echtem Pi noch nicht getestet.
 - [x] **Echter Druckbaustein CUPS (2026-11-11)** für den DNP DS620, auf der Betriebsseite wählbar. 66 Tests, gegen IPP-Testdrucker geprüft.
 - [x] **SD-Karte 64 GB beschrieben (2026-11-16):** Raspberry Pi Imager 2.0.12, Raspberry Pi OS (64-bit) für Pi 5, Hostname `fotobox`, Benutzer `fotobox`, Zeitzone Zürich, Tastatur ch, WLAN, SSH an, Raspberry Pi Connect aus
-- [ ] Erster echter Durchlauf auf dem Raspberry Pi (mit Claude zusammen)
+- [ ] Erster echter Durchlauf auf dem Raspberry Pi (2026-11-17, läuft): Installation, Autostart/Kiosk, Touch, Kamera gphoto2 ✅, Drucker eingerichtet ✅, Druck scheiterte an schlafendem CUPS → behoben, Update auf dem Pi offen
+- [ ] Pi: Foto kommt «einige Sekunden» nach der 0 (am Laptop 1,4 s) – Protokoll ansehen (Vorfokus? Pi langsamer?)
+- [ ] Pi: offizielles 27-W-Netzteil kaufen (jetzt Pi-4-Netzteil 3 A, USB gedrosselt)
 - [x] **DS620 erster echter Druck (2026-11-16, über Ubuntu/WSL):** Papiergrösse w288h432 bestätigt, Verzerrungsfehler gefunden und in `drucker_einrichten.sh` umgangen, 2. Testkarte richtig
 - [x] DS620: echte Postkarte gedruckt. Rand war zu schmal und ungleich → Rand auf 6 % vergrössert, gedruckt 4 / 4 / 4,3 mm (2026-11-16)
 - [x] **Postkarten-Rahmen (2026-11-16):** 5 Rahmen pro Veranstaltung wählbar, eigener Kartentext (leer = Namen/Datum), Vorschau auf der Betriebsseite. 79 Tests, Browserprüfung durch Claude mit Datenkopie

@@ -94,7 +94,7 @@ class FalschesCups:
 class CupsBaustein(unittest.TestCase):
     def setUp(self):
         self.cups = FalschesCups()
-        self.d = dc.CupsDrucker("DS620", server=self.cups.url, zeitlimit_s=3)
+        self.d = dc.CupsDrucker("DS620", server=self.cups.url, zeitlimit_s=3, socket_pfad=None)
         self.tmp = tempfile.TemporaryDirectory()
         self.karte = Path(self.tmp.name) / "karte.jpg"
         Image.new("RGB", (1800, 1200), "white").save(self.karte)
@@ -161,7 +161,7 @@ class CupsBaustein(unittest.TestCase):
             self.d.einreichen("D-1", self.karte, 1)
 
     def test_cups_nicht_erreichbar(self):
-        d = dc.CupsDrucker("DS620", server="http://127.0.0.1:9", zeitlimit_s=1)
+        d = dc.CupsDrucker("DS620", server="http://127.0.0.1:9", zeitlimit_s=1, socket_pfad=None)
         self.assertFalse(d.status()["bereit"])
         self.assertIn("nicht erreichbar", d.status()["text"])
 
@@ -174,7 +174,7 @@ class CupsImAblauf(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.box = Fotobox(Path(self.tmp.name))
         self.box.store.setze_einstellung("drucker_modus", "cups")
-        self.box._echte_drucker[("DS620", "w288h432")] = dc.CupsDrucker("DS620", server=self.cups.url)
+        self.box._echte_drucker[("DS620", "w288h432")] = dc.CupsDrucker("DS620", server=self.cups.url, socket_pfad=None)
 
     def tearDown(self):
         self.cups.stop()
