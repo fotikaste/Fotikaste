@@ -336,10 +336,19 @@ class CloudflareR2(unittest.TestCase):
             box = neue_box(Path(tmp))
             c = erstelle_app(box).test_client()
             c.post("/api/betrieb/anmelden", json={"pin": "1234"})
-            c.post("/api/betrieb/r2", json={"r2_konto_id": "k", "r2_bucket": "b", "r2_oeffentliche_url": "https://x.r2.dev",
-                                            "r2_zugangs_id": "id", "r2_geheimnis": "SEHRGEHEIM"})
-            c.post("/api/betrieb/r2", json={"r2_bucket": "b2", "r2_geheimnis": ""})   # leer = unverändert
-            self.assertEqual(box.store.einstellung("r2_geheimnis"), "SEHRGEHEIM")
+            geheim = "SEHRGEHEIM" + "f" * 54   # 64 Zeichen wie ein echter Secret Access Key
+            r = c.post("/api/betrieb/r2", json={"r2_konto_id": "a" * 32, "r2_bucket": "momnt-box", "r2_oeffentliche_url": "https://x.r2.dev",
+                                                "r2_zugangs_id": "b" * 32, "r2_geheimnis": geheim})
+            self.assertEqual(r.status_code, 200, r.json)
+            c.post("/api/betrieb/r2", json={"r2_bucket": "b2b", "r2_geheimnis": ""})   # leer = unverändert
+            self.assertEqual(box.store.einstellung("r2_geheimnis"), geheim)
+            # Typische Verwechslungen werden mit verständlicher Meldung abgelehnt und nicht gespeichert
+            for falsch in ({"r2_zugangs_id": geheim}, {"r2_konto_id": "47eb-falsch"}, {"r2_bucket": "Fotobox"},
+                           {"r2_geheimnis": "zu-kurz"}):
+                r = c.post("/api/betrieb/r2", json=falsch)
+                self.assertEqual(r.status_code, 400, falsch)
+                self.assertTrue(r.json["text"])
+            self.assertEqual(box.store.einstellung("r2_zugangs_id"), "b" * 32)
             c.post("/api/betrieb/einstellungen", json={"galerie_anbieter": "r2"})
             self.assertEqual(box.galerie.name, "Cloudflare R2")
             antwort = c.get("/api/betrieb/status").get_data(as_text=True)

@@ -50,6 +50,7 @@ h3{font-size:13px;font-weight:600;margin:0 0 8px}
 .postkarte{grid-column:1/-1;display:grid;gap:24px;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);margin-top:12px;padding-top:16px;border-top:1px solid var(--linie)}
 @media (max-width:760px){.postkarte{grid-template-columns:1fr}}
 .rahmenwahl{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.verdeckt{-webkit-text-security:disc}   /* wie ein Passwortfeld, ohne dass der Browser es als Login speichert */
 .exportziel{max-width:520px;margin-top:12px}
 .rahmengruppe{grid-column:1/-1;font-size:12px;color:var(--leise);margin-top:6px}
 .rahmengruppe:first-child{margin-top:0}
@@ -215,8 +216,8 @@ label.haken input{width:auto}
           <label>Bucket-Name<input name="r2_bucket" autocomplete="off"></label>
           <label>Speicherort<select name="r2_eu"><option value="true">EU (empfohlen)</option><option value="false">automatisch</option></select></label>
           <label>Öffentliche Adresse (Public URL)<input name="r2_oeffentliche_url" placeholder="https://…" autocomplete="off"></label>
-          <label>Access Key ID<input name="r2_zugangs_id" autocomplete="off"></label>
-          <label>Secret Access Key<input name="r2_geheimnis" type="password" autocomplete="new-password" placeholder="leer lassen = unverändert"></label>
+          <label>Access Key ID (32 Zeichen)<input name="r2_zugangs_id" autocomplete="off" spellcheck="false" data-lpignore="true"></label>
+          <label>Secret Access Key<input name="r2_geheimnis" class="verdeckt" autocomplete="off" spellcheck="false" data-lpignore="true" placeholder="leer lassen = unverändert"></label>
           <button class="primaer">Speichern</button>
           <button type="button" id="r2-testen">Verbindung testen</button>
         </form>
@@ -486,7 +487,12 @@ $('#f-r2').addEventListener('submit', async (e) => {
     f.r2_geheimnis.value = '';
     formularGeladen = false;
     meldung('Zugang gespeichert');
-  } catch { meldung('Speichern nicht möglich'); }
+    $('#r2-info').textContent = '';
+  } catch (err) {
+    meldung('Speichern nicht möglich');
+    $('#r2-info').textContent = '✕ ' + (err.text || 'Speichern nicht möglich');
+    return;   // Eingaben stehen lassen, damit man sie korrigieren kann
+  }
   laden();
 });
 $('#r2-testen').addEventListener('click', async () => {

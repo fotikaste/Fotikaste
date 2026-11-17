@@ -340,6 +340,18 @@ def erstelle_app(box: Fotobox) -> Flask:
     def b_r2():
         """Zugangsdaten für Cloudflare R2 speichern. Ein leeres Geheimnis-Feld lässt das bisherige stehen."""
         d = request.get_json(silent=True) or {}
+        # Häufige Verwechslungen beim Kopieren sofort und verständlich melden (Formate laut Cloudflare R2)
+        import re
+        werte = {k: str(d.get(k, "")).strip() for k in ("r2_konto_id", "r2_bucket", "r2_zugangs_id", "r2_geheimnis")}
+        if werte["r2_konto_id"] and not re.fullmatch(r"[0-9a-f]{32}", werte["r2_konto_id"]):
+            return jsonify({"fehler": "r2_format", "text": "Konto-ID: 32 Zeichen (0–9, a–f), steht in der Cloudflare-Adresszeile"}), 400
+        if werte["r2_bucket"] and not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,61}[a-z0-9]", werte["r2_bucket"]):
+            return jsonify({"fehler": "r2_format", "text": "Bucket-Name: nur Kleinbuchstaben, Zahlen und Bindestriche"}), 400
+        if werte["r2_zugangs_id"] and len(werte["r2_zugangs_id"]) != 32:
+            return jsonify({"fehler": "r2_format", "text": f"Access Key ID muss 32 Zeichen haben (eingegeben: {len(werte['r2_zugangs_id'])}). "
+                            "Das ist der kürzere der beiden Schlüssel"}), 400
+        if werte["r2_geheimnis"] and len(werte["r2_geheimnis"]) != 64:
+            return jsonify({"fehler": "r2_format", "text": f"Secret Access Key muss 64 Zeichen haben (eingegeben: {len(werte['r2_geheimnis'])})"}), 400
         for k in ("r2_konto_id", "r2_bucket", "r2_oeffentliche_url", "r2_zugangs_id"):
             if k in d:
                 box.store.setze_einstellung(k, str(d[k]).strip())
