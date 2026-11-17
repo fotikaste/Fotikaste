@@ -27,6 +27,7 @@
 - [x] **Online-Galerie, Teil 1 (2026-11-10):** Gast wird gefragt, ob er sein Foto aufs Handy möchte, und bekommt einen QR-Code mit unerratbarer Adresse. Upload-Warteschlange funktioniert ohne Internet und übersteht einen Neustart. Vorerst nur simulierter Speicher. 41 Tests, Browserprüfung durch Claude.
 - [x] Anbieter gewählt: **Cloudflare R2** (2026-11-10)
 - [x] R2-Baustein gebaut: Hochladen, Löschen, Verbindungstest. Signatur stimmt mit der offiziellen AWS-Bibliothek überein. Zugangsdaten auf der Betriebsseite, das Geheimnis wird nie angezeigt. 45 Tests.
+- [x] **Entscheid 2026-11-17:** Online-Galerie über Cloudflare R2 bleibt (Alternativen geprüft: eigenes Fotobox-WLAN, nur Stick – beide verworfen, R2 ist für Gäste am attraktivsten)
 - [ ] Cloudflare-Konto, R2 aktivieren, Bucket (EU) anlegen, öffentliche Adresse, Löschregel 30 Tage, API-Token (deine Schritte)
 - [ ] Echten Verbindungstest und ersten echten Upload machen und mit dem Handy prüfen
 - [ ] Für den Echtbetrieb: eigene Domain statt r2.dev (r2.dev ist laut Cloudflare nur für Entwicklung gedacht und in der Geschwindigkeit begrenzt)
