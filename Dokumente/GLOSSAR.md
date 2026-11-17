@@ -69,3 +69,5 @@
 | **Supersampling** | Doppelt so gross zeichnen und dann verkleinern, damit Kanten weich statt treppig werden | So entstehen die Schneeflocken und Blätter |
 | **Einhängen** (engl. mount) | Linux macht einen eingesteckten Stick als Ordner verfügbar | Stick «USB128» erscheint als `/media/<name>/USB128` |
 | **sync** | Befehl: alles, was noch im Zwischenspeicher liegt, wirklich auf den Stick schreiben | Danach darf der Stick abgezogen werden |
+| **Touchscreen** | Bildschirm, der auf Berührung reagiert – Antippen wirkt wie ein Mausklick | Der Verbatim 14" der Fotobox |
+| **Hauptaktion** | Der wichtigste nächste Schritt einer Ansicht, immer der grosse, farbige Knopf | «Foto machen», «Drucken» |
