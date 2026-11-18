@@ -48,7 +48,8 @@
 - [x] **Echter Druckbaustein CUPS (2026-11-11)** für den DNP DS620, auf der Betriebsseite wählbar. 66 Tests, gegen IPP-Testdrucker geprüft.
 - [x] **SD-Karte 64 GB beschrieben (2026-11-16):** Raspberry Pi Imager 2.0.12, Raspberry Pi OS (64-bit) für Pi 5, Hostname `fotobox`, Benutzer `fotobox`, Zeitzone Zürich, Tastatur ch, WLAN, SSH an, Raspberry Pi Connect aus
 - [ ] Erster echter Durchlauf auf dem Raspberry Pi (2026-11-17, läuft): Installation, Autostart/Kiosk, Touch, Kamera gphoto2 ✅, Drucker eingerichtet ✅, Druck scheiterte an schlafendem CUPS → behoben, per Klick-Datei «Fotobox aktualisieren.sh» aktualisiert, **Druck am Pi ✅**, **Cloudflare am Pi ✅** (eigener Token «fotobox-pi», QR mit Handy geprüft). Offen: PIN ändern
-- [ ] Pi: Foto kommt «einige Sekunden» nach der 0 (am Laptop 1,4 s) – Protokoll ansehen (Vorfokus? Pi langsamer?)
+- [x] Auslösen schneller gemacht (2026-11-18): Scharfstellen 2,5 s vor «0» (jede Countdown-Länge), Livebild-Abruf beim Auslösen angehalten, Auslösen hat Vorrang. Im Browser mit Simulation geprüft (10-s-Countdown)
+- [ ] Am Pi nachmessen: Protokoll «Foto nach X s» und Gefühl «Klick bei 0»
 - [x] **«Internet einrichten» am Touchscreen (2026-11-18):** WLAN wählen und Passwort mit Bildschirmtastatur, Kunden-Code nur fürs WLAN. Simulation getestet
 - [ ] «Internet einrichten» auf dem echten Pi testen (polkit-Regel, Verbinden, Wechsel zurück ins Heim-WLAN)
 - [ ] Kunden-Code festlegen und Karte für die Fotobox gestalten (Code + kurze Anleitung)

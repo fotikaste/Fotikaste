@@ -52,6 +52,7 @@ class Gphoto2Kamera(Kamera):
         self._status_cache = (0.0, None)
         self._livebild = False
         self._vorfokus_zeit = 0.0
+        self._ausloesen_wartet = False   # Auslösen hat Vorrang vor Livebildern
 
     # ---------- Verbindung ----------
     def _fehler(self, e, was: str) -> KameraFehler:
@@ -153,8 +154,10 @@ class Gphoto2Kamera(Kamera):
 
     def aufnehmen(self, ziel: Path) -> Path:
         gp = self.gp
-        vorab = self._livebild and time.monotonic() - self._vorfokus_zeit < self.VORFOKUS_GUELTIG_S
+        alter = time.monotonic() - self._vorfokus_zeit
+        vorab = self._livebild and alter < self.VORFOKUS_GUELTIG_S
         self._vorfokus_zeit = 0.0
+        self._ausloesen_wartet = True   # neue Livebild-Abrufe sofort abweisen, damit das Auslösen nicht warten muss
 
         def ausloesen(cam):
             if vorab:
@@ -183,12 +186,17 @@ class Gphoto2Kamera(Kamera):
             self._ereignisse_leeren(cam, 0.2)
             return ziel
 
-        log.info("gphoto2: Auslösen %s", "per Fernauslöser nach Vorfokus" if vorab else "mit capture (Kamera stellt selbst scharf)")
+        log.info("gphoto2: Auslösen %s", f"per Fernauslöser nach Vorfokus (vor {alter:.1f} s gestartet)" if vorab
+                 else "mit capture (Kamera stellt selbst scharf)")
+        t0 = time.monotonic()
         try:
             self._mit_kamera("Auslösen", ausloesen)
         except KameraFehler:
             self._status_cache = (0.0, None)
             raise
+        finally:
+            self._ausloesen_wartet = False
+        log.info("gphoto2: Foto nach %.1f s auf dem Gerät", time.monotonic() - t0)
         if not ziel.exists() or ziel.stat().st_size == 0:
             raise KameraFehler("fehler", "Leere Bilddatei von der Kamera")
         pruefe_canon(ziel)
@@ -204,6 +212,9 @@ class Gphoto2Kamera(Kamera):
             raise KameraFehler("kein_livebild", str(e)) from e
 
     def livebild_bild(self) -> bytes:
+        if self._ausloesen_wartet:
+            raise KameraFehler("kein_livebild", "Livebild pausiert – Kamera löst gerade aus")
+
         def bild(cam):
             f = cam.capture_preview()
             self._livebild = True

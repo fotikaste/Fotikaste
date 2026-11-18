@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import tempfile
 import threading
+import time
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -146,6 +147,32 @@ class Gphoto2Baustein(unittest.TestCase):
         self.assertIn("hole rr.jpg", p)
         self.k.livebild_stop()
         self.assertEqual(p[-1], "viewfinder=0")
+
+    def test_ausloesen_hat_vorrang_vor_livebild(self):
+        # Während ausgelöst wird, werden Livebild-Abrufe sofort abgewiesen (kein Warten auf die Kamera),
+        # danach funktioniert das Livebild wieder.
+        self.k.livebild_start()
+        self.k.vorfokussieren()
+        ergebnisse = []
+        original = self.k._setzen
+
+        def setzen_und_livebild_versuchen(name, wert):
+            if name == "eosremoterelease" and wert == "Immediate":
+                t0 = time.monotonic()
+                try:
+                    self.k.livebild_bild()
+                    ergebnisse.append("bild")
+                except KameraFehler as f:
+                    ergebnisse.append((f.code, time.monotonic() - t0))
+            return original(name, wert)
+        self.k._setzen = setzen_und_livebild_versuchen
+        with self.assertLogs("fotobox", level="INFO") as protokoll:
+            self.k.aufnehmen(self.ziel)
+        self.assertEqual(ergebnisse[0][0], "kein_livebild")
+        self.assertLess(ergebnisse[0][1], 0.1)
+        self.assertTrue(any("Vorfokus (vor" in z for z in protokoll.output))
+        self.assertTrue(any("Foto nach" in z for z in protokoll.output))
+        self.assertTrue(self.k.livebild_bild().startswith(b"\xff\xd8"))
 
     def test_vorfokus_ohne_livebild_tut_nichts(self):
         self.k.vorfokussieren()

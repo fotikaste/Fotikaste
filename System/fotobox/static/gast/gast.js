@@ -235,8 +235,14 @@ async function countdownUndAufnahme() {
 async function countdownStarten() {
   zeige('countdown');
   $('#countdown-text').textContent = 'Schau in die Kamera';
-  // Während der Countdown läuft, stellt die Kamera schon scharf – bei «0» löst sie sofort aus.
-  if ($('#countdown').classList.contains('mit-livebild')) api(`/api/sitzung/${sitzung}/fokus`, {}).catch(() => {});
+  // Scharfstellen kurz VOR «0», unabhängig von der Countdown-Länge (3 s, 10 s …): So stimmt die Schärfe
+  // auch, wenn sich die Gäste während eines langen Countdowns noch bewegen. Die Canon braucht im Livebild
+  // etwa 1–2 s zum Scharfstellen; FOKUS_VOR_MS gibt ihr genug Zeit, bis «0» fertig zu sein.
+  const FOKUS_VOR_MS = 2500;
+  const fokusTimer = $('#countdown').classList.contains('mit-livebild')
+    ? setTimeout(() => api(`/api/sitzung/${sitzung}/fokus`, {}).catch(() => {}),
+                 Math.max(0, konfig.countdown_s * 1000 - FOKUS_VOR_MS))
+    : null;
   const zahl = $('#zahl');
   zahl.classList.remove('leer');
   for (let n = konfig.countdown_s; n >= 1; n--) {
@@ -244,6 +250,7 @@ async function countdownStarten() {
     zahl.classList.remove('puls'); void zahl.offsetWidth; zahl.classList.add('puls');
     await warte(1000);
   }
+  clearTimeout(fokusTimer);
   // Die Kamera stellt nach dem Countdown noch scharf und löst erst dann aus (bis zu einigen
   // Sekunden). Darum bitten wir freundlich ums Stillhalten, bis das Foto wirklich im Kasten ist.
   const mitLive = $('#countdown').classList.contains('mit-livebild');
@@ -256,6 +263,9 @@ async function countdownStarten() {
     zeige('laden');
     $('#laden-text').textContent = 'Bitte noch einen Moment stillhalten …';
   }
+  // Livebild-Abruf anhalten (letztes Bild bleibt stehen): Sonst muss der Auslöse-Befehl warten, bis die
+  // Kamera zwischen den Livebildern frei ist – auf dem Raspberry Pi kostete das Sekunden (2026-11-18).
+  if (mitLive) liveStop();
   try {
     const erg = await api(`/api/sitzung/${sitzung}/aufnahme`, {});
     blitz();                               // erst jetzt ist das Foto wirklich gemacht
