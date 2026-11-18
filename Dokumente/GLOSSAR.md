@@ -75,3 +75,4 @@
 | **polkit** | Regelwerk in Linux, wer was am System ändern darf | Regel erlaubt dem Fotobox-Dienst, das WLAN zu wechseln |
 | **Kunden-Code** | Zahlencode für den Kunden, erlaubt nur «Internet einrichten» | Steht auf einer Karte bei der Fotobox |
 | **Bildschirmtastatur** | Tastatur, die auf dem Touchscreen erscheint | WLAN-Passwort eingeben ohne echte Tastatur |
+| **Auslöseverzögerung** | Zeit zwischen Auslöse-Befehl und dem Klick der Kamera | Wird mit «Auslösen vorziehen» ausgeglichen |

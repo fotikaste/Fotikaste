@@ -17,6 +17,9 @@ from pathlib import Path
 STANDARD_EINSTELLUNGEN = {
     "thema": "elegant",
     "countdown_s": 3,
+    # Auslöse-Befehl so viele Millisekunden VOR «0» schicken: gleicht die Auslöseverzögerung der Kamera aus
+    # (Canon 600D am Pi: ca. 1 s zu spät ohne Vorlauf, 2026-11-18). Am Gerät feinjustieren.
+    "ausloese_vorlauf_ms": 800,
     "max_wiederholungen": 2,
     "max_abzuege_pro_sitzung": 2,
     "inaktiv_s": 60,           # ohne Taste bis zur Frage «Noch da?»

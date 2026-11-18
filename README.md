@@ -31,7 +31,7 @@ Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
 | Druckkontingent | Verbleibende Abzüge der aktiven Veranstaltung, getrennt nach echt und simuliert |
 | Aktive Veranstaltung | Anlass, Namen, Datum und Thema der laufenden Veranstaltung ändern. **Rahmen der Postkarte** wählen: 5 schlichte (Farben vom Thema) und 6 Motiv-Rahmen mit eigener Dekoration (Hochzeit, Party, Geburtstag, Sommer, Winter, Silvester) und bei Bedarf **eigenen Text auf der Karte** eintragen. Leer = Namen und Datum der Veranstaltung. Die Vorschau zeigt die Karte sofort |
 | Alle Veranstaltungen | Neue Veranstaltung anlegen, aktivieren, Bilder exportieren, Bilder löschen |
-| Ablauf | Countdown, Wiederholungen, Abzüge pro Sitzung, Inaktivität, Kontingent |
+| Ablauf | Countdown, **Auslösen vorziehen** (Klick der Kamera genau bei «0»: kommt er später, Wert erhöhen), Wiederholungen, Abzüge pro Sitzung, Inaktivität, Kontingent |
 | Kamera und Simulation | Echte Kamera oder Testbilder, Fehler simulieren |
 | Sicherheit | PIN ändern |
 

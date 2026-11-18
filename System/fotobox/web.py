@@ -78,6 +78,7 @@ def erstelle_app(box: Fotobox, wlan=None) -> Flask:
             "thema": {"name": v["thema"], "farben": t["farben"], "schrift": t["schrift"], "name_gr": t["name_gr"], "deko": t["deko"]},
             "veranstaltung": {"anlass": v["anlass"], "namen": v["namen"], "datum_text": v["datum_text"]},
             "countdown_s": e["countdown_s"], "max_abzuege": e["max_abzuege_pro_sitzung"],
+            "ausloese_vorlauf_ms": e["ausloese_vorlauf_ms"],
             "inaktiv_s": e["inaktiv_s"], "inaktiv_warnung_s": e["inaktiv_warnung_s"], "abschluss_s": e["abschluss_s"],
             "druck_verbleibend": box.kontingent()["verbleibend"],
             "galerie_modus": e["galerie_modus"], "galerie_tage": e["galerie_tage"],
@@ -292,6 +293,8 @@ def erstelle_app(box: Fotobox, wlan=None) -> Flask:
                 return jsonify({"fehler": f"ungültig: {k}"}), 400
             if k == "thema" and wert not in THEMEN:
                 return jsonify({"fehler": f"ungültig: {k}"}), 400
+            if k == "ausloese_vorlauf_ms" and not 0 <= wert <= 2000:
+                return jsonify({"fehler": "ungültig: ausloese_vorlauf_ms", "text": "Auslösen vorziehen: 0 bis 2000 ms"}), 400
             if k == "wlan_code" and wert and not (wert.isdigit() and 4 <= len(wert) <= 8):
                 return jsonify({"fehler": "ungültig: wlan_code", "text": "Kunden-Code: 4 bis 8 Ziffern"}), 400
             if k == "wlan_code" and wert and wert == str(box.e("betreiber_pin")):

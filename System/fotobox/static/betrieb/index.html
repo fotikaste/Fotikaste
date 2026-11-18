@@ -157,6 +157,7 @@ label.haken input{width:auto}
         <h2>Ablauf</h2>
         <form class="formular" id="f-ablauf">
           <label>Countdown (Sekunden)<input name="countdown_s" type="number" min="1" max="10"></label>
+          <label title="Kommt der Klick der Kamera nach «0», Wert erhöhen; kommt er vorher, verringern">Auslösen vorziehen (Millisekunden, 0–2000)<input name="ausloese_vorlauf_ms" type="number" min="0" max="2000" step="100"></label>
           <label>Max. Wiederholungen<input name="max_wiederholungen" type="number" min="0" max="5"></label>
           <label>Max. Abzüge pro Sitzung<input name="max_abzuege_pro_sitzung" type="number" min="1" max="5"></label>
           <label>Inaktiv bis «Noch da?» (s)<input name="inaktiv_s" type="number" min="10" max="600"></label>

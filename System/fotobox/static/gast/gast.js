@@ -239,35 +239,44 @@ async function countdownStarten() {
   // auch, wenn sich die Gäste während eines langen Countdowns noch bewegen. Die Canon braucht im Livebild
   // etwa 1–2 s zum Scharfstellen; FOKUS_VOR_MS gibt ihr genug Zeit, bis «0» fertig zu sein.
   const FOKUS_VOR_MS = 2500;
-  const fokusTimer = $('#countdown').classList.contains('mit-livebild')
-    ? setTimeout(() => api(`/api/sitzung/${sitzung}/fokus`, {}).catch(() => {}),
-                 Math.max(0, konfig.countdown_s * 1000 - FOKUS_VOR_MS))
+  // Die Kamera löst erst eine Weile nach dem Befehl aus. Darum schicken wir den Befehl um «Auslösen vorziehen»
+  // früher – dann klickt es genau bei «0» (Wert auf der Betriebsseite einstellbar).
+  const dauer = konfig.countdown_s * 1000;
+  const vorlauf = Math.min(Number(konfig.ausloese_vorlauf_ms) || 0, Math.max(0, dauer - 200));
+  const ausloesenBei = dauer - vorlauf;
+  const mitLive = $('#countdown').classList.contains('mit-livebild');
+  const fokusTimer = mitLive
+    ? setTimeout(() => api(`/api/sitzung/${sitzung}/fokus`, {}).catch(() => {}), Math.max(0, ausloesenBei - FOKUS_VOR_MS))
     : null;
+  // Auslösen im Hintergrund zum geplanten Zeitpunkt – die Zahlen laufen trotzdem sauber bis «0» weiter.
+  // Vorher den Livebild-Abruf anhalten (letztes Bild bleibt stehen): Sonst muss der Auslöse-Befehl warten,
+  // bis die Kamera zwischen den Livebildern frei ist – auf dem Raspberry Pi kostete das Sekunden (2026-11-18).
+  stillhalten = true;
+  const aufnahme = warte(ausloesenBei).then(() => {
+    if (mitLive) liveStop();
+    return api(`/api/sitzung/${sitzung}/aufnahme`, {});
+  });
+  aufnahme.catch(() => {});   // Fehler wird unten behandelt
   const zahl = $('#zahl');
   zahl.classList.remove('leer');
+  const start = performance.now();
   for (let n = konfig.countdown_s; n >= 1; n--) {
     zahl.textContent = n;
     zahl.classList.remove('puls'); void zahl.offsetWidth; zahl.classList.add('puls');
-    await warte(1000);
+    await warte(Math.max(0, (konfig.countdown_s - n + 1) * 1000 - (performance.now() - start)));   // nach Plan, ohne Aufsummieren
   }
   clearTimeout(fokusTimer);
-  // Die Kamera stellt nach dem Countdown noch scharf und löst erst dann aus (bis zu einigen
-  // Sekunden). Darum bitten wir freundlich ums Stillhalten, bis das Foto wirklich im Kasten ist.
-  const mitLive = $('#countdown').classList.contains('mit-livebild');
-  stillhalten = true;
+  // Bis das Foto wirklich im Kasten ist (Übertragung von der Kamera), freundlich ums Stillhalten bitten.
   if (mitLive) {
     zahl.classList.add('leer');
-    $('#countdown-text').textContent = 'Die Kamera stellt scharf';
+    $('#countdown-text').textContent = 'Gleich ist das Foto im Kasten';
     $('#countdown').classList.add('stillhalten');
   } else {
     zeige('laden');
     $('#laden-text').textContent = 'Bitte noch einen Moment stillhalten …';
   }
-  // Livebild-Abruf anhalten (letztes Bild bleibt stehen): Sonst muss der Auslöse-Befehl warten, bis die
-  // Kamera zwischen den Livebildern frei ist – auf dem Raspberry Pi kostete das Sekunden (2026-11-18).
-  if (mitLive) liveStop();
   try {
-    const erg = await api(`/api/sitzung/${sitzung}/aufnahme`, {});
+    const erg = await aufnahme;
     blitz();                               // erst jetzt ist das Foto wirklich gemacht
     stillhalten = false;
     $('#countdown').classList.remove('stillhalten');
