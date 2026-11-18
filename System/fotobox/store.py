@@ -50,6 +50,7 @@ STANDARD_EINSTELLUNGEN = {
     "r2_geheimnis": "",
     "galerie_tage": 30,                # so lange bleibt ein Foto online (Hinweis für Gäste)
     "sim_galerie_verhalten": "ok",     # ok | offline (Simulation: kein Internet)
+    "wlan_code": "",                   # Kunden-Code für «Internet einrichten» (4–8 Ziffern); leer = nur mit Betreiber-PIN
 }
 
 SCHEMA = """

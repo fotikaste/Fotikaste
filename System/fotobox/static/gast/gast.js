@@ -111,12 +111,13 @@ buehne.addEventListener('click', () => {
   if (ansicht === 'start' && !betriebGeoeffnet) druecke(1);
 });
 
-// Betreiber ohne Tastatur: Namen oben auf der Startseite 3 Sekunden gedrückt halten → Betriebsseite (mit PIN).
+// Ohne Tastatur: Namen oben auf der Startseite 3 Sekunden gedrückt halten → «Internet einrichten» (Kunden-Code);
+// von dort führt ein Link zur Betriebsseite (Betreiber-PIN).
 let betriebTimer = null, betriebGeoeffnet = false;
 const kopf = $('.kopf');
 kopf.addEventListener('pointerdown', () => {
   clearTimeout(betriebTimer);
-  betriebTimer = setTimeout(() => { betriebGeoeffnet = true; location.href = '/betrieb'; }, 3000);
+  betriebTimer = setTimeout(() => { betriebGeoeffnet = true; location.href = '/internet'; }, 3000);
 });
 for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) kopf.addEventListener(ev, () => clearTimeout(betriebTimer));
 

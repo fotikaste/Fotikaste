@@ -80,8 +80,16 @@ Nach dem Neustart auf «Foto machen» tippen. Reagiert nichts: USB-Kabel des Mon
 - **Fotos auf USB-Stick:** Stick einstecken, ca. 5 s warten, Betriebsseite → «Alle Veranstaltungen» → «Exportieren nach: USB-Stick …» (wird automatisch vorgewählt) → «Exportieren». Erst abziehen, wenn «darf jetzt abgezogen werden» erscheint.
 - **Fotos auf dem Pi:** liegen in `/home/<name>/fotobox-daten/veranstaltungen/` (Originale nie verändert).
 
+## Internet am Fest
+- **Eigener mobiler Router (empfohlen):** einmal zu Hause den Pi mit dem Router-WLAN verbinden, am Fest nur einstecken.
+- **WLAN des Lokals:** Namen auf der Startseite 3 s gedrückt halten → «Internet einrichten» → Kunden-Code → WLAN antippen → Passwort auf der Bildschirmtastatur → «Verbinden». Der Pi merkt sich das WLAN.
+- **Ohne Internet** läuft alles weiter; Fotos fürs Handy werden hochgeladen, sobald wieder Internet da ist.
+- WLANs mit Anmeldeseite im Browser (z. B. Hotel-WLAN) funktionieren nicht – dann Router oder Handy-Hotspot.
+
 ## Fotobox später aktualisieren
-1. Claude aktualisiert den Ordner auf dem USB-Stick.
+1. Claude aktualisiert den Stick. Am Pi: Stick einstecken, im Dateimanager auf **«Fotobox aktualisieren.sh»** doppelklicken → «Execute in Terminal» → Passwort → Enter (Neustart). Fertig.
+
+   Von Hand (falls nötig):
 2. Am Pi: Tastatur anschliessen, Strg+Alt+T, dann den neuen Ordner über den alten kopieren:
    `cp -r /media/$USER/USB128/Fotobox/Fuer-Raspberry-Pi/fotobox/. ~/fotobox/`
 3. `bash ~/fotobox/raspberry/installieren.sh` (behält Fotos, Einstellungen und Zähler), danach `sudo reboot`.

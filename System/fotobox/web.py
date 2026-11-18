@@ -22,6 +22,7 @@ from .galerie import GalerieFehler, R2Galerie
 from .store import STANDARD_EINSTELLUNGEN
 from .themen import THEMEN, thema
 from .usb import auf_stick_schreiben_abschliessen, usb_sticks
+from .wlan import WlanFehler, erstelle_wlan
 
 STATIC = Path(__file__).parent / "static"
 log = logging.getLogger("fotobox")
@@ -33,10 +34,11 @@ AENDERBAR = {k: type(v) for k, v in STANDARD_EINSTELLUNGEN.items() if k not in G
 ABMELDEN_NACH_S = 15 * 60  # automatische Abmeldung nach 15 Minuten ohne Aktivität
 
 
-def erstelle_app(box: Fotobox) -> Flask:
+def erstelle_app(box: Fotobox, wlan=None) -> Flask:
     app = Flask(__name__, static_folder=str(STATIC), static_url_path="/static")
     app.secret_key = box.store.geheimschluessel()
     app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
+    wlan = wlan or erstelle_wlan()
 
     @app.errorhandler(FotoboxFehler)
     def fotobox_fehler(e: FotoboxFehler):
@@ -182,6 +184,68 @@ def erstelle_app(box: Fotobox) -> Flask:
     def schutz():
         if request.path.startswith("/api/betrieb/") and request.path != "/api/betrieb/anmelden" and not angemeldet():
             return jsonify({"fehler": "nicht_angemeldet"}), 401
+        if (request.path.startswith("/api/wlan/") and request.path not in ("/api/wlan/anmelden", "/api/wlan/status")
+                and not (wlan_angemeldet() or angemeldet())):
+            return jsonify({"fehler": "nicht_angemeldet"}), 401
+
+    # ---------------- Internet einrichten (Kunde mit Kunden-Code oder Betreiber) ----------------
+    # Der Kunden-Code erlaubt NUR die WLAN-Einrichtung – nicht Löschen, Nachdrucken oder Einstellungen.
+    def wlan_angemeldet() -> bool:
+        if not session.get("wlan"):
+            return False
+        if time.time() - session.get("wlan_zuletzt", 0) > 10 * 60:
+            session.pop("wlan", None)
+            return False
+        session["wlan_zuletzt"] = time.time()
+        return True
+
+    @app.get("/internet")
+    def internet_seite():
+        return send_from_directory(STATIC / "internet", "index.html")
+
+    @app.post("/api/wlan/anmelden")
+    def wlan_anmelden():
+        code = str((request.get_json(silent=True) or {}).get("code", ""))
+        kunde = str(box.e("wlan_code") or "")
+        if (kunde and secrets.compare_digest(code, kunde)) or secrets.compare_digest(code, str(box.e("betreiber_pin"))):
+            session["wlan"] = True
+            session["wlan_zuletzt"] = time.time()
+            log.info("Internet einrichten: angemeldet")
+            return jsonify({"ok": True})
+        time.sleep(1)  # bremst Durchprobieren
+        log.warning("Internet einrichten: falscher Code")
+        return jsonify({"fehler": "code"}), 403
+
+    @app.post("/api/wlan/abmelden")
+    def wlan_abmelden():
+        session.pop("wlan", None)
+        return jsonify({"ok": True})
+
+    @app.get("/api/wlan/status")
+    def wlan_status():
+        return jsonify({**wlan.status(), "simuliert": wlan.simuliert,
+                        "angemeldet": wlan_angemeldet() or angemeldet()})
+
+    @app.get("/api/wlan/netze")
+    def wlan_netze():
+        try:
+            return jsonify({"netze": wlan.netze()})
+        except WlanFehler as e:
+            return jsonify({"fehler": "wlan", "text": str(e)}), 503
+
+    @app.post("/api/wlan/verbinden")
+    def wlan_verbinden():
+        d = request.get_json(silent=True) or {}
+        ssid, passwort = str(d.get("ssid", "")).strip(), str(d.get("passwort", ""))
+        if not ssid or len(ssid) > 64 or len(passwort) > 64:
+            return jsonify({"fehler": "ungueltig", "text": "WLAN-Name oder Passwort ungültig"}), 400
+        try:
+            wlan.verbinden(ssid, passwort)
+        except WlanFehler as e:
+            log.warning("Internet einrichten: Verbinden mit «%s» fehlgeschlagen: %s", ssid, e)
+            return jsonify({"fehler": "wlan", "text": str(e)}), 400
+        log.info("Internet einrichten: verbunden mit «%s»", ssid)
+        return jsonify({"ok": True, **wlan.status()})
 
     @app.get("/api/betrieb/status")
     def b_status():
@@ -228,6 +292,10 @@ def erstelle_app(box: Fotobox) -> Flask:
                 return jsonify({"fehler": f"ungültig: {k}"}), 400
             if k == "thema" and wert not in THEMEN:
                 return jsonify({"fehler": f"ungültig: {k}"}), 400
+            if k == "wlan_code" and wert and not (wert.isdigit() and 4 <= len(wert) <= 8):
+                return jsonify({"fehler": "ungültig: wlan_code", "text": "Kunden-Code: 4 bis 8 Ziffern"}), 400
+            if k == "wlan_code" and wert and wert == str(box.e("betreiber_pin")):
+                return jsonify({"fehler": "ungültig: wlan_code", "text": "Kunden-Code darf nicht gleich wie die PIN sein"}), 400
             box.store.setze_einstellung(k, wert)
             log.info("Einstellung geändert: %s = %s", k, wert)
         return jsonify({"ok": True})

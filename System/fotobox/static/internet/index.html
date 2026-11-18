@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Internet einrichten</title>
+<link rel="stylesheet" href="/static/schriften.css">
+<style>
+/* Für den Touchscreen der Fotobox: grosse Flächen, eigene Bildschirmtastatur (kein Tippen auf echter Tastatur nötig) */
+html { font-size: min(1vw, 1.78vh); }
+:root { --bg:#f4f3f0; --karte:#fff; --linie:#e2dfd9; --text:#1f1d1a; --leise:#6b665f; --akzent:#2d5bd7;
+  --ok:#1d7f4e; --ok-bg:#e3f4ea; --fehler:#b4322a; --fehler-bg:#fbe5e3; --warn:#a5620b; --warn-bg:#fdf0dc; }
+* { box-sizing: border-box; margin: 0; }
+[hidden] { display: none !important; }
+html, body { height: 100%; background: var(--bg); color: var(--text); overflow: hidden; }
+body { font: 1.8rem/1.4 "Inter", "Segoe UI", system-ui, sans-serif; user-select: none; -webkit-user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+html.kiosk, html.kiosk * { cursor: none !important; }
+.seite { height: 100vh; display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); padding: 2.4rem 4rem 2rem; gap: 2rem; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 2rem; min-width: 0; }
+h1 { font-size: 3.2rem; font-weight: 650; white-space: nowrap; }
+header .zeile { flex-wrap: nowrap; min-width: 0; gap: 1.2rem; }
+header a { text-decoration: none; color: inherit; }
+header .knopf { min-height: 5.4rem; padding: 0 2.2rem; font-size: 1.7rem; white-space: nowrap; }
+.status { display: inline-flex; align-items: center; gap: 1rem; padding: .8rem 1.8rem; border-radius: 99rem; font-weight: 600; font-size: 1.7rem;
+  white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.status span { overflow: hidden; text-overflow: ellipsis; }
+.status i { width: 1.2rem; height: 1.2rem; border-radius: 50%; background: currentColor; }
+.s-ja { background: var(--ok-bg); color: var(--ok); } .s-nein { background: var(--fehler-bg); color: var(--fehler); }
+.s-teil { background: var(--warn-bg); color: var(--warn); }
+.knopf { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 1rem;
+  min-height: 6.4rem; padding: 0 3rem; border-radius: 99rem; font-weight: 600; font-size: 2rem; cursor: pointer;
+  background: var(--karte); border: .2rem solid var(--linie); transition: transform .1s; }
+.knopf.haupt { background: var(--akzent); border-color: var(--akzent); color: #fff; }
+.knopf:active { transform: scale(.96); }
+.knopf:disabled { opacity: .4; }
+.inhalt { min-height: 0; display: grid; place-items: center; }
+.karte { background: var(--karte); border: 1px solid var(--linie); border-radius: 2rem; padding: 2.4rem 3rem; width: min(100%, 110rem);
+  max-height: 100%; display: flex; flex-direction: column; gap: 1.4rem; box-shadow: 0 1rem 4rem rgba(0,0,0,.06); }
+.titel { font-size: 2.6rem; font-weight: 650; }
+.leise { color: var(--leise); }
+.zeile { display: flex; gap: 1.6rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+/* Code-Eingabe */
+.punkte { display: flex; gap: 1.6rem; justify-content: center; min-height: 3rem; }
+.punkte i { width: 2.2rem; height: 2.2rem; border-radius: 50%; border: .25rem solid var(--leise); }
+.punkte i.voll { background: var(--text); border-color: var(--text); }
+.ziffern { display: grid; grid-template-columns: repeat(3, 11rem); gap: 1rem; justify-content: center; }
+.ziffern button { all: unset; height: 6.6rem; border-radius: 1.6rem; background: var(--bg); text-align: center; font-size: 3.4rem;
+  font-weight: 600; cursor: pointer; }
+.ziffern button:active { background: var(--linie); }
+/* Netzliste */
+.netze { overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; max-height: 52vh; }
+.netz { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 2rem; padding: 2rem 2.4rem; border-radius: 1.4rem;
+  border: .2rem solid var(--linie); cursor: pointer; font-size: 2.2rem; font-weight: 600; }
+.netz:active { background: var(--bg); }
+.netz .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.netz small { font-size: 1.6rem; color: var(--ok); font-weight: 600; }
+.balken { display: flex; align-items: flex-end; gap: .35rem; height: 2.4rem; }
+.balken i { width: .7rem; background: var(--linie); border-radius: .2rem; }
+.balken i.an { background: var(--text); }
+.schloss { width: 1.8rem; height: 1.4rem; border-radius: .3rem; background: var(--leise); position: relative; margin-top: .8rem; }
+.schloss::before { content: ""; position: absolute; left: .3rem; right: .3rem; top: -1rem; height: 1.3rem; border: .3rem solid var(--leise);
+  border-bottom: 0; border-radius: 1rem 1rem 0 0; }
+/* Passwort + Tastatur */
+.feld { display: flex; align-items: center; gap: 1rem; border: .25rem solid var(--akzent); border-radius: 1.4rem; padding: 1.4rem 2rem;
+  font-size: 2.6rem; min-height: 7rem; font-family: ui-monospace, Consolas, monospace; overflow: hidden; }
+.feld span { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: clip; direction: rtl; text-align: left; }
+.feld span bdi { direction: ltr; }
+.feld .cursor { width: .25rem; height: 3.2rem; background: var(--akzent); animation: blinken 1s steps(1) infinite; }
+@keyframes blinken { 50% { opacity: 0; } }
+.tastatur { display: flex; flex-direction: column; gap: .8rem; }
+.tastatur div { display: flex; gap: .8rem; justify-content: center; }
+/* Tasten passen sich der Breite an (höchstens 7,6rem breit) */
+.tastatur button { all: unset; flex: 1 1 0; max-width: 7.6rem; height: 5.4rem; border-radius: 1rem; background: var(--bg);
+  display: grid; place-items: center; font-size: 2.4rem; font-weight: 500; cursor: pointer; }
+.tastatur button.breit { flex-grow: 1.6; max-width: 12rem; font-size: 1.8rem; font-weight: 600; }
+.tastatur button.leer { flex-grow: 5; max-width: 42rem; }
+.kompakt { gap: 1.1rem; padding: 2rem 2.4rem; }
+.kompakt .feld { min-height: 5.6rem; padding: .8rem 1.6rem; }
+.tastatur button.an { background: var(--text); color: #fff; }
+.tastatur button:active { background: var(--linie); }
+.meldung { padding: 1.6rem 2rem; border-radius: 1.2rem; font-weight: 600; }
+.m-fehler { background: var(--fehler-bg); color: var(--fehler); } .m-ok { background: var(--ok-bg); color: var(--ok); }
+.lader { width: 7rem; aspect-ratio: 1; border-radius: 50%; border: .6rem solid var(--linie); border-top-color: var(--akzent);
+  animation: drehen .9s linear infinite; margin: 2rem auto; }
+@keyframes drehen { to { transform: rotate(360deg); } }
+.mitte { text-align: center; }
+</style>
+</head>
+<body>
+<div class="seite">
+  <header>
+    <h1>Internet einrichten</h1>
+    <div class="zeile">
+      <span class="status" id="status"><i></i><span>Prüfe Internet …</span></span>
+      <a href="/betrieb"><button class="knopf" id="zum-betrieb">Betrieb (Vermieter)</button></a>
+      <button class="knopf" id="zurueck">Zurück zur Fotobox</button>
+    </div>
+  </header>
+
+  <main class="inhalt">
+    <!-- 1. Kunden-Code -->
+    <section class="karte" id="v-code" style="width:min(100%,60rem)">
+      <p class="titel mitte">Code eingeben</p>
+      <p class="leise mitte">Den Code findest du auf der Karte bei der Fotobox.</p>
+      <div class="punkte" id="punkte"></div>
+      <p class="meldung m-fehler mitte" id="code-fehler" hidden>Code falsch – bitte nochmals.</p>
+      <div class="ziffern" id="ziffern"></div>
+    </section>
+
+    <!-- 2. WLAN wählen -->
+    <section class="karte" id="v-netze" hidden>
+      <div class="zeile"><p class="titel">WLAN wählen</p><button class="knopf" id="neu-suchen">Neu suchen</button></div>
+      <p class="leise">Tippe auf das WLAN des Lokals. Das Passwort hat meist das Personal.</p>
+      <div class="netze" id="netze"></div>
+    </section>
+
+    <!-- 3. Passwort -->
+    <section class="karte kompakt" id="v-passwort" hidden>
+      <div class="zeile"><p class="titel">Passwort für «<span id="pw-ssid"></span>»</p>
+        <div class="zeile"><button class="knopf" id="pw-zurueck">Anderes WLAN</button>
+          <button class="knopf haupt" id="pw-verbinden">Verbinden</button></div></div>
+      <div class="zeile" style="flex-wrap:nowrap">
+        <div class="feld" id="pw-feld" style="flex:1"><span><bdi id="pw-text"></bdi></span><i class="cursor"></i></div>
+        <button class="knopf" id="pw-zeigen">Anzeigen</button></div>
+      <div class="tastatur" id="tastatur"></div>
+    </section>
+
+    <!-- 4. Verbinden / Ergebnis -->
+    <section class="karte mitte" id="v-ergebnis" hidden style="width:min(100%,70rem)">
+      <div class="lader" id="e-lader"></div>
+      <p class="titel" id="e-titel">Verbinde …</p>
+      <p class="meldung" id="e-text" hidden></p>
+      <div class="zeile" style="justify-content:center">
+        <button class="knopf" id="e-nochmal" hidden>Nochmals versuchen</button>
+        <button class="knopf haupt" id="e-fertig" hidden>Zurück zur Fotobox</button>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+'use strict';
+const $ = (s) => document.querySelector(s);
+try { if (sessionStorage.getItem('kiosk')) document.documentElement.classList.add('kiosk'); } catch (_) {}
+
+async function api(pfad, daten) {
+  const r = await fetch(pfad, daten === undefined ? {} : {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(daten)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw {status: r.status, ...j};
+  return j;
+}
+function zeige(id) { for (const s of document.querySelectorAll('main > section')) s.hidden = s.id !== id; }
+function esc(s) { return String(s ?? '').replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c])); }
+
+// ---------- Status oben rechts ----------
+async function statusLaden() {
+  const el = $('#status');
+  try {
+    const s = await api('/api/wlan/status');
+    const [klasse, text] = s.internet === 'ja' ? ['s-ja', `Internet ok – ${s.ssid || 'verbunden'}`]
+      : s.internet === 'eingeschraenkt' ? ['s-teil', `WLAN «${s.ssid}», aber Anmeldung im Browser nötig`]
+      : s.verbunden ? ['s-teil', `WLAN «${s.ssid}», kein Internet`] : ['s-nein', 'Kein Internet'];
+    el.className = 'status ' + klasse; el.querySelector('span').textContent = text + (s.simuliert ? ' (Simulation)' : '');
+  } catch { el.className = 'status s-nein'; el.querySelector('span').textContent = 'Status unbekannt'; }
+}
+statusLaden(); setInterval(statusLaden, 10000);
+
+$('#zurueck').onclick = () => { api('/api/wlan/abmelden', {}).catch(() => {}); location.href = '/'; };
+$('#e-fertig').onclick = $('#zurueck').onclick;
+
+// ---------- 1. Code ----------
+let code = '';
+const LAENGE_MAX = 8;
+function punkte() { $('#punkte').innerHTML = Array.from({length: Math.max(4, code.length)}, (_, i) => `<i class="${i < code.length ? 'voll' : ''}"></i>`).join(''); }
+$('#ziffern').innerHTML = ['1','2','3','4','5','6','7','8','9','⌫','0','OK'].map((z) => `<button data-z="${z}">${z}</button>`).join('');
+$('#ziffern').onclick = async (e) => {
+  const z = e.target.closest('button')?.dataset.z; if (!z) return;
+  $('#code-fehler').hidden = true;
+  if (z === '⌫') code = code.slice(0, -1);
+  else if (z === 'OK') {
+    try { await api('/api/wlan/anmelden', {code}); netzeLaden(); }
+    catch { $('#code-fehler').hidden = false; }
+    code = '';
+  } else if (code.length < LAENGE_MAX) code += z;
+  punkte();
+};
+punkte();
+
+// ---------- 2. Netze ----------
+function balken(signal) {
+  const stufen = signal >= 75 ? 4 : signal >= 50 ? 3 : signal >= 25 ? 2 : 1;
+  return `<span class="balken">${[1, 2, 3, 4].map((s) => `<i class="${s <= stufen ? 'an' : ''}" style="height:${s * 25}%"></i>`).join('')}</span>`;
+}
+let netzListe = [];
+async function netzeLaden() {
+  zeige('v-netze');
+  $('#netze').innerHTML = '<div class="lader"></div><p class="mitte leise">Suche WLANs …</p>';
+  try {
+    netzListe = (await api('/api/wlan/netze')).netze;
+    $('#netze').innerHTML = netzListe.map((n, i) => `<button class="netz" data-i="${i}">${balken(n.signal)}
+      <span class="name">${esc(n.ssid)}</span>${n.aktiv ? '<small>verbunden</small>' : ''}${n.gesichert ? '<span class="schloss"></span>' : ''}</button>`).join('')
+      || '<p class="mitte leise">Kein WLAN gefunden. «Neu suchen» tippen.</p>';
+  } catch (e) {
+    if (e.status === 401) { zeige('v-code'); return; }
+    $('#netze').innerHTML = `<p class="meldung m-fehler">${esc(e.text || 'Suche nicht möglich')}</p>`;
+  }
+}
+$('#neu-suchen').onclick = netzeLaden;
+let gewaehlt = null;
+$('#netze').onclick = (e) => {
+  const b = e.target.closest('.netz'); if (!b) return;
+  gewaehlt = netzListe[Number(b.dataset.i)];
+  if (!gewaehlt.gesichert) { verbinden(''); return; }
+  passwortStart();
+};
+
+// ---------- 3. Passwort mit eigener Tastatur (Schweizer Anordnung) ----------
+let pw = '', zeigen = false, gross = false, zeichen = false;
+const BUCHSTABEN = [['q','w','e','r','t','z','u','i','o','p','ü'], ['a','s','d','f','g','h','j','k','l','ö','ä'], ['y','x','c','v','b','n','m','-','_','.']];
+const ZEICHEN = [['1','2','3','4','5','6','7','8','9','0'], ['@','#','$','%','&','*','+','=','/','\\'], ['!','?',',',';',':','\'','"','(',')','€']];
+function tastatur() {
+  const reihen = (zeichen ? ZEICHEN : BUCHSTABEN).map((r) => r.map((t) => {
+    const anzeige = gross && !zeichen ? t.toUpperCase() : t;
+    return `<button data-t="${esc(anzeige)}">${esc(anzeige)}</button>`;
+  }).join(''));
+  $('#tastatur').innerHTML =
+    `<div>${reihen[0]}<button class="breit" data-t="⌫">⌫</button></div>` +
+    `<div>${reihen[1]}</div>` +
+    `<div><button class="breit ${gross ? 'an' : ''}" data-t="⇧">⇧ Gross</button>${reihen[2]}</div>` +
+    `<div><button class="breit ${zeichen ? 'an' : ''}" data-t="123">${zeichen ? 'ABC' : '123 #+'}</button><button class="leer" data-t=" ">Leerzeichen</button></div>`;
+}
+function pwAnzeigen() { $('#pw-text').textContent = zeigen ? pw : '•'.repeat(pw.length); $('#pw-verbinden').disabled = pw.length === 0; }
+function passwortStart() {
+  pw = ''; gross = false; zeichen = false;
+  $('#pw-ssid').textContent = gewaehlt.ssid;
+  tastatur(); pwAnzeigen(); zeige('v-passwort');
+}
+$('#tastatur').onclick = (e) => {
+  const t = e.target.closest('button')?.dataset.t; if (t === undefined) return;
+  if (t === '⌫') pw = pw.slice(0, -1);
+  else if (t === '⇧') { gross = !gross; tastatur(); }
+  else if (t === '123') { zeichen = !zeichen; tastatur(); }
+  else if (pw.length < 64) { pw += t; if (gross && !zeichen) { gross = false; tastatur(); } }   // Gross gilt für einen Buchstaben
+  pwAnzeigen();
+};
+$('#pw-zeigen').onclick = () => { zeigen = !zeigen; $('#pw-zeigen').textContent = zeigen ? 'Verbergen' : 'Anzeigen'; pwAnzeigen(); };
+$('#pw-zurueck').onclick = netzeLaden;
+$('#pw-verbinden').onclick = () => verbinden(pw);
+
+// ---------- 4. Verbinden ----------
+async function verbinden(passwort) {
+  zeige('v-ergebnis');
+  $('#e-lader').hidden = false; $('#e-titel').textContent = `Verbinde mit «${gewaehlt.ssid}» …`;
+  $('#e-text').hidden = true; $('#e-nochmal').hidden = true; $('#e-fertig').hidden = true;
+  try {
+    const s = await api('/api/wlan/verbinden', {ssid: gewaehlt.ssid, passwort});
+    $('#e-titel').textContent = 'Verbunden ✓';
+    $('#e-text').className = 'meldung m-ok';
+    $('#e-text').textContent = s.internet === 'ja' ? 'Internet funktioniert. Die Fotos fürs Handy werden jetzt hochgeladen.'
+      : 'WLAN verbunden, aber noch kein Internet. Manche Lokal-WLANs verlangen eine Anmeldung im Browser – dann bitte den Vermieter fragen.';
+    $('#e-fertig').hidden = false;
+  } catch (e) {
+    if (e.status === 401) { zeige('v-code'); return; }
+    $('#e-titel').textContent = 'Nicht verbunden';
+    $('#e-text').className = 'meldung m-fehler';
+    $('#e-text').textContent = e.text || 'Verbinden hat nicht geklappt.';
+    $('#e-nochmal').hidden = false;
+  } finally {
+    $('#e-lader').hidden = true; $('#e-text').hidden = false; pw = ''; statusLaden();
+  }
+}
+$('#e-nochmal').onclick = () => (gewaehlt.gesichert ? passwortStart() : netzeLaden());
+
+// Bereits angemeldet (z. B. Betreiber)? Dann direkt zur Netzliste.
+api('/api/wlan/status').then((s) => (s.angemeldet ? netzeLaden() : zeige('v-code'))).catch(() => zeige('v-code'));
+</script>
+</body>
+</html>

@@ -36,6 +36,13 @@ else
 fi
 [ -f "$ZIEL/VERSION" ] && echo "  Version: $(cat "$ZIEL/VERSION")"
 
+# Neue Systemrechte, die eine neuere Version braucht (z. B. «Internet einrichten»)
+if [ -f "$ZIEL/raspberry/wlan_rechte.sh" ]; then
+  echo
+  echo "Rechte für «Internet einrichten» setzen (evtl. Passwort eingeben):"
+  sudo bash "$ZIEL/raspberry/wlan_rechte.sh" "$(id -un)" || echo "  (nicht gesetzt – bitte Claude fragen)"
+fi
+
 echo
 echo "Jetzt startet der Pi neu (dafür wird evtl. dein Passwort gefragt)."
 echo "USB-Stick danach abziehen."

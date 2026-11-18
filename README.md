@@ -17,7 +17,9 @@ Auf der Startseite startet auch ein Tipp irgendwo auf den Bildschirm.
 
 Zum Testen am PC: mit der Maus klicken, oder Tastatur: Enter/Leertaste = Hauptknopf, Pfeil links/rechts = Knopf links/rechts.
 
-**Betriebsseite ohne Tastatur:** auf der Startseite die Namen oben **3 Sekunden gedrückt halten** (danach PIN). Mit Tastatur: Strg+Umschalt+B.
+**Internet einrichten / Betriebsseite ohne Tastatur:** auf der Startseite die Namen oben **3 Sekunden gedrückt halten**. Es öffnet sich «Internet einrichten» (Kunden-Code oder PIN, dann WLAN wählen und Passwort auf der Bildschirmtastatur). Oben rechts führt «Betrieb (Vermieter)» zur Betriebsseite (PIN). Mit Tastatur: Strg+Umschalt+B.
+
+**Kunden-Code:** Betriebsseite → «Fotos fürs Handy» → «Kunden-Code». Er erlaubt nur die WLAN-Einrichtung – nicht Löschen, Nachdrucken oder Einstellungen. Code auf eine Karte zur Fotobox legen.
 
 ## Betriebsbereich
 `http://127.0.0.1:8080/betrieb` – **Standard-PIN: 1234**. Ändere sie unter «Sicherheit», bevor du die Fotobox vermietest. Solange sie aktiv ist, zeigt die Seite oben eine rote Warnung.

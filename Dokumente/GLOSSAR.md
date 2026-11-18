@@ -71,3 +71,7 @@
 | **sync** | Befehl: alles, was noch im Zwischenspeicher liegt, wirklich auf den Stick schreiben | Danach darf der Stick abgezogen werden |
 | **Touchscreen** | Bildschirm, der auf Berührung reagiert – Antippen wirkt wie ein Mausklick | Der Verbatim 14" der Fotobox |
 | **Hauptaktion** | Der wichtigste nächste Schritt einer Ansicht, immer der grosse, farbige Knopf | «Foto machen», «Drucken» |
+| **NetworkManager / nmcli** | Teil von Linux, der WLAN und Netzwerk verwaltet; `nmcli` ist sein Befehl | Die Fotobox wählt damit das WLAN des Lokals |
+| **polkit** | Regelwerk in Linux, wer was am System ändern darf | Regel erlaubt dem Fotobox-Dienst, das WLAN zu wechseln |
+| **Kunden-Code** | Zahlencode für den Kunden, erlaubt nur «Internet einrichten» | Steht auf einer Karte bei der Fotobox |
+| **Bildschirmtastatur** | Tastatur, die auf dem Touchscreen erscheint | WLAN-Passwort eingeben ohne echte Tastatur |

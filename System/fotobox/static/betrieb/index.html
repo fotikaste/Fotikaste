@@ -207,7 +207,9 @@ label.haken input{width:auto}
           <label>Simulation: Internet<select name="sim_galerie_verhalten">
             <option value="ok">vorhanden</option>
             <option value="offline">fehlt</option></select></label>
+          <label>Kunden-Code «Internet einrichten» (4–8 Ziffern)<input name="wlan_code" inputmode="numeric" autocomplete="off" placeholder="leer = nur mit PIN"></label>
           <button class="primaer">Übernehmen</button>
+          <a href="/internet" class="link-knopf"><button type="button">Internet einrichten …</button></a>
         </form>
         <p class="hinweis">Ohne Internet bekommen Gäste den QR-Code trotzdem. Die Fotobox lädt das Foto hoch, sobald wieder Internet da ist.</p>
         <h2 style="margin-top:20px">Zugang Cloudflare R2</h2>
@@ -472,9 +474,9 @@ $('#f-galerie').addEventListener('submit', async (e) => {
   try {
     await api('/api/betrieb/einstellungen', {galerie_anbieter: f.galerie_anbieter.value,
       galerie_modus: f.galerie_modus.value, galerie_tage: Number(f.galerie_tage.value),
-      sim_galerie_verhalten: f.sim_galerie_verhalten.value});
+      sim_galerie_verhalten: f.sim_galerie_verhalten.value, wlan_code: f.wlan_code.value.trim()});
     meldung('Übernommen');
-  } catch { meldung('Ungültiger Wert'); }
+  } catch (err) { meldung(err.text || 'Ungültiger Wert'); }
   laden();
 });
 

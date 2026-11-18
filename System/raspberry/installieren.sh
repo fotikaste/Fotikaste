@@ -119,6 +119,8 @@ else
   hinweis "GVFS-Dienst nicht gefunden (ist auf diesem System evtl. nicht vorhanden – dann gut)"
 fi
 pkill -f gvfsd-gphoto2 >/dev/null 2>&1 || true
+# «Internet einrichten» am Touchscreen: der Dienst darf das WLAN wählen
+sudo bash "$HIER/wlan_rechte.sh" "$BENUTZER" || hinweis "WLAN-Rechte nicht gesetzt – «Internet einrichten» geht dann nicht"
 
 schritt "7/8 Alte Taster-Einträge entfernen (Bedienung jetzt per Touchscreen)"
 CONFIG=""
