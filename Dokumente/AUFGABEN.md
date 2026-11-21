@@ -70,7 +70,7 @@
 - [x] **Bedienung nur per Touchscreen (2026-11-17, dein Entscheid nach Test mit einer Testperson):** keine physischen Tasten. Startseite mit grossem Knopf «Foto machen» (auch Tipp irgendwo startet), Knöpfe mit Beschriftung im Knopf, einheitlich «Tippe auf …». Betriebsseite ohne Tastatur: Namen 3 s gedrückt halten. GPIO-Taster aus dem Pi-Installationsprogramm entfernt
 - [x] Touch am Pi: mit dem mitgelieferten USB-C-Kabel + Adapter funktioniert er wieder (2026-11-21, dein Test). Billiges Kabel war die Ursache
 - [x] **Betriebsseite ohne Tastatur (2026-11-21):** Bildschirmtastatur (Text: Schweizer Anordnung, Zahlen: Ziffernblock) für alle Felder im Kiosk-Modus, «Zurück zur Fotobox» bei der PIN-Anmeldung, Abmelden führt zur Fotobox, Eingabefenster statt Browser-Abfrage beim Löschen. Im Browser mit Klicks geprüft
-- [ ] Bildschirmtastatur mit dem Finger am Pi ausprobieren
+- [x] Update 6d19f21 am Pi eingespielt, laut dir läuft alles (2026-11-21): Bildschirmtastatur, Zurück, Papierrolle, Auslösen vorziehen
 - [x] **Papierrolle überwachen (2026-11-21):** eigener Zähler (Stand beim Einlegen minus echt gedruckte Abzüge), «Neue Rolle eingelegt», «Stand korrigieren», Warnung wenn knapp. Meldung des Druckers wird eingerechnet: Anzahl vom Drucker hat Vorrang, Füllstand % als Gegenprobe mit Hinweis bei Abweichung, Warnung sobald eine Quelle knapp meldet
 - [ ] Am Pi: Rollenstand eintragen (z. B. 390 nach 10 Testdrucken) und prüfen, ob der DS620 eine Anzahl meldet
 - [ ] M6: Drucker- und Plattformentscheid
