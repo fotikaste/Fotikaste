@@ -135,6 +135,17 @@ GRUENDE = {
 }
 
 
+def rest_laut_drucker(meldungen) -> int | None:
+    """Gutenprint-Treiber melden laut ihren Unterlagen z. B. «390 native prints remaining on '4x6' media».
+    Mit dem echten DS620 noch nicht gesehen (Stand 2026-11-21) – fehlt die Meldung, gibt es None."""
+    import re
+    for m in meldungen or []:
+        treffer = re.search(r"(\d+)\s+(?:native\s+)?prints?\s+remaining", str(m), re.IGNORECASE)
+        if treffer:
+            return int(treffer.group(1))
+    return None
+
+
 def _grund_text(gruende: list[str]) -> list[str]:
     texte = []
     for g in gruende:
@@ -226,7 +237,7 @@ class CupsDrucker(Drucker):
                             _attr(T_URI, "printer-uri", self.drucker_uri)
                             + _attr(T_KEYWORD, "requested-attributes",
                                     ["printer-state", "printer-state-reasons", "printer-state-message",
-                                     "printer-is-accepting-jobs", "marker-names", "marker-levels"]))
+                                     "printer-is-accepting-jobs", "marker-names", "marker-levels", "marker-message"]))
 
     def status(self, frisch=False) -> dict:
         zeit, wert = self._status_cache
@@ -240,11 +251,16 @@ class CupsDrucker(Drucker):
             texte = _grund_text(fehler or gruende)
             pegel = [p for p in a.get("marker-levels", []) if isinstance(p, int) and p >= 0]
             rest = f", Papier/Farbband ca. {min(pegel)} %" if pegel else ""
+            bilder = rest_laut_drucker(a.get("marker-message", []))
             if zustand == 5 or fehler or a.get("printer-is-accepting-jobs") == [False]:
                 wert = {"bereit": False, "text": "; ".join(texte) or "Drucker angehalten"}
             else:
                 hinweis = f" – {'; '.join(texte)}" if texte else ""
                 wert = {"bereit": True, "text": ("druckt gerade" if zustand == 4 else "bereit") + rest + hinweis}
+            if pegel:
+                wert["fuellstand_prozent"] = min(pegel)
+            if bilder is not None:
+                wert["rest_laut_drucker"] = bilder
         except DruckFehler as e:
             wert = {"bereit": False, "text": str(e)}
         self._status_cache = (time.monotonic(), wert)

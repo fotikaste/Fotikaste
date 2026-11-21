@@ -9,6 +9,7 @@ Hier wird entschieden, was erlaubt ist – unabhängig von der Oberfläche:
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 import secrets
 import shutil
 import threading
@@ -478,6 +479,28 @@ class Fotobox:
                 self.galerie_abarbeiten()
             except Exception:  # noqa: BLE001 – z. B. Datenbank geschlossen beim Beenden
                 return
+
+    # ---------- Papierrolle ----------
+    def rolle(self) -> dict:
+        """Wie viele Bilder sind noch auf der Rolle? Eigener Zähler: Stand beim Einlegen minus echt gedruckte
+        Abzüge seither. Fehlgeschlagene und simulierte Drucke zählen nicht. Ist eine Schätzung – bei Papierstau
+        oder Testdrucken am Drucker selbst kann er abweichen; dann auf der Betriebsseite korrigieren."""
+        kapazitaet = int(self.e("rolle_kapazitaet"))
+        start = str(self.e("rolle_start") or "")
+        if not start:
+            return {"eingerichtet": False, "kapazitaet": kapazitaet}
+        gedruckt = self.store.echte_abzuege_seit(start)
+        rest = max(0, int(self.e("rolle_start_rest")) - gedruckt)
+        return {"eingerichtet": True, "kapazitaet": kapazitaet, "rest": rest, "gedruckt_seit": gedruckt,
+                "seit": start, "knapp": rest <= max(20, kapazitaet // 20)}
+
+    def rolle_setzen(self, rest: int, kapazitaet: int | None = None):
+        if kapazitaet is not None:
+            self.store.setze_einstellung("rolle_kapazitaet", int(kapazitaet))
+        # auf Mikrosekunden genau: Drucke aus derselben Sekunde VOR dem Setzen zählen so nicht mit
+        self.store.setze_einstellung("rolle_start", datetime.now().isoformat(timespec="microseconds"))
+        self.store.setze_einstellung("rolle_start_rest", int(rest))
+        log.info("Betreiber: Papierrolle auf %d Bilder gesetzt", rest)
 
     def geraetestatus(self) -> dict:
         return {"kamera": {"name": self.kamera.name, "simuliert": self.kamera.simuliert, **self.kamera.status()},

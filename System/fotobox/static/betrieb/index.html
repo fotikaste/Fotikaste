@@ -119,6 +119,17 @@ label.haken input{width:auto}
         <div id="kontingent"></div>
       </section>
 
+      <section class="karte" id="k-rolle">
+        <h2>Papierrolle</h2>
+        <div class="gross" id="rolle-rest">–</div>
+        <div class="balken"><i id="rolle-balken"></i></div>
+        <div id="rolle-info"></div>
+        <div class="aktionen" style="margin-top:10px">
+          <button class="primaer" id="rolle-neu">Neue Rolle eingelegt</button>
+          <button id="rolle-korrigieren">Stand korrigieren</button>
+        </div>
+      </section>
+
       <section class="karte">
         <h2>Geräte</h2>
         <div id="geraete"></div>
@@ -285,6 +296,7 @@ try {
   }
 } catch (_) {}
 let ordnerOeffnenMoeglich = false;
+let rolleKapazitaet = 400;
 
 // hintergrund=true: automatisches Aktualisieren zählt nicht als Aktivität (sonst nie automatische Abmeldung)
 async function api(pfad, daten, hintergrund = false) {
@@ -317,13 +329,14 @@ $('#abmelden').onclick = async () => {
 };
 
 // Eingabefenster: liefert den eingegebenen Text oder null (Abbrechen)
-function eingabe(text, {verdeckt = false, zahlen = false} = {}) {
+function eingabe(text, {verdeckt = false, zahlen = false, vorgabe = ''} = {}) {
   return new Promise((fertig) => {
     const d = $('#dialog'), feld = $('#dialog-eingabe');
     $('#dialog-text').textContent = text;
-    feld.value = ''; feld.type = verdeckt ? 'password' : 'text';
+    feld.value = vorgabe; feld.type = verdeckt ? 'password' : 'text';
     delete feld.dataset.inputmode; feld.inputMode = zahlen ? 'numeric' : 'text';
     d.hidden = false; feld.focus();
+    if (window.Tastatur && window.Tastatur.zeigen) window.Tastatur.zeigen(feld);   // Tastatur sicher öffnen
     const ende = (wert) => { d.hidden = true; $('#dialog-form').onsubmit = null; $('#dialog-abbrechen').onclick = null; fertig(wert); };
     $('#dialog-form').onsubmit = (e) => { e.preventDefault(); ende(feld.value); };
     $('#dialog-abbrechen').onclick = () => ende(null);
@@ -364,6 +377,26 @@ async function laden(hintergrund = false) {
     zeile('Reserviert (offen oder unklar)', k.reserviert) +
     zeile('Fehlgeschlagen (nicht gezählt)', k.fehlgeschlagen) +
     zeile('Materialkosten bisher (CHF 0.15 / Abzug)', 'CHF ' + ((k.echt) * 0.15).toFixed(2));
+  // Papierrolle: eigener Zähler + (falls vorhanden) Meldung des Druckers
+  const r = d.rolle, dr = d.geraete.drucker;
+  rolleKapazitaet = r.kapazitaet;
+  if (r.eingerichtet) {
+    $('#rolle-rest').textContent = `noch ca. ${r.rest} Bilder`;
+    $('#rolle-balken').style.width = Math.min(100, 100 * r.rest / Math.max(1, r.kapazitaet)) + '%';
+    $('#rolle-balken').style.background = r.knapp ? 'var(--fehler)' : '';
+    $('#rolle-info').innerHTML =
+      zeile('Gezählt seit', esc(r.seit.replace('T', ' ').slice(0, 16))) +
+      zeile('Seither echt gedruckt', r.gedruckt_seit) +
+      (dr.rest_laut_drucker != null ? zeile('Laut Drucker', `noch ${dr.rest_laut_drucker} Bilder`) : '') +
+      (dr.fuellstand_prozent != null ? zeile('Füllstand laut Drucker', dr.fuellstand_prozent + ' %') : '') +
+      (r.knapp ? '<p class="hinweis" style="color:var(--fehler)"><b>Rolle fast leer – Ersatzrolle bereitlegen.</b></p>' : '');
+  } else {
+    $('#rolle-rest').textContent = 'nicht eingerichtet';
+    $('#rolle-balken').style.width = '0';
+    $('#rolle-info').innerHTML = '<p class="hinweis">Nach dem Einlegen einer Rolle «Neue Rolle eingelegt» tippen. ' +
+      'Ist die Rolle schon angebraucht: «Stand korrigieren» und die Anzahl Bilder eingeben, die noch drauf sind.</p>';
+  }
+  $('#k-rolle').classList.toggle('problem', !!r.knapp);
   const g = d.geraete;
   $('#geraete').innerHTML =
     zeile('Kamera', `${esc(g.kamera.name)} ${g.kamera.bereit ? '<span class="marke m-erfolgreich">bereit</span>' : '<span class="marke m-fehlgeschlagen">nicht bereit</span>'}`) +
@@ -460,6 +493,23 @@ function kartenVorschau(sofort = false) {
 }
 $('#f-veranstaltung').addEventListener('input', () => kartenVorschau());
 $('#f-veranstaltung').addEventListener('change', () => kartenVorschau());
+
+// Papierrolle
+$('#rolle-neu').onclick = async () => {
+  const k = await eingabe(`Neue Rolle eingelegt. Wie viele Bilder hat die Rolle?
+(DNP DS620, 10×15 cm: 400)`, {zahlen: true, vorgabe: String(rolleKapazitaet)});
+  if (k === null) return;
+  try { await api('/api/betrieb/rolle', {rest: Number(k), kapazitaet: Number(k)}); meldung('Neue Rolle: ' + k + ' Bilder'); }
+  catch (err) { meldung(err.text || 'Ungültige Zahl'); }
+  laden();
+};
+$('#rolle-korrigieren').onclick = async () => {
+  const n = await eingabe('Wie viele Bilder sind noch auf der Rolle?', {zahlen: true});
+  if (n === null) return;
+  try { await api('/api/betrieb/rolle', {rest: Number(n)}); meldung('Stand gesetzt: ' + n + ' Bilder'); }
+  catch (err) { meldung(err.text || 'Ungültige Zahl'); }
+  laden();
+};
 
 // Aktionen für Veranstaltungen
 document.addEventListener('click', async (e) => {

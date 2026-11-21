@@ -76,3 +76,4 @@
 | **Kunden-Code** | Zahlencode für den Kunden, erlaubt nur «Internet einrichten» | Steht auf einer Karte bei der Fotobox |
 | **Bildschirmtastatur** | Tastatur, die auf dem Touchscreen erscheint | WLAN-Passwort eingeben ohne echte Tastatur |
 | **Auslöseverzögerung** | Zeit zwischen Auslöse-Befehl und dem Klick der Kamera | Wird mit «Auslösen vorziehen» ausgeglichen |
+| **Rollenzähler** | Eigene Zählung der Bilder auf der Papierrolle: Stand beim Einlegen minus gedruckte Abzüge | «noch ca. 390 Bilder» |

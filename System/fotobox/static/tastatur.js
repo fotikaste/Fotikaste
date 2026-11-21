@@ -98,6 +98,8 @@
     document.body.style.paddingBottom = tafel.offsetHeight + 'px';
     setTimeout(() => el.scrollIntoView({block: 'center', behavior: 'smooth'}), 30);
   }
+  window.Tastatur.zeigen = (el) => { if (el.inputMode === 'numeric') el.dataset.inputmode = 'numeric'; el.inputMode = 'none'; zeigen(el); };
+
   function verbergen() {
     tafel.classList.remove('offen');
     document.body.style.paddingBottom = '';

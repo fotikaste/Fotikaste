@@ -26,6 +26,10 @@ STANDARD_EINSTELLUNGEN = {
     "inaktiv_warnung_s": 10,   # Dauer der Frage, danach zurück zum Start
     "abschluss_s": 8,          # Dankesbildschirm bis zur Rückkehr
     "druckkontingent": 300,
+    # Papierrolle des Druckers: eigener Zähler (zieht jeden echt gedruckten Abzug ab)
+    "rolle_kapazitaet": 400,           # DNP DS620, 10x15 cm: 400 Bilder pro Rolle (Medienset 2 x 400)
+    "rolle_start": "",                 # Zeitpunkt «Rolle eingelegt / Stand gesetzt» (leer = noch nicht eingerichtet)
+    "rolle_start_rest": 400,           # so viele Bilder waren zu diesem Zeitpunkt auf der Rolle
     "betreiber_pin": "1234",
     # Druckformat (Beispielformat für den Prototyp: Postkarte 10x15 cm quer, 300 dpi)
     "druck_breite_px": 1800,
@@ -314,6 +318,12 @@ class Store:
         for r in self._q("SELECT status, COUNT(*) n FROM uploads GROUP BY status"):
             z[r["status"]] = r["n"]
         return z
+
+    def echte_abzuege_seit(self, zeitpunkt: str) -> int:
+        """Echt (nicht simuliert) und erfolgreich gedruckte Abzüge seit einem Zeitpunkt – für den Rollenzähler."""
+        r = self._q("SELECT COALESCE(SUM(abzuege), 0) FROM druckauftraege "
+                    "WHERE simuliert=0 AND status='erfolgreich' AND erstellt >= ?", (zeitpunkt,)).fetchone()
+        return int(r[0])
 
     def zaehler(self, veranstaltung_id=None) -> dict:
         """Gedruckte Abzüge, getrennt nach simuliert und echt. Offene/unklare Aufträge zählen

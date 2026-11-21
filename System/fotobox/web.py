@@ -264,6 +264,7 @@ def erstelle_app(box: Fotobox, wlan=None) -> Flask:
             "ordner_oeffnen_moeglich": hasattr(os, "startfile"),
             "standard_pin": str(box.e("betreiber_pin")) == STANDARD_EINSTELLUNGEN["betreiber_pin"],
             "kontingent": box.kontingent(),
+            "rolle": box.rolle(),
             "einstellungen": e,
             "themen": {k: t["titel"] for k, t in THEMEN.items()},
             "rahmen": [{"id": k, **r} for k, r in RAHMEN.items()],   # Liste: Reihenfolge bleibt
@@ -408,6 +409,20 @@ def erstelle_app(box: Fotobox, wlan=None) -> Flask:
             box.bilder_in_papierkorb(vid, str(d.get("bestaetigung", "")))
             return jsonify({"ok": True})
         return jsonify({"fehler": "aktion_unbekannt"}), 400
+
+    @app.post("/api/betrieb/rolle")
+    def b_rolle():
+        """Papierrolle: neue Rolle eingelegt (rest = Kapazität) oder Stand korrigiert."""
+        d = request.get_json(silent=True) or {}
+        try:
+            rest = int(d.get("rest"))
+            kapazitaet = int(d["kapazitaet"]) if d.get("kapazitaet") not in (None, "") else None
+        except (TypeError, ValueError):
+            return jsonify({"fehler": "ungueltig", "text": "Bitte eine Zahl eingeben"}), 400
+        if not 0 <= rest <= 2000 or (kapazitaet is not None and not 1 <= kapazitaet <= 2000):
+            return jsonify({"fehler": "ungueltig", "text": "Zahl zwischen 0 und 2000"}), 400
+        box.rolle_setzen(rest, kapazitaet)
+        return jsonify(box.rolle())
 
     @app.post("/api/betrieb/r2")
     def b_r2():
