@@ -29,7 +29,7 @@ Nach 15 Minuten ohne Aktivität wirst du automatisch abgemeldet.
 |---|---|
 | Druckaufträge mit Handlungsbedarf | Fehlgeschlagene Aufträge nachdrucken oder verwerfen, unklare als «gedruckt» oder «nicht gedruckt» markieren |
 | Druckkontingent | Verbleibende Abzüge der aktiven Veranstaltung, getrennt nach echt und simuliert |
-| Papierrolle | Wie viele Bilder noch auf der Rolle sind (eigener Zähler: jeder echte Abzug wird abgezogen; dazu Füllstand laut Drucker). «Neue Rolle eingelegt» beim Wechsel, «Stand korrigieren» bei Abweichung. Rote Warnung, wenn knapp |
+| Papierrolle | Wie viele Bilder noch auf der Rolle sind. Meldet der Drucker eine Anzahl, gilt diese; sonst der eigene Zähler (jeder echte Abzug wird abgezogen). Der Füllstand in % des Druckers dient als Gegenprobe – passen die Werte nicht zusammen, erscheint ein Hinweis mit «Zähler auf ca. X setzen». «Neue Rolle eingelegt» beim Wechsel, «Stand korrigieren» bei Abweichung. Rote Warnung, wenn knapp |
 | Aktive Veranstaltung | Anlass, Namen, Datum und Thema der laufenden Veranstaltung ändern. **Rahmen der Postkarte** wählen: 5 schlichte (Farben vom Thema) und 6 Motiv-Rahmen mit eigener Dekoration (Hochzeit, Party, Geburtstag, Sommer, Winter, Silvester) und bei Bedarf **eigenen Text auf der Karte** eintragen. Leer = Namen und Datum der Veranstaltung. Die Vorschau zeigt die Karte sofort |
 | Alle Veranstaltungen | Neue Veranstaltung anlegen, aktivieren, Bilder exportieren, Bilder löschen |
 | Ablauf | Countdown, **Auslösen vorziehen** (Klick der Kamera genau bei «0»: kommt er später, Wert erhöhen), Wiederholungen, Abzüge pro Sitzung, Inaktivität, Kontingent |

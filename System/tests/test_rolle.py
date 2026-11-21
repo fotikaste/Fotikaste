@@ -5,7 +5,9 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from fotobox.ablauf import Fotobox
 from fotobox.drucker_cups import rest_laut_drucker
 from fotobox.web import erstelle_app
 from fotobox.wlan import SimuliertesWlan
@@ -66,6 +68,49 @@ class Rollenzaehler(unittest.TestCase):
     def test_nur_angemeldet(self):
         self.c.post("/api/betrieb/abmelden", json={})
         self.assertEqual(self.c.post("/api/betrieb/rolle", json={"rest": 10}).status_code, 401)
+
+
+class EchterDruckerMeldet(Rollenzaehler):
+    """Wie Rollenzaehler, aber mit einem (nachgebildeten) echten Drucker, der Füllstand/Anzahl meldet."""
+    def mit_drucker(self, **status):
+        falsch = mock.Mock(simuliert=False, name_="DS620")
+        falsch.name = "Echter Drucker"
+        falsch.status.return_value = {"bereit": True, "text": "bereit", **status}
+        return mock.patch.object(Fotobox, "drucker", new=property(lambda self: falsch))
+
+    def rolle(self):
+        return self.c.get("/api/betrieb/status").json["rolle"]
+
+    def test_anzahl_vom_drucker_wird_angezeigt(self):
+        self.c.post("/api/betrieb/rolle", json={"rest": 390})
+        with self.mit_drucker(rest_laut_drucker=388, fuellstand_prozent=97):
+            r = self.rolle()
+        self.assertEqual((r["rest"], r["quelle"], r["zaehler"], r["laut_drucker"]), (388, "drucker", 390, 388))
+        self.assertFalse(r["abweichung"])
+
+    def test_nur_prozent_dient_als_gegenprobe(self):
+        self.c.post("/api/betrieb/rolle", json={"rest": 390})
+        with self.mit_drucker(fuellstand_prozent=97):      # 97 % von 400 = 388–392
+            r = self.rolle()
+        self.assertEqual((r["rest"], r["quelle"], r["prozent_von"], r["prozent_bis"]), (390, "zaehler", 388, 392))
+        self.assertFalse(r["abweichung"])
+        with self.mit_drucker(fuellstand_prozent=50):      # passt nicht zu 390
+            r = self.rolle()
+        self.assertTrue(r["abweichung"])
+        self.assertEqual(r["vorschlag"], 202)   # 50 % von 400 = 200–204, Mitte 202
+
+    def test_ohne_zaehler_reicht_der_drucker(self):
+        with self.mit_drucker(fuellstand_prozent=60):
+            r = self.rolle()
+        self.assertTrue(r["eingerichtet"])
+        self.assertEqual((r["rest"], r["quelle"]), (240, "prozent"))
+
+    def test_warnt_wenn_eine_quelle_knapp_meldet(self):
+        self.c.post("/api/betrieb/rolle", json={"rest": 300})
+        with self.mit_drucker(rest_laut_drucker=12):
+            r = self.rolle()
+        self.assertTrue(r["knapp"])
+        self.assertTrue(r["abweichung"])
 
 
 class MeldungDesDruckers(unittest.TestCase):

@@ -486,13 +486,52 @@ class Fotobox:
         Abzüge seither. Fehlgeschlagene und simulierte Drucke zählen nicht. Ist eine Schätzung – bei Papierstau
         oder Testdrucken am Drucker selbst kann er abweichen; dann auf der Betriebsseite korrigieren."""
         kapazitaet = int(self.e("rolle_kapazitaet"))
+        grenze = max(20, kapazitaet // 20)
+        erg: dict = {"kapazitaet": kapazitaet, "grenze": grenze}
+
+        # 1. Eigener Zähler
         start = str(self.e("rolle_start") or "")
-        if not start:
-            return {"eingerichtet": False, "kapazitaet": kapazitaet}
-        gedruckt = self.store.echte_abzuege_seit(start)
-        rest = max(0, int(self.e("rolle_start_rest")) - gedruckt)
-        return {"eingerichtet": True, "kapazitaet": kapazitaet, "rest": rest, "gedruckt_seit": gedruckt,
-                "seit": start, "knapp": rest <= max(20, kapazitaet // 20)}
+        zaehler = None
+        if start:
+            gedruckt = self.store.echte_abzuege_seit(start)
+            zaehler = max(0, int(self.e("rolle_start_rest")) - gedruckt)
+            erg.update(zaehler=zaehler, gedruckt_seit=gedruckt, seit=start)
+
+        # 2. Meldung des Druckers (nur echter Drucker; Status ist 10 s zwischengespeichert)
+        st = {} if self.drucker.simuliert else self.drucker.status()
+        anzahl = st.get("rest_laut_drucker")                # genaue Anzahl, falls der Treiber sie meldet
+        prozent = st.get("fuellstand_prozent")              # Füllstand in %
+        if anzahl is not None:
+            erg["laut_drucker"] = int(anzahl)
+        if prozent is not None:
+            # Der DS620 rundet ab (nach 1 Druck von 400: «99 %»): Rest liegt zwischen p % und p+1 % der Kapazität
+            von, bis = prozent * kapazitaet // 100, min(kapazitaet, (prozent + 1) * kapazitaet // 100)
+            erg.update(prozent=int(prozent), prozent_von=von, prozent_bis=bis)
+
+        # 3. Was wird angezeigt? Genaue Druckerzahl vor eigenem Zähler vor Prozent-Schätzung
+        if anzahl is not None:
+            erg.update(rest=int(anzahl), quelle="drucker")
+        elif zaehler is not None:
+            erg.update(rest=zaehler, quelle="zaehler")
+        elif prozent is not None:
+            erg.update(rest=erg["prozent_von"], quelle="prozent")
+        erg["eingerichtet"] = "rest" in erg
+        if not erg["eingerichtet"]:
+            return erg
+
+        # 4. Passen Zähler und Drucker zusammen? (Toleranz 5 Bilder)
+        if zaehler is not None and anzahl is not None:
+            erg["abweichung"] = abs(zaehler - int(anzahl)) > 5
+            erg["vorschlag"] = int(anzahl)
+        elif zaehler is not None and prozent is not None:
+            erg["abweichung"] = not (erg["prozent_von"] - 5 <= zaehler <= erg["prozent_bis"] + 5)
+            erg["vorschlag"] = (erg["prozent_von"] + erg["prozent_bis"]) // 2
+        else:
+            erg["abweichung"] = False
+        # Warnen, sobald IRGENDEINE Quelle knapp meldet – lieber einmal zu früh als ein leerer Drucker am Fest
+        schaetzungen = [x for x in (zaehler, anzahl, erg.get("prozent_von")) if x is not None]
+        erg["knapp"] = min(schaetzungen) <= grenze
+        return erg
 
     def rolle_setzen(self, rest: int, kapazitaet: int | None = None):
         if kapazitaet is not None:

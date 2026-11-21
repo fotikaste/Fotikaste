@@ -71,7 +71,7 @@
 - [x] Touch am Pi: mit dem mitgelieferten USB-C-Kabel + Adapter funktioniert er wieder (2026-11-21, dein Test). Billiges Kabel war die Ursache
 - [x] **Betriebsseite ohne Tastatur (2026-11-21):** Bildschirmtastatur (Text: Schweizer Anordnung, Zahlen: Ziffernblock) für alle Felder im Kiosk-Modus, «Zurück zur Fotobox» bei der PIN-Anmeldung, Abmelden führt zur Fotobox, Eingabefenster statt Browser-Abfrage beim Löschen. Im Browser mit Klicks geprüft
 - [ ] Bildschirmtastatur mit dem Finger am Pi ausprobieren
-- [x] **Papierrolle überwachen (2026-11-21):** eigener Zähler (Stand beim Einlegen minus echt gedruckte Abzüge), «Neue Rolle eingelegt», «Stand korrigieren», Warnung wenn knapp. Zusätzlich Meldung des Druckers (Füllstand %, Anzahl falls gemeldet)
+- [x] **Papierrolle überwachen (2026-11-21):** eigener Zähler (Stand beim Einlegen minus echt gedruckte Abzüge), «Neue Rolle eingelegt», «Stand korrigieren», Warnung wenn knapp. Meldung des Druckers wird eingerechnet: Anzahl vom Drucker hat Vorrang, Füllstand % als Gegenprobe mit Hinweis bei Abweichung, Warnung sobald eine Quelle knapp meldet
 - [ ] Am Pi: Rollenstand eintragen (z. B. 390 nach 10 Testdrucken) und prüfen, ob der DS620 eine Anzahl meldet
 - [ ] M6: Drucker- und Plattformentscheid
 - [ ] Prüfen: USB-Stecker der 600D (Mini- oder Micro-USB?)

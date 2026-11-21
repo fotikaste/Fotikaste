@@ -296,7 +296,7 @@ try {
   }
 } catch (_) {}
 let ordnerOeffnenMoeglich = false;
-let rolleKapazitaet = 400;
+let rolleKapazitaet = 400, rolleVorschlag = null;
 
 // hintergrund=true: automatisches Aktualisieren zählt nicht als Aktivität (sonst nie automatische Abmeldung)
 async function api(pfad, daten, hintergrund = false) {
@@ -377,24 +377,31 @@ async function laden(hintergrund = false) {
     zeile('Reserviert (offen oder unklar)', k.reserviert) +
     zeile('Fehlgeschlagen (nicht gezählt)', k.fehlgeschlagen) +
     zeile('Materialkosten bisher (CHF 0.15 / Abzug)', 'CHF ' + ((k.echt) * 0.15).toFixed(2));
-  // Papierrolle: eigener Zähler + (falls vorhanden) Meldung des Druckers
-  const r = d.rolle, dr = d.geraete.drucker;
+  // Papierrolle: Meldung des Druckers und eigener Zähler zusammen
+  const r = d.rolle;
   rolleKapazitaet = r.kapazitaet;
+  rolleVorschlag = r.vorschlag ?? null;
+  const QUELLE = {drucker: 'laut Drucker', zaehler: 'eigener Zähler', prozent: 'aus Füllstand des Druckers'};
   if (r.eingerichtet) {
     $('#rolle-rest').textContent = `noch ca. ${r.rest} Bilder`;
     $('#rolle-balken').style.width = Math.min(100, 100 * r.rest / Math.max(1, r.kapazitaet)) + '%';
     $('#rolle-balken').style.background = r.knapp ? 'var(--fehler)' : '';
-    $('#rolle-info').innerHTML =
-      zeile('Gezählt seit', esc(r.seit.replace('T', ' ').slice(0, 16))) +
-      zeile('Seither echt gedruckt', r.gedruckt_seit) +
-      (dr.rest_laut_drucker != null ? zeile('Laut Drucker', `noch ${dr.rest_laut_drucker} Bilder`) : '') +
-      (dr.fuellstand_prozent != null ? zeile('Füllstand laut Drucker', dr.fuellstand_prozent + ' %') : '') +
-      (r.knapp ? '<p class="hinweis" style="color:var(--fehler)"><b>Rolle fast leer – Ersatzrolle bereitlegen.</b></p>' : '');
+    setzeHtml('#rolle-info',
+      zeile('Angezeigt', QUELLE[r.quelle] || r.quelle) +
+      (r.laut_drucker != null ? zeile('Laut Drucker', `noch ${r.laut_drucker} Bilder`) : '') +
+      (r.prozent != null ? zeile('Füllstand laut Drucker', `${r.prozent} % (≈ ${r.prozent_von}–${r.prozent_bis} Bilder)`) : '') +
+      (r.zaehler != null ? zeile('Eigener Zähler', `noch ${r.zaehler} Bilder`) +
+        zeile('Gezählt seit', esc(r.seit.replace('T', ' ').slice(0, 16)) + ` · ${r.gedruckt_seit} gedruckt`)
+        : zeile('Eigener Zähler', 'nicht gesetzt')) +
+      (r.abweichung ? `<p class="hinweis" style="color:var(--warn)"><b>Zähler und Drucker passen nicht zusammen.</b>
+        Vielleicht wurde am Drucker selbst gedruckt oder eine andere Rolle eingelegt.
+        <button id="rolle-uebernehmen" style="margin-top:6px">Zähler auf ca. ${r.vorschlag} setzen</button></p>` : '') +
+      (r.knapp ? '<p class="hinweis" style="color:var(--fehler)"><b>Rolle fast leer – Ersatzrolle bereitlegen.</b></p>' : ''));
   } else {
     $('#rolle-rest').textContent = 'nicht eingerichtet';
     $('#rolle-balken').style.width = '0';
-    $('#rolle-info').innerHTML = '<p class="hinweis">Nach dem Einlegen einer Rolle «Neue Rolle eingelegt» tippen. ' +
-      'Ist die Rolle schon angebraucht: «Stand korrigieren» und die Anzahl Bilder eingeben, die noch drauf sind.</p>';
+    setzeHtml('#rolle-info', '<p class="hinweis">Nach dem Einlegen einer Rolle «Neue Rolle eingelegt» tippen. ' +
+      'Ist die Rolle schon angebraucht: «Stand korrigieren» und die Anzahl Bilder eingeben, die noch drauf sind.</p>');
   }
   $('#k-rolle').classList.toggle('problem', !!r.knapp);
   const g = d.geraete;
@@ -495,6 +502,12 @@ $('#f-veranstaltung').addEventListener('input', () => kartenVorschau());
 $('#f-veranstaltung').addEventListener('change', () => kartenVorschau());
 
 // Papierrolle
+document.addEventListener('click', async (e) => {
+  if (!e.target.closest('#rolle-uebernehmen') || rolleVorschlag == null) return;
+  try { await api('/api/betrieb/rolle', {rest: rolleVorschlag}); meldung('Zähler gesetzt: ' + rolleVorschlag + ' Bilder'); }
+  catch (err) { meldung(err.text || 'Nicht möglich'); }
+  laden();
+});
 $('#rolle-neu').onclick = async () => {
   const k = await eingabe(`Neue Rolle eingelegt. Wie viele Bilder hat die Rolle?
 (DNP DS620, 10×15 cm: 400)`, {zahlen: true, vorgabe: String(rolleKapazitaet)});
