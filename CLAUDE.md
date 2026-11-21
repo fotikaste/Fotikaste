@@ -36,6 +36,7 @@ Kamera und Drucker haben jeweils eine simulierte und echte Umsetzungen mit derse
 - `themen.py` Themen und `MOTIV_FARBEN` der Motiv-Rahmen (einzige Quelle für Farben/Schriften)
 - `ablauf.py` Sitzungsablauf und alle Regeln (Klasse `Fotobox`)
 - `web.py` Flask-Routen (Gäste `/`, Betrieb `/betrieb`, API `/api/...`); `__main__.py` Start mit waitress auf 127.0.0.1
+- `static/tastatur.js` Bildschirmtastatur für alle Eingabefelder (nur im Kiosk-Modus bzw. `?tastatur=1`)
 - `static/gast/`, `static/betrieb/` Oberflächen (reines HTML/CSS/JS), `static/fonts/` lokale OFL-Schriften
 
 ## Befehle (im Ordner System)

@@ -68,6 +68,11 @@ h3{font-size:13px;font-weight:600;margin:0 0 8px}
 .kartentext{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));align-items:end}
 label.haken{display:flex;align-items:center;gap:8px;color:var(--text);font-size:14px}
 label.haken input{width:auto}
+.dialog-hinter{position:fixed;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:start center;padding-top:8vh;z-index:900}
+.dialog-hinter[hidden]{display:none}
+.dialog{width:min(560px,92vw);display:grid;gap:14px}
+.dialog-text{white-space:pre-line;font-size:16px}
+#login button{padding:12px 14px}
 .meldung{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 18px;border-radius:8px;display:none}
 </style>
 </head>
@@ -77,8 +82,21 @@ label.haken input{width:auto}
     <h1>Fotobox Betrieb</h1>
     <label>PIN<input id="pin" type="password" inputmode="numeric" autocomplete="off" autofocus></label>
     <button class="primaer">Anmelden</button>
+    <button type="button" id="login-zurueck">Zurück zur Fotobox</button>
     <p class="hinweis" id="login-fehler"></p>
   </form>
+
+  <!-- Eingabefenster (statt Browser-Abfrage – funktioniert mit der Bildschirmtastatur) -->
+  <div class="dialog-hinter" id="dialog" hidden>
+    <form class="karte dialog" id="dialog-form">
+      <p class="dialog-text" id="dialog-text"></p>
+      <input id="dialog-eingabe" autocomplete="off">
+      <div class="aktionen" style="justify-content:flex-end">
+        <button type="button" id="dialog-abbrechen">Abbrechen</button>
+        <button class="primaer" id="dialog-ok">OK</button>
+      </div>
+    </form>
+  </div>
 
   <main id="app" hidden>
     <header>
@@ -252,6 +270,7 @@ label.haken input{width:auto}
   </main>
 </div>
 <div class="meldung" id="meldung"></div>
+<script src="/static/tastatur.js"></script>
 <script>
 'use strict';
 const $ = (s) => document.querySelector(s);
@@ -290,7 +309,26 @@ $('#login').addEventListener('submit', async (e) => {
   try { await api('/api/betrieb/anmelden', {pin: $('#pin').value}); $('#pin').value = ''; $('#login').hidden = true; laden(); }
   catch { $('#login-fehler').textContent = 'PIN falsch.'; }
 });
-$('#abmelden').onclick = async () => { await api('/api/betrieb/abmelden', {}); zeigeLogin(); };
+$('#login-zurueck').onclick = () => { location.href = '/'; };
+// Abmelden: im Kiosk direkt zurück zu den Gästen (sonst stünde man vor der PIN-Abfrage)
+$('#abmelden').onclick = async () => {
+  await api('/api/betrieb/abmelden', {}).catch(() => {});
+  if (window.Tastatur && window.Tastatur.aktiv) location.href = '/'; else zeigeLogin();
+};
+
+// Eingabefenster: liefert den eingegebenen Text oder null (Abbrechen)
+function eingabe(text, {verdeckt = false, zahlen = false} = {}) {
+  return new Promise((fertig) => {
+    const d = $('#dialog'), feld = $('#dialog-eingabe');
+    $('#dialog-text').textContent = text;
+    feld.value = ''; feld.type = verdeckt ? 'password' : 'text';
+    delete feld.dataset.inputmode; feld.inputMode = zahlen ? 'numeric' : 'text';
+    d.hidden = false; feld.focus();
+    const ende = (wert) => { d.hidden = true; $('#dialog-form').onsubmit = null; $('#dialog-abbrechen').onclick = null; fertig(wert); };
+    $('#dialog-form').onsubmit = (e) => { e.preventDefault(); ende(feld.value); };
+    $('#dialog-abbrechen').onclick = () => ende(null);
+  });
+}
 
 async function laden(hintergrund = false) {
   const d = await api('/api/betrieb/status', undefined, hintergrund);
@@ -431,9 +469,9 @@ document.addEventListener('click', async (e) => {
   const daten = {};
   if (x === 'exportieren') daten.ziel = $('#export-ziel').value;
   if (x === 'bilder_loeschen') {
-    const best = prompt(`Alle Bilder von «${name}» in den Papierkorb verschieben?\n\nZum Bestätigen LÖSCHEN eingeben:`);
+    const best = await eingabe(`Alle Bilder von «${name}» in den Papierkorb verschieben?\n\nZum Bestätigen LÖSCHEN eingeben:`);
     if (best === null) return;
-    const pin = prompt('Zur Sicherheit: Betreiber-PIN eingeben');
+    const pin = await eingabe('Zur Sicherheit: Betreiber-PIN eingeben', {verdeckt: true, zahlen: true});
     if (pin === null) return;
     Object.assign(daten, {bestaetigung: best.trim(), pin});
   }

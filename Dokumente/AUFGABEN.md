@@ -68,7 +68,9 @@
 - [x] Pi-Anleitung mit Checkliste, Monitor-Anschluss, USB-Export und Update-Ablauf (2026-11-16)
 - [ ] Kiosk-Modus: Browser startet automatisch im Vollbild ohne Adressleiste
 - [x] **Bedienung nur per Touchscreen (2026-11-17, dein Entscheid nach Test mit einer Testperson):** keine physischen Tasten. Startseite mit grossem Knopf «Foto machen» (auch Tipp irgendwo startet), Knöpfe mit Beschriftung im Knopf, einheitlich «Tippe auf …». Betriebsseite ohne Tastatur: Namen 3 s gedrückt halten. GPIO-Taster aus dem Pi-Installationsprogramm entfernt
-- [ ] Touch am Pi fällt aus (2026-11-18): TouchScreen fehlt in lsusb, beim Einstecken keine Meldung → vermutlich billiges USB-C-Kabel ohne Daten. Gutes Datenkabel besorgen und testen
+- [x] Touch am Pi: mit dem mitgelieferten USB-C-Kabel + Adapter funktioniert er wieder (2026-11-21, dein Test). Billiges Kabel war die Ursache
+- [x] **Betriebsseite ohne Tastatur (2026-11-21):** Bildschirmtastatur (Text: Schweizer Anordnung, Zahlen: Ziffernblock) für alle Felder im Kiosk-Modus, «Zurück zur Fotobox» bei der PIN-Anmeldung, Abmelden führt zur Fotobox, Eingabefenster statt Browser-Abfrage beim Löschen. Im Browser mit Klicks geprüft
+- [ ] Bildschirmtastatur mit dem Finger am Pi ausprobieren
 - [ ] M6: Drucker- und Plattformentscheid
 - [ ] Prüfen: USB-Stecker der 600D (Mini- oder Micro-USB?)
 - [ ] Prüfen: Netzteil-Lösung für die Kamera (z. B. Canon ACK-E8)

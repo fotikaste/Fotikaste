@@ -75,7 +75,7 @@ Nach dem Neustart auf «Foto machen» tippen. Reagiert nichts: USB-Kabel des Mon
 
 ## Bedienung im Alltag
 - **Einschalten:** Steckdose an → nach ca. 1 Minute läuft die Fotobox.
-- **Betriebsseite (ohne Tastatur):** auf der Startseite die **Namen oben 3 Sekunden gedrückt halten**, dann PIN eintippen. Zurück: Knopf **«Zurück zur Gästeansicht»** oben rechts. Mit Tastatur geht auch Strg + Umschalt + B.
+- **Betriebsseite (ohne Tastatur):** auf der Startseite die **Namen oben 3 Sekunden gedrückt halten**, dann PIN eintippen. Zurück: Knopf **«Zurück zur Gästeansicht»** oben rechts oder «Abmelden». Eine echte Tastatur braucht es nicht: Tippt man in ein Feld, erscheint eine **Bildschirmtastatur**. Mit Tastatur geht auch Strg + Umschalt + B.
 - **Ausschalten:** am sichersten mit Tastatur (oder per SSH vom Laptop): Strg+Alt+T (Terminal) → `sudo poweroff`, warten bis die grüne Lampe aus ist, dann Strom aus. Einfach den Strom ziehen geht meistens gut, eine SSD ist dabei robuster als eine Speicherkarte.
 - **Fotos auf USB-Stick:** Stick einstecken, ca. 5 s warten, Betriebsseite → «Alle Veranstaltungen» → «Exportieren nach: USB-Stick …» (wird automatisch vorgewählt) → «Exportieren». Erst abziehen, wenn «darf jetzt abgezogen werden» erscheint.
 - **Fotos auf dem Pi:** liegen in `/home/<name>/fotobox-daten/veranstaltungen/` (Originale nie verändert).
