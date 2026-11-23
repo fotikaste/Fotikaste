@@ -41,10 +41,10 @@ mit Linux-Zeilenenden, ohne die Windows-Python-Umgebung und ohne deine Fotos. Na
 | Was | Von | Nach |
 |---|---|---|
 | Bild | Pi: **Micro-HDMI-Buchse «HDMI0»** (die neben dem USB-C-Strom) → Adapter Micro-HDMI → HDMI | Monitor: mitgeliefertes Kabel HDMI → **Mini-HDMI** |
-| Touch | Monitor: USB-C-Buchse (Daten) → mitgeliefertes Kabel | Pi: eine der **blauen** USB-Buchsen |
-| Strom Monitor | eigenes Netzteil des Monitors | Monitor: zweite USB-C-Buchse |
+| Touch **und Strom** | Monitor: USB-C-Buchse → **mitgeliefertes** USB-C-Kabel + Adapter USB-C → USB-A | Pi: eine der **blauen** USB-Buchsen |
+| ~~Strom Monitor~~ | **kein eigenes Netzteil am Monitor** | – |
 
-Der Pi kann den Monitor über USB nicht zuverlässig mit Strom versorgen. Darum bekommt der Monitor sein eigenes Netzteil.
+**Wichtig (getestet 2026-11-23):** Mit eigenem Monitor-Netzteil blieb der Touch oft tot (der Monitor meldete sich gar nicht als USB-Gerät). Ohne Monitor-Netzteil, nur über das Kabel vom Pi versorgt, funktioniert er. Das braucht das **offizielle 27-W-Netzteil** am Pi (gibt über USB bis 1,6 A ab). Billige USB-C-Kabel übertragen oft keine Daten – das mitgelieferte nehmen.
 
 ## Schritt 3 – Pi starten und Fotobox installieren
 1. SSD/Karte in den Pi, Bildschirm, Tastatur, Maus, Kamera (eingeschaltet) anschliessen, Netzteil zuletzt.

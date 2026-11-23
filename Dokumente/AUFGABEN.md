@@ -55,7 +55,8 @@
 - [ ] «Internet einrichten» auf dem echten Pi testen (polkit-Regel, Verbinden, Wechsel zurück ins Heim-WLAN)
 - [ ] Kunden-Code festlegen und Karte für die Fotobox gestalten (Code + kurze Anleitung)
 - [ ] Mobilen 4G-Router + Daten-SIM prüfen (z. B. TP-Link TL-MR6400)
-- [ ] Pi: offizielles 27-W-Netzteil kaufen (jetzt Pi-4-Netzteil 3 A, USB gedrosselt)
+- [x] Pi: offizielles 27-W-Netzteil gekauft (2026-11-23). Monitor jetzt nur über den Pi versorgt → Touch zuverlässig
+- [ ] Dauerbetrieb prüfen: nach einigen Stunden `vcgencmd get_throttled` (soll 0x0 sein) (jetzt Pi-4-Netzteil 3 A, USB gedrosselt)
 - [x] **DS620 erster echter Druck (2026-11-16, über Ubuntu/WSL):** Papiergrösse w288h432 bestätigt, Verzerrungsfehler gefunden und in `drucker_einrichten.sh` umgangen, 2. Testkarte richtig
 - [x] DS620: echte Postkarte gedruckt. Rand war zu schmal und ungleich → Rand auf 6 % vergrössert, gedruckt 4 / 4 / 4,3 mm (2026-11-16)
 - [x] **Postkarten-Rahmen (2026-11-16):** 5 Rahmen pro Veranstaltung wählbar, eigener Kartentext (leer = Namen/Datum), Vorschau auf der Betriebsseite. 79 Tests, Browserprüfung durch Claude mit Datenkopie
