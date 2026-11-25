@@ -4,13 +4,20 @@ Ergänzt `Dokumente/GLOSSAR.md` (Fotobox). Je Begriff: Was? · Wozu? · Wo bei u
 
 | Begriff | Erklärung | Bei Fotikaste |
 |---|---|---|
-| **Next.js** | Web-Framework auf Basis von React; kann Seiten auf dem Server fertig bauen | Ganze Plattform |
+| **Astro** | Web-Framework, das Seiten beim Bauen als fertiges HTML erzeugt und nur wo nötig Server-Code ausführt | Ganze Plattform |
+| **Cloudflare Worker** | Kleines Programm, das in Cloudflares Rechenzentren bei jeder Anfrage läuft | Buchung, Galerie, Admin, Geräte-API |
+| **Statische Assets** | Fertige Dateien (HTML, Bilder), die ohne Rechenarbeit ausgeliefert werden | Öffentliche Seiten |
+| **Cloudflare D1** | Datenbank von Cloudflare auf Basis von SQLite | Buchungen, Kunden, Rechnungen |
+| **batch()** | Mehrere D1-Befehle, die ganz oder gar nicht ausgeführt werden | Doppelbuchungsschutz |
+| **UNIQUE-Regel** | Datenbank verbietet doppelte Werte | ein Tag pro Fotobox nur einmal belegt |
+| **Cloudflare Access** | Vorgeschaltete Anmeldung vor einer Webadresse | Admin-Bereich |
+| **Turnstile** | Unsichtbare Prüfung «Mensch oder Bot» | Buchung, Magic Link |
+| **Wrangler** | Werkzeug, um Worker lokal zu testen und zu veröffentlichen | Entwicklung |
+| **Free Tier / Gratisstufe** | kostenloses Kontingent eines Dienstes | gesamte Plattform |
 | **TypeScript** | JavaScript mit Typen – Fehler fallen vor dem Ausführen auf | Gesamter Code |
 | **Tailwind CSS** | Gestaltung über kleine Klassen direkt im HTML | Designsystem |
-| **PostgreSQL** | Relationale Datenbank (Tabellen mit Beziehungen) | Buchungen, Kunden, Rechnungen |
-| **Supabase** | Dienst, der Postgres + Login + Werkzeuge betreibt | DB und Anmeldung |
-| **Migration** | Versionierte SQL-Datei, die die DB Schritt für Schritt verändert | `supabase/migrations/` |
-| **Row Level Security (RLS)** | Regeln *in* der Datenbank, welche Zeilen jemand sehen darf | Kunde sieht nur eigene Buchung |
+| **Migration** | Versionierte SQL-Datei, die die DB Schritt für Schritt verändert | `migrations/` |
+| **Row Level Security (RLS)** | Regeln *in* der Datenbank, welche Zeilen jemand sehen darf (D1 hat das nicht → Prüfung im Worker) | – |
 | **Exclusion Constraint** | DB-Regel: zwei Einträge dürfen sich nicht überschneiden | Kein Gerät doppelt gebucht |
 | **Transaktion** | Mehrere DB-Schritte gelten ganz oder gar nicht | Hold → Buchung |
 | **Hold** | Kurze Reservierung (15 min) während der Kunde bucht | Buchungsstrecke |

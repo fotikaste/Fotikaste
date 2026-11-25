@@ -1,0 +1,9 @@
+---
+import ContentLayout from "../layouts/ContentLayout.astro";
+import FaqList from "../components/FaqList.astro";
+import { faqs } from "../data/content";
+import { faqJsonLd } from "../lib/seo";
+---
+<ContentLayout path="/faq" eyebrow="Häufige Fragen" heading="Gut zu wissen" lead="Antworten auf die wichtigsten Fragen zu Buchung, Fotos, Lieferung und Datenschutz." jsonLd={[faqJsonLd(faqs)]}>
+  <div class="max-w-3xl"><FaqList items={faqs} level={2} /></div>
+</ContentLayout>

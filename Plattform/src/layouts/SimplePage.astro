@@ -1,0 +1,9 @@
+---
+/** Kurze Platzhalterseite mit einem Hinweis. */
+import ContentLayout from "./ContentLayout.astro";
+interface Props { path: string; eyebrow?: string; heading?: string; lead: string; tag: string; }
+const { path, eyebrow, heading, lead, tag } = Astro.props;
+---
+<ContentLayout path={path} eyebrow={eyebrow} heading={heading} lead={lead}>
+  <p class="placeholder-tag">{tag}</p>
+</ContentLayout>

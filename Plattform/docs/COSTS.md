@@ -1,43 +1,59 @@
-# Kosten – Schätzung
+# Kosten
 
-Stand: 2026-11-25 · **Achtung:** Preise stammen aus meinem Wissensstand, nicht aus einer heutigen Prüfung der Anbieterseiten.
-Vor jedem Entscheid prüfe ich sie auf den offiziellen Preisseiten und trage das Prüfdatum hier ein. USD ≈ CHF (grobe Annahme).
+Stand: 2026-11-25 (Version 2) · Ziel: **CHF 0 pro Monat**, einzig die Domain kostet (jährlich).
+Quellen: offizielle Seiten, am 2026-11-25 gelesen (Links unten). Vor Go-Live erneut prüfen.
 
-## Laufende Kosten Variante A (empfohlen)
+## Laufende Kosten
 
-| Dienst | Entwicklung (bis Phase 6) | Produktion | Bemerkung |
+| Dienst | Gratisstufe (geprüft 2026-11-25) | Was passiert am Limit | Kosten Fotikaste |
 |---|---|---|---|
-| Vercel | Hobby: 0 | Pro: ca. USD 20 / Monat | Hobby ist laut Bedingungen **nur nicht-kommerziell** → für den Echtbetrieb Pro |
-| Supabase | Free: 0 | Pro: ca. USD 25 / Monat | Free-Projekte werden nach ca. 1 Woche Inaktivität pausiert, keine täglichen Backups → nicht für Echtbetrieb |
-| Cloudflare R2 | 0 (10 GB gratis) | ca. USD 0.015 / GB / Monat, **Download gratis** | 1 Event ≈ 300 Fotos × 6 MB Original + Varianten ≈ 2–2.5 GB |
-| Resend | Free: 0 (begrenzte Mails/Tag) | 0 bis ca. USD 20 | Bei wenigen Buchungen reicht Free meist |
-| Domain .ch | – | ca. CHF 10–25 / Jahr | noch **nicht gekauft**; Name offen (siehe Entscheid D1) |
-| Uptime-Überwachung | 0 | 0 (Gratisstufe) | z. B. Better Stack / UptimeRobot |
-| **Summe** | **CHF 0** | **ca. CHF 45–70 / Monat** | |
+| Cloudflare Workers + statische Assets | 100 000 Aufrufe/Tag, 10 ms CPU/Aufruf, 5 Cron, Assets unbegrenzt | Fehler, keine Rechnung (Paid-Plan nicht aktiv) | **CHF 0** |
+| Cloudflare D1 | 5 Mio. Lese-/100 000 Schreibzeilen pro Tag, 500 MB/DB, 5 GB/Konto, 7 Tage Time Travel | Abfragen scheitern, keine Rechnung | **CHF 0** |
+| Cloudflare R2 | 10 GB-Monat, 1 Mio. Klasse-A, 10 Mio. Klasse-B pro Monat, Download gratis | **wird verrechnet**: USD 0.015/GB, 4.50/Mio. A, 0.36/Mio. B | **CHF 0** bei Einhaltung der App-Grenzen |
+| Cloudflare Access | Zero Trust Free < 50 Benutzer | – | **CHF 0** |
+| Cloudflare Turnstile, Email Routing, DNS | gratis | – | **CHF 0** |
+| Resend | 100 E-Mails/Tag, 3 000/Monat, 3 Domains, 30 Tage Logs | Versand blockiert (429) | **CHF 0** |
+| GitHub | privates Repo, Actions-Kontingent | Actions stoppen | **CHF 0** |
+| **Domain .ch** | – | – | ca. CHF 10–25 / Jahr (noch nicht gekauft) |
 
-### Fotospeicher-Rechnung (Beispiel)
-- 4 Events/Monat × 2.5 GB, Aufbewahrung 30 Tage → ca. 10 GB gleichzeitig → **≈ gratis bis CHF 0.20/Monat**.
-- Bei 90 Tagen Aufbewahrung ≈ 30 GB → ca. CHF 0.30–0.50/Monat. Der Speicher ist also **kein** Kostentreiber.
-- Supabase Storage wäre für viele Galerie-Downloads teurer (Datentransfer wird verrechnet) → R2 behalten.
+### Reicht das? (Rechnung mit Annahmen)
+| Grösse | Annahme | Verbrauch | Gratisgrenze |
+|---|---|---|---|
+| Fotos | 6 Events/Monat × 400 Fotos × (6 MB + 0.6 MB + 0.05 MB) | ≈ 16 GB/Monat **ohne Löschung** | 10 GB → **Löschfrist nötig** |
+| mit 30 Tagen Aufbewahrung | gleichzeitig ca. 1 Monat | ≈ 8–16 GB | **zu knapp bei 6 Events** |
+| mit 14 Tagen Original + 60 Tagen Webversion | Originale gehen zusätzlich per USB-Stick an den Kunden | ≈ 4–8 GB | ✅ |
+| Schreibvorgänge R2 | 2 400 Fotos × 3 Dateien | ≈ 7 200 | 1 Mio. ✅ |
+| Lesevorgänge R2 | 200 Gäste × 20 Bilder × 6 Events | ≈ 24 000 | 10 Mio. ✅ |
+| Worker-Aufrufe | Galerie, Buchung, Fotobox | einige Tausend/Tag | 100 000/Tag ✅ |
+| E-Mails | 6 Buchungen × ca. 6 Mails | ≈ 40/Monat | 3 000 ✅ |
 
-## Variante B (eigener Server) und C (Cloudflare-only)
-| | B: VPS (Infomaniak/Hetzner) | C: Cloudflare Workers + Neon |
+**Wichtigste Erkenntnis:** Engpass ist allein der **Fotospeicher**. Wer CHF 0 will, braucht kurze Aufbewahrungsfristen für
+Originale in der Cloud. Vorschlag: Originale **nicht** standardmässig hochladen, sondern Web-Version (≈ 0.6 MB) online, Originale
+auf USB-Stick/Download-Link nur auf Wunsch → Speicherbedarf sinkt um ca. 90 % (Entscheid E4).
+
+## Schutz vor Kosten (Details `ARCHITECTURE.md` §7)
+- Workers Paid, R2 Infrequent Access, Cloudflare Images werden **nie** ohne deine Zustimmung aktiviert.
+- App-Obergrenze R2: 8 GB, Upload-Stopp mit lokaler Warteschlange auf der Fotobox.
+- Warnungen per E-Mail bei 50/80/95 %, Verbrauchsanzeige im Admin.
+- Cloudflare-Budgetwarnung bei USD 1 (richtest du ein; informiert nur).
+- E-Mail-Outbox drosselt auf 80/Tag.
+
+## Einmalige Kosten
+Domain (jährlich). Optional später: Markenanmeldung beim IGE (Gebühr laut IGE prüfen), rechtliche Prüfung der Texte.
+
+## Vergleich zu Version 1
+| | Version 1 (Vercel + Supabase) | **Version 2 (Cloudflare)** |
 |---|---|---|
-| Server/Worker | CHF 5–20 | USD 5 (Workers Paid) |
-| DB | inkl. | Neon Free/USD 19 |
-| Backups | selbst einrichten, Offsite-Speicher CHF 2–5 | Anbieter |
-| Zeitaufwand Wartung | **ca. 2–4 h / Monat** | ca. 1 h / Monat |
+| Monatlich | ca. CHF 45–70 | **CHF 0** |
+| Wartung | gering | gering bis mittel |
+| Einschränkungen | kaum | 10 ms CPU, Speicher 10 GB, Backups selbst organisieren, kein Server-PDF |
+| Anbieter | 4 | im Kern 1 (Cloudflare) + Resend |
 
-Deine Arbeitszeit ist der grösste Kostenfaktor – daher Empfehlung A trotz höherer Rechnung.
-
-## Einmalige Kosten (Plattform)
-Keine Lizenzkosten. Domain, ggf. Markenanmeldung beim IGE (Grundgebühr laut IGE prüfen), ggf. rechtliche Prüfung der AGB/Datenschutz.
-
-## Wirtschaftlichkeits-Beispiel (nur Rechenweg, deine Zahlen fehlen noch)
+## Wirtschaftlichkeit (Rechenweg, Werte vorläufig)
+Druckkosten vorläufig **CHF 0.15 pro Abzug** (kalkulatorisch, im Admin änderbar). Keine MWST berechnet, bis deine Situation geklärt ist.
 ```
-Deckungsbeitrag pro Vermietung = Mietpreis − Druckkosten − Transport − Zeitaufwand × Stundensatz − anteilige Cloud
-Break-even (Anzahl Vermietungen) = Investition Fotobox ÷ Deckungsbeitrag pro Vermietung
+Deckungsbeitrag = Mietpreis − Abzüge × 0.15 − Transport − Arbeitszeit × Stundensatz   (Cloud = 0)
+Break-even      = Investition ÷ Deckungsbeitrag
 ```
-Beispiel mit **Fantasiewerten** (bitte ersetzen): Preis 590, 300 Drucke × 0.15 = 45, Transport 40, Cloud 15 →
-DB 490 (ohne Arbeitszeit). Investition 2'500 → 6 Vermietungen. Mit 6 h × CHF 40 Arbeitszeit → DB 250 → 10 Vermietungen.
-Das Finanzmodul rechnet das später aus echten Daten.
+
+Quellen: [Workers Limits](https://developers.cloudflare.com/workers/platform/limits/) · [Workers Pricing](https://developers.cloudflare.com/workers/platform/pricing/) · [D1 Pricing](https://developers.cloudflare.com/d1/platform/pricing/) · [D1 Limits](https://developers.cloudflare.com/d1/platform/limits/) · [R2 Pricing](https://developers.cloudflare.com/r2/pricing/) · [Budget Alerts](https://developers.cloudflare.com/billing/manage/budget-alerts/) · [Zero Trust Plans](https://www.cloudflare.com/plans/sase-zero-trust.md) · [Resend Limits](https://resend.com/docs/knowledge-base/account-quotas-and-limits) · [Resend Pricing](https://resend.com/pricing) · [Cloudflare Terms](https://www.cloudflare.com/terms/)

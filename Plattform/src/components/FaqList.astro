@@ -1,0 +1,17 @@
+---
+/** FAQ als natives <details>: ohne JavaScript bedienbar, Antworten im HTML (für Google und KI-Systeme lesbar). */
+interface Props { items: { question: string; answer: string }[]; level?: 2 | 3; }
+const { items, level = 3 } = Astro.props;
+const H = level === 2 ? "h2" : "h3";
+---
+<div class="border-t border-line">
+  {items.map((f) => (
+    <details class="group border-b border-line">
+      <summary class="list-none cursor-pointer flex justify-between items-start gap-6 py-5 text-lg font-medium">
+        <H class="font-sans text-[1.05rem] font-semibold leading-snug">{f.question}</H>
+        <span aria-hidden="true" class="text-gold-text text-2xl leading-none transition-transform group-open:rotate-45">+</span>
+      </summary>
+      <p class="pb-6 pr-10 text-muted max-w-[68ch]">{f.answer}</p>
+    </details>
+  ))}
+</div>

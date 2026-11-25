@@ -1,30 +1,62 @@
 # Entscheidungen (ADR – Architecture Decision Records)
 
-Format: Kontext · Entscheid · Alternativen · Folgen. Status **vorgeschlagen** = wartet auf deine Freigabe.
+Format: Kontext · Entscheid · Alternativen · Folgen.
 
-## ADR-001 Plattform im Unterordner `Plattform/` des Fotobox-Repositorys — *angenommen (2026-11-25, dein Entscheid)*
-Kontext: Fotobox-Software liegt in `System/`. Entscheid: Plattform in `Plattform/`, eigene Doku und Regeln. Pi-Code wird nicht berührt.
-Alternative: eigenes Repository (sauberere Trennung, getrennte Versionen). Folge: Deployment muss auf `Plattform/` als Root zeigen.
+## ADR-001 Plattform im Unterordner `Plattform/` — *angenommen (2026-11-25)*
+## ADR-007 Geld in Rappen, Zeit UTC, Anzeige Europe/Zurich — *angenommen*
+## ADR-008 Keine Zahlungsintegration in V1 — *angenommen*
 
-## ADR-002 Modularer Monolith mit Next.js + TypeScript — *vorgeschlagen*
-Alternativen: separates Backend (z. B. Python/FastAPI, passt zur Pi-Sprache) – mehr Betriebsaufwand; Astro für die Webseite + separates Admin – zwei Systeme.
-Folge: eine Sprache (TypeScript) für Web, Admin und API; serverseitiges Rendern für SEO.
+## ADR-002 Next.js — *ersetzt durch ADR-010*
+## ADR-003 Supabase — *ersetzt durch ADR-009*
+## ADR-005 Postgres-Ausschlussregel — *ersetzt durch ADR-011*
 
-## ADR-003 Supabase (Postgres, Auth) in EU-Region — *vorgeschlagen*
-Alternativen: Neon + Auth-Bibliothek (weniger Abhängigkeit, mehr Eigenbau); eigenes Postgres (Variante B).
-Folge: RLS-Policies müssen für jede Tabelle geschrieben **und getestet** werden.
+## ADR-004 Fotos in privatem R2-Bucket — *angenommen (Vorgabe: vorhandene Infrastruktur nutzen)*
+Neuer Bucket `fotikaste-fotos`, EU-Jurisdiktion, ohne öffentlichen Zugang.
 
-## ADR-004 Fotos in privatem Cloudflare-R2-Bucket — *vorgeschlagen*
-Kontext: R2 ist schon im Einsatz und hat keine Download-Gebühren. Entscheid: **neuer privater** Bucket für die Plattform; der bestehende öffentliche bleibt bis zur Umstellung des Pi.
-Alternative: Supabase Storage (ein Anbieter weniger, aber Datentransfer kostet).
+## ADR-006 Fotobox erzeugt Foto-Token selbst — *angenommen*
 
-## ADR-005 Doppelbuchungsschutz über Postgres-Ausschlussregel — *vorgeschlagen*
-Alternative: nur Prüfung im Code mit Sperren (fehleranfälliger). Folge: braucht Erweiterung `btree_gist` (bei Supabase verfügbar – in Phase 2 prüfen).
+## ADR-009 Cloudflare-Gratisstufen statt Vercel/Supabase — *angenommen (Vorgabe CHF 0, 2026-11-25)*
+Kontext: Budget CHF 0/Monat. Entscheid: Workers (+ statische Assets), D1, R2, Access, Turnstile, Email Routing; Resend Free; GitHub Free.
+Alternativen: Vercel Hobby (laut Bedingungen nicht kommerziell), Supabase Free (pausiert bei Inaktivität). Folgen: 10 ms CPU, keine RLS,
+eigene Magic-Links, Backups selbst; einzige Kostengefahr R2 → harte App-Grenzen.
+Hinweis: Die Freigabe von Variante A (D2) ist dadurch überholt.
 
-## ADR-006 Fotobox erzeugt Foto-Token selbst, Plattform speichert Hash — *vorgeschlagen*
-Grund: QR-Code muss offline funktionieren; passt zur bestehenden Warteschlange. Alternative: Token von der Cloud holen (bricht offline).
+## ADR-010 Astro statt Next.js — *vorgeschlagen (Entscheid E2)*
+Kontext: Öffentliche Seiten sollen statisch, schnell und ohne Server-CPU sein; Free-Plan 10 ms CPU. Astro erzeugt statisches HTML und
+nur dort Server-Code, wo nötig; offizieller Cloudflare-Adapter; Astro gehört seit Jan. 2026 zu Cloudflare (bleibt MIT-lizenziert).
+Alternativen: Next.js über OpenNext auf Workers (seit Sept. 2026 bis 64 MiB möglich, aber schwerer, mehr CPU pro Aufruf);
+SvelteKit. Folge: React-Komponenten weiterhin möglich (Astro-Inseln), z. B. für Buchungsstrecke und Admin.
 
-## ADR-007 Geld in Rappen (integer), Zeit in UTC, Anzeige Europe/Zurich — *angenommen (technische Kleinentscheidung)*
+## ADR-011 Doppelbuchungsschutz über `allocation_days` UNIQUE + `batch()` — *vorgeschlagen*
+D1 hat keine Ausschlussregel; `batch()` ist laut Doku eine Transaktion. Tagesbasierte Belegung pro Ressource. Alternative: Durable Object
+als Buchungs-«Schalter» (auch gratis verfügbar) – komplexer; nur falls Tests Probleme zeigen.
 
-## ADR-008 Keine Zahlungsintegration in V1 — *angenommen (Masterprompt)*
-Datenmodell `payments` mit Feld `method` vorbereitet; keine scheinbar funktionierende Zahlungsfunktion.
+## ADR-012 Admin-Anmeldung über Cloudflare Access + Token-Prüfung im Worker — *vorgeschlagen*
+Alternative: eigene Passwort+TOTP-Anmeldung (mehr Code, mehr Risiko). Folge: 2FA hängt am Google/GitHub-Konto des Admins – dort Pflicht.
+
+## ADR-013 Bildvarianten auf der Fotobox, PDF/ZIP im Browser — *vorgeschlagen*
+Grund: keine Bildverarbeitung/kein Rechenaufwand in Gratis-Workern.
+
+## ADR-014 Markenname zentral in `brand.ts`, Arbeitsname «Fotikaste» — *angenommen (D1)*
+
+## ADR-015 KI-Suche erlaubt, KI-Training gesperrt — *angenommen (D7)*
+robots.txt aus Konfiguration erzeugt: Such-Crawler (Googlebot, Bingbot, OAI-SearchBot, PerplexityBot …) erlaubt; Trainings-Crawler
+(GPTBot, Google-Extended, ClaudeBot, CCBot, Applebot-Extended …) gesperrt; Liste vor Go-Live gegen aktuelle Anbieterdoku prüfen.
+Zusätzlich Cloudflare-Einstellung «AI Crawl Control/Bot-Schutz» prüfen, damit erlaubte Such-Crawler nicht blockiert werden.
+
+## ADR-016 Sprache de-CH, Mehrsprachigkeit vorbereitet — *angenommen (D6)*
+
+## ADR-009/010/012 — *angenommen (E1, E2, 2026-11-25)*
+
+## ADR-017 Schriften lokal statt Google Fonts — *angenommen (Phase 1)*
+Schneller (kein Fremd-Server), datenschutzfreundlich (keine IP-Übermittlung an Google), vorgeladen gegen Layoutverschiebung.
+
+## ADR-018 Phase 1 rein statisch, Cloudflare-Adapter erst ab Phase 2 — *angenommen*
+Öffentliche Seiten bleiben auch danach statisch (prerender); nur Buchung/Portal/Admin/API werden Server-Routen.
+
+## ADR-019 Platzhalterseiten noindex — *angenommen*
+Anlass-, Regional-, Rechts- und Kontaktseiten sind bis zu echtem Inhalt `noindex` und nicht in der Sitemap (gegen dünne Inhalte).
+
+## ADR-020 Galeriebilder 2400 px / JPEG 85 / ohne Metadaten — *vorläufig (E4)*, siehe `IMAGES.md`.
+
+## ADR-021 Zahlung 100 % auf Rechnung vor dem Event — *angenommen (Geschäftsmodell, ersetzt 30 %-Vorschlag)*

@@ -1,0 +1,24 @@
+---
+import Logo from "./Logo.astro";
+import { brand } from "../config/brand";
+import { mainNav, occasionNav, regionNav, legalNav } from "../config/site";
+const year = new Date().getFullYear();
+---
+<footer class="bg-charcoal text-[#EDE7DC] mt-24">
+  <div class="container-page py-16 grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+    <div class="flex flex-col gap-4 max-w-sm">
+      <Logo tagline={false} />
+      <p class="text-[#C9C2B6] text-[0.95rem]">Fotobox mit Spiegelreflexkamera und Sofortdruck. Für Hochzeiten, Geburtstage und Firmenanlässe in der Ostschweiz und in Zürich.</p>
+      <p class="text-sm text-[#C9C2B6]">Kontaktdaten folgen.</p>
+    </div>
+    <nav aria-label="Fotobox"><h2 class="font-sans text-xs tracking-[0.2em] uppercase text-[#CDB284] mb-4 font-semibold">Fotobox</h2>
+      <ul class="flex flex-col gap-2 text-[0.95rem]">{mainNav.map((i) => <li><a href={i.href} class="hover:text-white">{i.label}</a></li>)}</ul></nav>
+    <nav aria-label="Anlässe und Regionen"><h2 class="font-sans text-xs tracking-[0.2em] uppercase text-[#CDB284] mb-4 font-semibold">Anlässe</h2>
+      <ul class="flex flex-col gap-2 text-[0.95rem]">{[...occasionNav, ...regionNav].map((i) => <li><a href={i.href} class="hover:text-white">{i.label}</a></li>)}</ul></nav>
+    <nav aria-label="Rechtliches"><h2 class="font-sans text-xs tracking-[0.2em] uppercase text-[#CDB284] mb-4 font-semibold">Rechtliches</h2>
+      <ul class="flex flex-col gap-2 text-[0.95rem]">{legalNav.map((i) => <li><a href={i.href} class="hover:text-white">{i.label}</a></li>)}<li><a href="/ueber-uns" class="hover:text-white">Über uns</a></li></ul></nav>
+  </div>
+  <div class="border-t border-[#3A3631]">
+    <p class="container-page py-6 text-xs text-[#A9A296]">© {year} {brand.name}{brand.isWorkingName && " (Arbeitsname)"} · Entwicklungsversion mit Platzhaltern · Preise in CHF</p>
+  </div>
+</footer>

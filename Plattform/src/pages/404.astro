@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+<BaseLayout title="Seite nicht gefunden" path="/404" indexable={false}>
+  <section class="container-page py-24 text-center">
+    <p class="eyebrow">Fehler 404</p>
+    <h1 class="text-5xl mt-4">Diese Seite gibt es nicht.</h1>
+    <p class="mt-4 text-muted">Vielleicht hilft Ihnen die Startseite weiter.</p>
+    <a href="/" class="btn btn-primary mt-8">Zur Startseite</a>
+  </section>
+</BaseLayout>

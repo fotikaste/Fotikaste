@@ -20,6 +20,12 @@
       "runtimeExecutable": "py",
       "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1", "--directory", "C:\\Users\\timku\\Documents\\Projekte\\Fotobox\\Dokumente\\design"],
       "port": 8765
+    },
+    {
+      "name": "plattform-design",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["-m", "http.server", "8766", "--bind", "127.0.0.1", "--directory", "C:\\Users\\timku\\Documents\\Projekte\\Fotobox\\Plattform\\design"],
+      "port": 8766
     }
   ]
 }

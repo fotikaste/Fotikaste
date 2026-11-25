@@ -1,0 +1,23 @@
+---
+import ContentLayout from "../layouts/ContentLayout.astro";
+import PostcardStack from "../components/PostcardStack.astro";
+import { productFacts } from "../data/content";
+import { serviceJsonLd } from "../lib/seo";
+---
+<ContentLayout path="/fotobox" eyebrow="Unsere Fotobox" heading="Profitechnik innen, Ruhe aussen" lead="Spiegelreflexkamera, Dauerlicht, Touchscreen und ein Sublimationsdrucker für Postkarten 10 × 15 cm – in einem eigenen Gehäuse, selbst entwickelt." jsonLd={[serviceJsonLd()]}>
+  <div class="grid lg:grid-cols-2 gap-14 items-start">
+    <div>
+      <h2 class="text-3xl sm:text-4xl">Technische Angaben</h2>
+      <dl class="mt-6 border-t border-line">
+        {productFacts.map((f) => (<div class="grid grid-cols-[9rem_1fr] gap-4 py-4 border-b border-line"><dt class="text-muted">{f.label}</dt><dd>{f.value ?? <span class="text-muted italic">Angabe folgt</span>}</dd></div>))}
+      </dl>
+      <h2 class="text-3xl sm:text-4xl mt-14">So bedienen die Gäste die Fotobox</h2>
+      <ol class="mt-6 list-decimal pl-5 flex flex-col gap-2 text-muted">
+        <li>Auf «Foto machen» tippen.</li><li>Im Livebild ausrichten, der Countdown läuft.</li><li>Foto ansehen: wiederholen, drucken oder aufs Handy laden.</li><li>Postkarte nach wenigen Sekunden mitnehmen.</li>
+      </ol>
+      <h2 class="text-3xl sm:text-4xl mt-14">Ohne Internet zuverlässig</h2>
+      <p class="mt-4 text-muted max-w-[60ch]">Fotografieren und Drucken funktionieren auch ohne Internetverbindung. Digitale Fotos werden automatisch nachgeladen, sobald wieder eine Verbindung besteht. Die Fotobox sagt das den Gästen offen, statt einen sofortigen Download zu versprechen.</p>
+    </div>
+    <div class="lg:sticky lg:top-28"><PostcardStack /><p class="text-center text-sm text-muted mt-6">Produktfotos folgen.</p></div>
+  </div>
+</ContentLayout>

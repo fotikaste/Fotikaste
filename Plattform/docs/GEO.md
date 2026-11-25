@@ -16,8 +16,8 @@
 |---|---|---|
 | Googlebot, Bingbot | Suche | erlauben |
 | OAI-SearchBot (OpenAI), PerplexityBot | KI-Suche | erlauben |
-| Google-Extended, GPTBot, ClaudeBot, CCBot | **Training** von KI-Modellen | **Entscheid D7** (separat von Suche!) |
-Alle: `Disallow: /admin /konto /event /f /api /buchen`. Zusätzlich prüfen, dass Vercel/Cloudflare-Bot-Schutz erlaubte Such-Crawler nicht blockiert.
+| Google-Extended, GPTBot, ClaudeBot, CCBot, Applebot-Extended | **Training** von KI-Modellen | **gesperrt** (D7, separat konfigurierbar) |
+Alle: `Disallow: /admin /konto /event /f /api /buchen`. Zusätzlich prüfen, dass Cloudflare-Bot-Schutz / AI Crawl Control erlaubte Such-Crawler nicht blockiert.
 
 **llms.txt:** optionaler Vorschlag, kein etablierter Standard und kein bekannter Rankingfaktor → höchstens als kleine Ergänzung.
 **IndexNow:** für Bing/Yandex bei neuen/geänderten Seiten (Phase 7).

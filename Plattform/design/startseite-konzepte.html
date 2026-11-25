@@ -1,0 +1,308 @@
+<meta charset="utf-8">
+<title>Fotikaste Designkonzepte</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: Präsentationsmappe. Rahmen-Chrome folgt dem Theme; jede Konzept-Mockup-Fläche hat bewusst ihre eigene feste Palette. */
+:root{
+  --bg:#F2F0EB; --panel:#FFFFFF; --ink:#1F1E1C; --muted:#67635B; --line:#DDD8CE; --accent:#7A6440;
+  --ui:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Cormorant Garamond","Iowan Old Style",Georgia,serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#171716;--panel:#211F1D;--ink:#ECE8E0;--muted:#A7A196;--line:#38352F;--accent:#CDB284;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171716;--panel:#211F1D;--ink:#ECE8E0;--muted:#A7A196;--line:#38352F;--accent:#CDB284;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--ui);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1320px;margin:0 auto;padding-block:40px 80px;display:flex;flex-direction:column;gap:64px}
+.intro{display:flex;flex-direction:column;gap:12px;max-width:72ch}
+.intro h1{font:600 clamp(2.2rem,5vw,3.2rem)/1.05 var(--serif);margin:0;text-wrap:balance}
+.intro p{margin:0;color:var(--muted)}
+.eyebrow{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.concept{display:flex;flex-direction:column;gap:20px;border-top:1px solid var(--line);padding-top:28px}
+.chead{display:flex;flex-wrap:wrap;gap:12px 32px;align-items:baseline;justify-content:space-between}
+.chead h2{font:600 2rem/1.1 var(--serif);margin:0}
+.chead p{margin:0;color:var(--muted);max-width:62ch}
+.views{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:900px){.views{grid-template-columns:1fr}}
+.label{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:600}
+.frame{border:1px solid var(--line);background:var(--panel);overflow:hidden}
+.dscroll{overflow-x:auto}
+.desk{width:1280px;zoom:.62}
+@media (max-width:1400px){.desk{zoom:.5}}
+@media (max-width:700px){.desk{zoom:.3}}
+.mob{width:390px;zoom:.77;margin:0 auto}
+@media (max-width:900px){.mob{zoom:.8}}
+.specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.spec{background:var(--panel);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.spec h3{margin:0;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.sw{display:flex;gap:6px;flex-wrap:wrap}
+.sw span{width:44px;height:44px;border:1px solid var(--line);display:flex;align-items:flex-end;font-size:9px;padding:2px;color:#555;background:var(--c)}
+.note{font-size:.82rem;color:var(--muted)}
+.ph{font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+
+/* ---------- Gemeinsame Mockup-Struktur ---------- */
+.page{container-type:inline-size;font-size:16px;line-height:1.55}
+.page *{box-sizing:border-box}
+.page a{color:inherit;text-decoration:none}
+.page .nav{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.page .links{display:flex;gap:28px;font-size:14px}
+.page .burger{display:none;width:28px;height:14px;border-top:1.5px solid currentColor;border-bottom:1.5px solid currentColor}
+@container (max-width:600px){
+  .page .links{display:none}
+  .page .burger{display:block}
+  .page .nav .navcta{display:none}
+}
+
+/* ---------- Konzept A: Galerie ---------- */
+.ka{background:#F8F6F0;color:#222222;font-family:"Inter",sans-serif}
+.ka .nav{padding:28px 64px;border-bottom:1px solid #E6DFD2}
+.ka .logo{font:500 26px/1 "Cormorant Garamond",serif;letter-spacing:.32em;text-transform:uppercase}
+.ka .logo i{font-style:normal;color:#8C7447}
+.ka .links a{color:#444}
+.ka .btn{display:inline-block;padding:14px 26px;border:1px solid #222;font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+.ka .btn.solid{background:#222;color:#F8F6F0}
+.ka .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:72px;padding:88px 64px 72px;align-items:center}
+.ka .kicker{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#7A6440}
+.ka h1{font:400 76px/1.02 "Cormorant Garamond",serif;margin:18px 0 22px;letter-spacing:-.01em}
+.ka h1 em{font-style:italic;color:#7A6440}
+.ka .sub{font-size:18px;color:#555;max-width:40ch;margin:0 0 34px}
+.ka .ctas{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.ka .ctas small{color:#777;font-size:13px}
+.ka .print{background:#fff;padding:34px 34px 70px;box-shadow:0 1px 0 #E6DFD2,0 30px 60px -40px rgba(60,45,20,.35);position:relative}
+.ka .print .img{aspect-ratio:4/5;background:#E9E2D4;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#8C7447}
+.ka .print .cap{position:absolute;left:34px;right:34px;bottom:24px;display:flex;justify-content:space-between;font:italic 15px "Cormorant Garamond",serif;color:#777}
+.ka .facts{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #E6DFD2;border-bottom:1px solid #E6DFD2;margin:0 64px}
+.ka .facts div{padding:26px 22px;border-right:1px solid #E6DFD2}
+.ka .facts div:last-child{border-right:0}
+.ka .facts b{display:block;font:500 26px/1.1 "Cormorant Garamond",serif;margin-bottom:6px}
+.ka .facts span{font-size:13px;color:#666}
+.ka .pk{padding:80px 64px}
+.ka .pk h2{font:400 44px/1.1 "Cormorant Garamond",serif;margin:0 0 36px}
+.ka table{width:100%;border-collapse:collapse;font-size:15px}
+.ka th{text-align:left;font:500 28px "Cormorant Garamond",serif;padding:0 0 16px;border-bottom:1px solid #222}
+.ka th small{display:block;font:500 11px "Inter",sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#7A6440;margin-top:6px}
+.ka td{padding:14px 0;border-bottom:1px solid #E6DFD2;color:#444;vertical-align:top}
+.ka td:first-child{color:#777;width:24%}
+.ka .price td{font:500 22px "Cormorant Garamond",serif;color:#222}
+@container (max-width:600px){
+  .ka .nav{padding:18px 20px}
+  .ka .logo{font-size:20px;letter-spacing:.26em}
+  .ka .hero{grid-template-columns:1fr;gap:36px;padding:40px 20px}
+  .ka h1{font-size:46px}
+  .ka .sub{font-size:16px}
+  .ka .print{padding:18px 18px 48px}
+  .ka .print .cap{left:18px;right:18px;bottom:16px}
+  .ka .facts{grid-template-columns:1fr 1fr;margin:0 20px}
+  .ka .facts div:nth-child(2){border-right:0}
+  .ka .facts div:nth-child(-n+2){border-bottom:1px solid #E6DFD2}
+  .ka .pk{padding:48px 20px}
+  .ka .pk h2{font-size:34px}
+  .ka .tbl{overflow-x:auto}
+  .ka table{min-width:520px}
+  .ka .ctas .btn{flex:1;text-align:center}
+}
+
+/* ---------- Konzept B: Abendlicht ---------- */
+.kb{background:#1C1B19;color:#EDE7DC;font-family:"Manrope",sans-serif}
+.kb .nav{padding:26px 60px}
+.kb .logo{font:500 28px/1 "Playfair Display",serif}
+.kb .logo span{display:inline-block;width:6px;height:6px;background:#C8AC7C;margin-left:4px;vertical-align:middle}
+.kb .links a{color:#B9B2A6}
+.kb .btn{display:inline-block;padding:14px 28px;font-size:14px;font-weight:600;letter-spacing:.04em}
+.kb .btn.gold{background:#C8AC7C;color:#1C1B19}
+.kb .btn.ghost{border:1px solid #57514A;color:#EDE7DC}
+.kb .hero{text-align:center;padding:72px 60px 40px;display:flex;flex-direction:column;align-items:center}
+.kb .kicker{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#C8AC7C}
+.kb h1{font:400 72px/1.05 "Playfair Display",serif;margin:22px 0 18px;max-width:15ch}
+.kb h1 i{color:#C8AC7C}
+.kb .sub{color:#B9B2A6;font-size:18px;max-width:46ch;margin:0 0 30px}
+.kb .stage{margin-top:56px;width:100%;max-width:760px;aspect-ratio:16/9;background:radial-gradient(ellipse 45% 60% at 50% 55%,#3A332A 0%,#1C1B19 70%);display:flex;align-items:flex-end;justify-content:center;position:relative;border-bottom:1px solid #3A3631}
+.kb .booth{width:150px;height:300px;background:#2A2724;border:1px solid #4A443D;position:relative;margin-bottom:-1px}
+.kb .booth::before{content:"";position:absolute;left:22px;right:22px;top:34px;height:96px;background:#141311;border:1px solid #5A5249}
+.kb .booth::after{content:"";position:absolute;left:62px;top:150px;width:26px;height:26px;border-radius:50%;border:1px solid #C8AC7C}
+.kb .stage .ph{position:absolute;top:18px;left:0;right:0;color:#8F877B}
+.kb .pk{padding:84px 60px 90px}
+.kb .pk h2{font:400 40px "Playfair Display",serif;text-align:center;margin:0 0 48px}
+.kb .cols{display:grid;grid-template-columns:repeat(3,1fr)}
+.kb .col{padding:10px 36px 0;border-left:1px solid #3A3631;display:flex;flex-direction:column;gap:12px}
+.kb .col:first-child{border-left:0}
+.kb .col .n{font:400 64px/1 "Playfair Display",serif;color:#C8AC7C}
+.kb .col .n small{font:600 12px "Manrope";letter-spacing:.2em;text-transform:uppercase;color:#8F877B;display:block;margin-top:8px}
+.kb .col h3{font:500 24px "Playfair Display",serif;margin:8px 0 0}
+.kb .col ul{margin:0;padding:0;list-style:none;color:#B9B2A6;font-size:14px;display:flex;flex-direction:column;gap:6px}
+.kb .col .p{font-size:20px;font-weight:600;margin-top:6px}
+.kb .col.feat h3::after{content:"Beliebt";font:600 10px "Manrope";letter-spacing:.18em;text-transform:uppercase;color:#C8AC7C;margin-left:10px;vertical-align:middle}
+@container (max-width:600px){
+  .kb .nav{padding:18px 20px}
+  .kb .logo{font-size:22px}
+  .kb .hero{padding:44px 20px 24px}
+  .kb h1{font-size:44px}
+  .kb .sub{font-size:16px}
+  .kb .stage{margin-top:36px}
+  .kb .booth{width:96px;height:190px}
+  .kb .booth::before{left:14px;right:14px;top:22px;height:60px}
+  .kb .booth::after{left:38px;top:96px;width:18px;height:18px}
+  .kb .pk{padding:52px 20px}
+  .kb .pk h2{font-size:32px}
+  .kb .cols{grid-template-columns:1fr;gap:34px}
+  .kb .col{border-left:0;border-top:1px solid #3A3631;padding:28px 0 0}
+  .kb .btn{width:100%;text-align:center}
+  .kb .ctas{width:100%;display:flex;flex-direction:column;gap:10px}
+}
+
+/* ---------- Konzept C: Postkarte ---------- */
+.kc{background:#FFFFFF;color:#232220;font-family:"Manrope",sans-serif}
+.kc .nav{padding:24px 56px;border-bottom:1px solid #EFE9DE}
+.kc .logo{font:italic 500 30px/1 "Cormorant Garamond",serif}
+.kc .logo small{font:600 10px "Manrope";letter-spacing:.22em;text-transform:uppercase;color:#8C7447;margin-left:10px;font-style:normal;vertical-align:middle}
+.kc .links a{color:#555}
+.kc .btn{display:inline-block;padding:15px 28px;background:#232220;color:#fff;font-size:14px;font-weight:600}
+.kc .hero{display:grid;grid-template-columns:1fr 1fr;gap:56px;padding:80px 56px;align-items:center;background:#F6F1E8}
+.kc h1{font:500 68px/1.04 "Cormorant Garamond",serif;margin:0 0 20px}
+.kc h1 em{font-style:italic}
+.kc .sub{font-size:17px;color:#5A564F;max-width:42ch;margin:0 0 30px}
+.kc .check{display:flex;gap:0;max-width:460px;border:1px solid #232220;background:#fff}
+.kc .check span{flex:1;padding:14px 16px;font-size:14px;color:#777}
+.kc .check b{padding:14px 20px;background:#232220;color:#fff;font-size:14px;font-weight:600}
+.kc .hint{font-size:13px;color:#777;margin-top:10px}
+.kc .stack{position:relative;height:420px}
+.kc .card{position:absolute;width:300px;aspect-ratio:2/3;background:#fff;padding:14px 14px 48px;box-shadow:0 18px 40px -24px rgba(40,30,10,.45)}
+.kc .card .im{height:100%;background:#DCCFBB}
+.kc .card .t{position:absolute;bottom:14px;left:0;right:0;text-align:center;font:italic 18px "Cormorant Garamond",serif;color:#6B5A3C}
+.kc .c1{left:8%;top:30px;transform:rotate(-6deg)}
+.kc .c2{left:34%;top:0;transform:rotate(4deg)}
+.kc .c2 .im{background:#C9B79B;display:flex;align-items:center;justify-content:center;color:#5B4A2E}
+.kc .meta{display:flex;gap:28px;margin-top:34px;font-size:13px;color:#5A564F}
+.kc .meta b{display:block;font:500 22px "Cormorant Garamond",serif;color:#232220}
+.kc .pk{padding:84px 56px}
+.kc .pk h2{font:500 44px "Cormorant Garamond",serif;margin:0 0 10px}
+.kc .pk>p{color:#666;margin:0 0 40px}
+.kc .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.kc .pc{border:1px solid #E6DECF;padding:28px;position:relative;background:#FFFDF9}
+.kc .stamp{position:absolute;top:18px;right:18px;width:74px;height:86px;border:1px dashed #B49A70;display:flex;flex-direction:column;align-items:center;justify-content:center;font:500 26px/1 "Cormorant Garamond",serif;color:#7A6440}
+.kc .stamp small{font:600 9px "Manrope";letter-spacing:.14em;text-transform:uppercase;margin-top:6px}
+.kc .pc h3{font:500 30px "Cormorant Garamond",serif;margin:0 0 4px}
+.kc .pc .p{font-size:15px;font-weight:600;margin-bottom:18px}
+.kc .pc ul{margin:0 0 22px;padding:0;list-style:none;font-size:14px;color:#555;display:flex;flex-direction:column;gap:7px;border-top:1px solid #EFE9DE;padding-top:16px}
+.kc .pc a{font-size:14px;font-weight:600;border-bottom:1px solid #232220;padding-bottom:2px}
+@container (max-width:600px){
+  .kc .nav{padding:16px 20px}
+  .kc .logo{font-size:24px}
+  .kc .logo small{display:none}
+  .kc .hero{grid-template-columns:1fr;padding:40px 20px;gap:30px}
+  .kc h1{font-size:44px}
+  .kc .sub{font-size:16px}
+  .kc .stack{height:300px;order:-1}
+  .kc .card{width:180px}
+  .kc .c1{left:6%;top:24px}
+  .kc .c2{left:38%;top:0}
+  .kc .meta{gap:18px;flex-wrap:wrap}
+  .kc .pk{padding:52px 20px}
+  .kc .pk h2{font-size:34px}
+  .kc .cards{grid-template-columns:1fr}
+}
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">Fotikaste · Phase 0 · Designkonzepte</span>
+    <h1>Drei Richtungen für die Startseite</h1>
+    <p>Jedes Konzept zeigt denselben Inhalt: Navigation, Einstieg mit Buchungsknopf, Produktpräsentation und Pakete. Links die Desktop-Ansicht, rechts die Handy-Ansicht. Alle Preise, Bilder und Zahlen sind <strong>Platzhalter</strong> und keine Angebote. Fotikaste ist Arbeitsname.</p>
+  </header>
+
+  <!-- ================= KONZEPT A ================= -->
+  <section class="concept" aria-labelledby="ka-t">
+    <div class="chead"><h2 id="ka-t">A · Galerie</h2><p>Ruhig und redaktionell wie ein Kunstbuch. Die Fotobox wird gerahmt wie ein Abzug mit Passepartout. Die Pakete stehen in einer klaren Vergleichstabelle, gut für Kunden und für KI-Suchsysteme.</p></div>
+    <div class="views">
+      <div><div class="label">Desktop 1280 px</div><div class="frame dscroll"><div class="desk"><div class="page ka" data-variant="a"></div></div></div></div>
+      <div><div class="label">Handy 390 px</div><div class="frame"><div class="mob"><div class="page ka" data-variant="a"></div></div></div></div>
+    </div>
+    <div class="specs">
+      <div class="spec"><h3>Typografie</h3><div style="font:500 28px/1.1 var(--serif)">Cormorant Garamond</div><div>Inter für Text und Bedienung</div><div class="note">Grosse Serifen nur ab 32 px, Fliesstext 16–18 px.</div></div>
+      <div class="spec"><h3>Farben</h3><div class="sw"><span style="--c:#F8F6F0">Ivory</span><span style="--c:#FFFFFF">Weiss</span><span style="--c:#E9E2D4">Sand</span><span style="--c:#7A6440;color:#fff">Gold</span><span style="--c:#222222;color:#fff">Kohle</span></div><div class="note">Gold #B49A70 nur dekorativ; für Text dunkleres Gold #7A6440 (Kontrast auf Ivory ca. 5:1).</div></div>
+      <div class="spec"><h3>Navigation und CTA</h3><div>Wortmarke links, 5 Links, «Jetzt buchen» als dunkler Kastenknopf. Am Handy Menü-Symbol, Buchen-Knopf im Hero über die volle Breite.</div></div>
+      <div class="spec"><h3>Stärke und Risiko</h3><div>Wirkt teuer und zeitlos. Lebt von sehr guten Produktfotos; ohne sie zu leer.</div></div>
+    </div>
+  </section>
+
+  <!-- ================= KONZEPT B ================= -->
+  <section class="concept" aria-labelledby="kb-t">
+    <div class="chead"><h2 id="kb-t">B · Abendlicht</h2><p>Dunkel wie ein Festsaal am Abend. Die Fotobox steht wie ein beleuchtetes Objekt in der Mitte, das passt zur Dauerbeleuchtung der echten Box. Die Pakete führen mit der Anzahl Ausdrucke.</p></div>
+    <div class="views">
+      <div><div class="label">Desktop 1280 px</div><div class="frame dscroll"><div class="desk"><div class="page kb" data-variant="b"></div></div></div></div>
+      <div><div class="label">Handy 390 px</div><div class="frame"><div class="mob"><div class="page kb" data-variant="b"></div></div></div></div>
+    </div>
+    <div class="specs">
+      <div class="spec"><h3>Typografie</h3><div style="font:400 28px/1.1 'Playfair Display',serif">Playfair Display</div><div style="font-family:Manrope">Manrope für Text und Bedienung</div><div class="note">Kontrastreiche Serife, wirkt festlich; sparsam einsetzen.</div></div>
+      <div class="spec"><h3>Farben</h3><div class="sw"><span style="--c:#1C1B19;color:#fff">Nacht</span><span style="--c:#2A2724;color:#fff">Kohle</span><span style="--c:#C8AC7C">Champagner</span><span style="--c:#B9B2A6">Stein</span><span style="--c:#EDE7DC">Elfenbein</span></div><div class="note">Ein einziger weicher Lichtschein hinter dem Produkt, sonst flache Flächen.</div></div>
+      <div class="spec"><h3>Navigation und CTA</h3><div>Goldener, flächiger Buchen-Knopf, daneben «Verfügbarkeit prüfen» als Umriss. Am Handy beide Knöpfe übereinander.</div></div>
+      <div class="spec"><h3>Stärke und Risiko</h3><div>Unterscheidet sich am stärksten von der Konkurrenz. Dunkle Seiten wirken bei Firmenkunden schwerer; Fotos brauchen dunklen Hintergrund.</div></div>
+    </div>
+  </section>
+
+  <!-- ================= KONZEPT C ================= -->
+  <section class="concept" aria-labelledby="kc-t">
+    <div class="chead"><h2 id="kc-t">C · Postkarte</h2><p>Baut auf dem echten Ergebnis der Fotobox auf: der Postkarte 10×15 cm. Abzüge liegen wie auf einem Tisch, die Verfügbarkeitsprüfung sitzt direkt im Einstieg. Jedes Paket zeigt die Anzahl Abzüge als Briefmarke.</p></div>
+    <div class="views">
+      <div><div class="label">Desktop 1280 px</div><div class="frame dscroll"><div class="desk"><div class="page kc" data-variant="c"></div></div></div></div>
+      <div><div class="label">Handy 390 px</div><div class="frame"><div class="mob"><div class="page kc" data-variant="c"></div></div></div></div>
+    </div>
+    <div class="specs">
+      <div class="spec"><h3>Typografie</h3><div style="font:italic 500 28px/1.1 var(--serif)">Cormorant Garamond Kursiv</div><div style="font-family:Manrope">Manrope für Text und Bedienung</div><div class="note">Kursive Wortmarke erinnert an Handschrift auf einer Karte, ohne verspielt zu sein.</div></div>
+      <div class="spec"><h3>Farben</h3><div class="sw"><span style="--c:#FFFFFF">Weiss</span><span style="--c:#F6F1E8">Papier</span><span style="--c:#DCCFBB">Sand</span><span style="--c:#B49A70">Gold</span><span style="--c:#232220;color:#fff">Tinte</span></div><div class="note">Gold nur für Linien und Briefmarken, Knöpfe in Tinte.</div></div>
+      <div class="spec"><h3>Navigation und CTA</h3><div>Datumsfeld mit «Verfügbarkeit prüfen» direkt im Hero: der kürzeste Weg zur Direktbuchung. Am Handy steht das Feld unter den Postkarten.</div></div>
+      <div class="spec"><h3>Stärke und Risiko</h3><div>Am nächsten am Produkt und an der Buchung. Braucht gute Fotos echter Abzüge; heller Hintergrund kann schlichter wirken als A oder B.</div></div>
+    </div>
+  </section>
+</div>
+
+<template id="tpl-a">
+  <nav class="nav"><a class="logo" href="#">Foti<i>·</i>kaste</a><div class="links"><a>Unsere Fotobox</a><a>Angebote</a><a>Galerie</a><a>Verfügbarkeit</a><a>FAQ</a></div><a class="btn solid navcta">Jetzt buchen</a><span class="burger" aria-hidden="true"></span></nav>
+  <div class="hero">
+    <div><div class="kicker">Fotobox mieten · Thurgau &amp; Ostschweiz</div>
+      <h1>Besondere Momente. <em>Bleibende</em> Erinnerungen.</h1>
+      <p class="sub">Die Fotobox für Hochzeiten, besondere Feiern und Firmenanlässe. Spiegelreflexkamera, Sofortdruck und eine private Online-Galerie.</p>
+      <div class="ctas"><a class="btn solid">Jetzt buchen</a><a class="btn">Verfügbarkeit prüfen</a></div></div>
+    <figure class="print" style="margin:0"><div class="img"><svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="18" y="6" width="28" height="52" fill="none"/><rect x="23" y="12" width="18" height="13" fill="none"/><circle cx="32" cy="34" r="4" fill="none"/></svg><span class="ph">Platzhalter · Produktfoto</span></div><figcaption class="cap"><span>Die Fotikaste</span><span>Handgefertigt im Thurgau</span></figcaption></figure>
+  </div>
+  <div class="facts"><div><b>DSLR</b><span>Canon-Spiegelreflexkamera</span></div><div><b>10 × 15 cm</b><span>Sofortdruck in Laborqualität</span></div><div><b>QR-Code</b><span>Jedes Foto aufs Handy</span></div><div><b>Platzbedarf</b><span>Angabe folgt</span></div></div>
+  <div class="pk"><h2>Pakete im Vergleich</h2><div class="tbl"><table>
+    <thead><tr><th></th><th>Essential<small>Platzhalter</small></th><th>Premium<small>Beispiel</small></th><th>Signature<small>Platzhalter</small></th></tr></thead>
+    <tbody><tr><td>Mietdauer</td><td>folgt</td><td>folgt</td><td>folgt</td></tr><tr><td>Ausdrucke</td><td>folgt</td><td>300 (Beispiel)</td><td>folgt</td></tr><tr><td>Online-Galerie</td><td>✓</td><td>✓</td><td>✓</td></tr><tr><td>Lieferung, Aufbau</td><td>folgt</td><td>✓</td><td>✓</td></tr><tr class="price"><td>Preis</td><td>CHF —</td><td>CHF —</td><td>CHF —</td></tr></tbody></table></div></div>
+</template>
+
+<template id="tpl-b">
+  <nav class="nav"><a class="logo" href="#">Fotikaste<span></span></a><div class="links"><a>Unsere Fotobox</a><a>Angebote</a><a>Galerie</a><a>Verfügbarkeit</a><a>FAQ</a></div><a class="btn gold navcta">Jetzt buchen</a><span class="burger" aria-hidden="true"></span></nav>
+  <div class="hero"><div class="kicker">Die Fotobox für besondere Anlässe</div>
+    <h1>Besondere Momente. <i>Bleibende</i> Erinnerungen.</h1>
+    <p class="sub">Mit Spiegelreflexkamera, Studiolicht und Sofortdruck. Geliefert und aufgebaut im Thurgau und in der Ostschweiz.</p>
+    <div class="ctas"><a class="btn gold">Jetzt buchen</a> <a class="btn ghost">Verfügbarkeit prüfen</a></div>
+    <div class="stage"><span class="ph">Platzhalter · Produktfoto vor dunklem Hintergrund</span><div class="booth"></div></div></div>
+  <div class="pk"><h2>Drei Pakete. Klare Preise.</h2><div class="cols">
+    <div class="col"><div class="n">—<small>Ausdrucke</small></div><h3>Essential</h3><ul><li>Mietdauer folgt</li><li>Online-Galerie</li><li>QR-Download</li></ul><div class="p">CHF —</div></div>
+    <div class="col feat"><div class="n">300<small>Ausdrucke · Beispiel</small></div><h3>Premium</h3><ul><li>Lieferung und Aufbau</li><li>Individuelles Fotolayout</li><li>Online-Galerie</li></ul><div class="p">CHF —</div></div>
+    <div class="col"><div class="n">—<small>Ausdrucke</small></div><h3>Signature</h3><ul><li>Hintergrundsystem</li><li>Verlängerte Mietdauer</li><li>Persönliche Betreuung</li></ul><div class="p">CHF —</div></div></div></div>
+</template>
+
+<template id="tpl-c">
+  <nav class="nav"><a class="logo" href="#">Fotikaste<small>Fotobox</small></a><div class="links"><a>Unsere Fotobox</a><a>Angebote</a><a>Galerie</a><a>Verfügbarkeit</a><a>FAQ</a></div><a class="btn navcta">Jetzt buchen</a><span class="burger" aria-hidden="true"></span></nav>
+  <div class="hero"><div>
+      <h1>Besondere Momente. <em>Zum Mitnehmen.</em></h1>
+      <p class="sub">Jeder Gast hält sein Foto nach wenigen Sekunden in der Hand, als Postkarte 10×15 cm, und auf Wunsch auch auf dem Handy.</p>
+      <div class="check"><span>Eventdatum wählen</span><b>Verfügbarkeit prüfen</b></div>
+      <div class="hint">Sofort verbindlich buchen · Platzhalter</div>
+      <div class="meta"><div><b>10 × 15</b>Postkarte</div><div><b>DSLR</b>Canon</div><div><b>QR</b>Foto aufs Handy</div></div></div>
+    <div class="stack"><div class="card c1"><div class="im"></div><div class="t">Anna &amp; Luca · Beispiel</div></div><div class="card c2"><div class="im"><span class="ph">Platzhalter · echter Abzug</span></div><div class="t">Sommerfest · Beispiel</div></div></div></div>
+  <div class="pk"><h2>Pakete</h2><p>Alle Preise inklusive. Keine versteckten Kosten. Werte folgen.</p><div class="cards">
+    <div class="pc"><div class="stamp">—<small>Abzüge</small></div><h3>Essential</h3><div class="p">CHF —</div><ul><li>Mietdauer folgt</li><li>Online-Galerie</li></ul><a>Paket wählen</a></div>
+    <div class="pc"><div class="stamp">300<small>Abzüge</small></div><h3>Premium</h3><div class="p">CHF — · Beispiel</div><ul><li>Lieferung und Aufbau</li><li>Eigenes Fotolayout</li></ul><a>Paket wählen</a></div>
+    <div class="pc"><div class="stamp">—<small>Abzüge</small></div><h3>Signature</h3><div class="p">CHF —</div><ul><li>Hintergrundsystem</li><li>Verlängerte Mietdauer</li></ul><a>Paket wählen</a></div></div></div>
+</template>
+
+<script>
+document.querySelectorAll('.page[data-variant]').forEach(function(el){
+  var t=document.getElementById('tpl-'+el.dataset.variant);
+  if(t) el.appendChild(t.content.cloneNode(true));
+});
+</script>

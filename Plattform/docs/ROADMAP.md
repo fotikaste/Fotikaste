@@ -1,29 +1,22 @@
 # Roadmap
 
-Stand: 2026-11-25 · Prinzip: erst ein **verkaufsfähiges MVP**, dann ausbauen. Jede Phase endet mit Tests, Doku, Commit und deiner Abnahme.
+Stand: 2026-11-25 (Version 2, Cloudflare CHF 0) · Jede Phase endet mit: Funktionsübersicht, echten Browseransichten, Testergebnissen,
+bekannten Fehlern, Risiken, geänderten Dateien, nächsten Schritten, Fachbegriffen und drei Verständnisfragen.
+Entwicklung auf Branch `plattform/entwicklung`; Übernahme nach `main` nur nach grünen Tests.
 
-> **MVP** (Minimum Viable Product) – die kleinste Version, mit der echte Kunden buchen können und die du sicher betreiben kannst.
+| Phase | Inhalt | Ergebnis | Änderung zu V1 |
+|---|---|---|---|
+| **0** ✅ Entwurf | Konzept, Recherche, Marken-/Wettbewerbsprüfung, drei Designkonzepte | Freigabe | Architektur auf Cloudflare umgestellt |
+| **0b – Sofortmassnahme R2** | Token-Rechte prüfen, Lifecycle 30 Tage, Budgetwarnung (du im Dashboard, ich erkläre) | Risiko gesenkt | neu |
+| **1** ✅ Fundament & Design (2026-11-25, lokal getestet) | Node.js, **Astro** + TypeScript + Tailwind, `wrangler`, Designsystem (gewähltes Konzept), Logo-Entwurf, Startseite, Navigation, **SEO-Fundament** (Metadaten, Canonical, Sitemap, robots.txt mit getrennter KI-Such-/Trainingssteuerung, JSON-LD aus `brand.ts`/Daten, semantisches HTML, Bildoptimierung), Regionalseiten-Gerüst, FAQ-Struktur, Lighthouse-Messung | Startseite lokal im Browser (Desktop + Handy) | SEO ab Phase 1 verbindlich |
+| **2** Datenbank & Sicherheit | D1-Migrationen, Cloudflare Access für Admin, Rollenprüfung im Worker, Audit-Log, Turnstile, Rate-Limits, Verbrauchszähler, Tests für Zugriffsrechte | geschützter leerer Admin | RLS → Worker-Prüfung + Tests |
+| **3** Buchung | Pakete, Extras, **Liefergebiete** (PLZ, Kantone, km, Kosten, Abholung, Vorlauf, Kapazität, Puffer), serverseitige Preise, Verfügbarkeit mit `allocation_days`, Direktbuchung + Anfrage-Weg, Anzahlung/Rest/Kaution konfigurierbar, Bestätigungsmail (Testmodus), Magic-Link-Portal | Testbuchung A–Z, Gleichzeitigkeitstest | Liefergebiet/Zahlungsplan ausgebaut |
+| **4** Administration | Dashboard inkl. **Verbrauchsanzeige**, Buchungen, Kalender, Kunden, Inhalte/Preise/FAQ ohne Code | Selbstverwaltung | Verbrauch neu |
+| **5** Fotobox-Integration | Geräteverwaltung, Geräte-API, Simulator, privater Bucket, Galerie, `PlattformGalerie` im Pi-Code (Laptop), **Migration nach `R2_MIGRATION.md`**, Pi-Update erst nach Freigabe | QR → Plattform, alte Schlüssel gelöscht | Pi darf erweitert werden |
+| **6** Rechnungen & Finanzen | Rechnung als PDF (im Browser erzeugt, unveränderlich), Storno/Gutschrift, CSV, Zahlungserinnerung, Wirtschaftlichkeit (0.15/Abzug vorläufig) | Rechnung zur Buchung | PDF-Erzeugung im Browser |
+| **7** Veröffentlichung | Sicherheits-/Datenschutzprüfung, Rechtstexte, Domain (nach Namensentscheid), Search Console/Bing, Backups + Wiederherstellungstest | Live nach Freigabe | – |
 
-## MVP (V1) – Ziel: erste Online-Buchung
-| Phase | Inhalt | Ergebnis |
-|---|---|---|
-| **0** Analyse ✅ (Entwurf) | Dieses Konzept | Freigabe durch dich |
-| **1** Fundament & Design | Node.js, Next.js+TS+Tailwind, Designsystem (Farben, Schriften, Logo-Entwurf), Komponenten, **Startseite** mit Platzhalter-Inhalten, SEO-Grundgerüst (Metadaten, Sitemap, robots, JSON-LD aus Daten) | Startseite lokal im Browser |
-| **2** Datenbank & Sicherheit | Supabase-Projekt (EU), Migrationen, RLS + Tests, Admin-Login mit 2FA, Rollen, Audit-Log | Geschützter leerer Admin |
-| **3** Buchung | Pakete/Extras/Lieferzonen (admin-pflegbar), serverseitige Preisberechnung, Verfügbarkeit mit Ausschlussregel, Buchungsstrecke, Bestätigungs-Mail (Testmodus), Magic-Link-Portal | Testbuchung Ende-zu-Ende |
-| **4** Administration | Dashboard (echte Zahlen), Buchungen, Kalender (Monat/Woche/Tag), Kunden-CRM, Inhalte/FAQ/Preise bearbeiten | Du verwaltest alles ohne Code |
-| **5** Fotobox-Integration | Geräteverwaltung, Geräte-API, **Simulator**, private Galerie, Einzelfoto-Token, Vorschaubilder, ZIP, Löschfristen; danach `PlattformGalerie` im Pi-Code (eigene Freigabe!) | QR → Foto über eigene Domain |
-| **6a** Rechnungen | Nummernkreis, PDF, Sperre nach Ausstellung, Storno/Gutschrift, CSV-Export, Zahlungserinnerung | Rechnung zur Buchung |
-| **7** Veröffentlichung | Sicherheits- und Datenschutzprüfung, Rechtstexte prüfen lassen, Domain, E-Mail-Domain (SPF/DKIM/DMARC), Backups + Wiederherstellungstest, Lighthouse | Live – nur mit deiner Freigabe |
+**Später:** QR-Rechnung, Onlinezahlung (nur gehostete Zahlungsseite), Marketing-Dashboard, KI-Sichtbarkeitsmonitoring, Sprachen FR/IT/EN, Halbtages-Slots, Mitarbeiter-Rolle.
 
-## Später (V2+)
-| Priorität | Erweiterung |
-|---|---|
-| hoch | Schweizer QR-Rechnung (nach Prüfung der SIX-Spezifikation), Finanzübersicht + Wirtschaftlichkeit, Bewertungsanfrage, Event-/Galerie-Mails |
-| mittel | Ratgeber-CMS mit Redaktionsplan, Regionalseiten, SEO-Qualitätsprüfung im Admin, Weiterleitungen, IndexNow, datenschutzfreundliche Analyse |
-| mittel | Onlinezahlung (TWINT/Karte über z. B. Stripe oder Payrexx), Anzahlungen |
-| niedrig | Marketing-Dashboard (Search Console, Bing), KI-Sichtbarkeitsmonitoring (Budget), Mitarbeiter-Rolle aktiv, lokale WLAN-Downloads an der Box |
-
-## Notwendig vs. später (Kurzfassung)
-**Notwendig für den Start:** Webseite, Preise, Verfügbarkeit, Buchung, Bestätigung, Admin, Rechnung als PDF, Rechtstexte, Galerie mit Einzelfoto-Links, Backups, 2FA.
-**Bewusst später:** Onlinezahlung, QR-Rechnung, Marketing- und KI-Dashboards, Mitarbeiter, Ratgeber-Masse, mehrere Fotoboxen im Alltag (Datenmodell kann es von Anfang an).
+**Auswirkungen der CHF-0-Vorgabe auf den Plan:** +ca. 1 Woche Aufwand für Eigenbau Anmeldung/Magic Link, Backup-Export,
+Verbrauchsschutz und Browser-PDF; dafür entfallen Anbieterkonten bei Vercel/Supabase.

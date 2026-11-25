@@ -15,7 +15,11 @@ in der DB nur als Hash gespeichert, jederzeit widerrufbar. Rate Limit pro Gerät
 | `POST` | `/uploads/{photo_id}/complete` | Upload abschliessen; Server prüft Objekt, Grösse, Prüfsumme |
 
 ## Fehler
-`401` Token ungültig/widerrufen · `403` Event nicht diesem Gerät zugewiesen oder geschlossen · `409` gleiche `client_photo_id` mit anderer Prüfsumme · `413` zu gross · `429` zu viele Anfragen.
+`401` Token ungültig/widerrufen · `403` Event nicht diesem Gerät zugewiesen oder geschlossen · `409` gleiche `client_photo_id` mit anderer Prüfsumme · `413` zu gross · `429` zu viele Anfragen · `507` Speichergrenze erreicht (Fotobox behält Foto in der Warteschlange und versucht es später).
+
+## Ergänzungen Version 2 (Cloudflare)
+- `POST /uploads` liefert **drei** vorsignierte URLs (Original optional je nach Event-Einstellung, Web ca. 1600 px, Vorschau ca. 400 px); die Fotobox erzeugt die Varianten mit Pillow.
+- Gäste-Download läuft durch den Worker (Token-Prüfung, Rate-Limit), der die Datei aus dem privaten Bucket streamt.
 Der Pi wiederholt bei `5xx`/Netzwerkfehlern mit wachsendem Abstand; bei `4xx` (ausser 429) nicht automatisch.
 
 ## Gäste-Endpunkte (Web)

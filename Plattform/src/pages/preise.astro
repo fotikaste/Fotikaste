@@ -1,0 +1,25 @@
+---
+import ContentLayout from "../layouts/ContentLayout.astro";
+import PackageCards from "../components/PackageCards.astro";
+import { packages } from "../data/content";
+const printsLabel = (p: (typeof packages)[number]) => (p.prints ? `${p.prints}${p.printsIsExample ? " (Beispiel)" : ""}` : "folgt");
+---
+<ContentLayout path="/preise" eyebrow="Angebote" heading="Pakete und Preise" lead="Transparent und vollständig: Grundpreis, Ausdrucke, Lieferung und Extras sehen Sie vor der Buchung. Bezahlung auf Rechnung vor dem Event, in Schweizer Franken.">
+  <PackageCards level={2} />
+  <h2 class="text-3xl sm:text-4xl mt-20">Leistungen im Vergleich</h2>
+  <div class="mt-6 overflow-x-auto border border-line bg-white" tabindex="0" role="region" aria-label="Paketvergleich, seitlich scrollbar">
+    <table class="w-full min-w-[36rem] text-left text-[0.95rem]">
+      <caption class="sr-only">Vergleich der Pakete</caption>
+      <thead class="bg-paper"><tr><th scope="col" class="p-4 font-semibold">Leistung</th>{packages.map((p) => <th scope="col" class="p-4 font-display text-xl font-medium">{p.name}</th>)}</tr></thead>
+      <tbody>
+        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Preis</th>{packages.map(() => <td class="p-4">folgt</td>)}</tr>
+        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Ausdrucke 10 × 15 cm</th>{packages.map((p) => <td class="p-4">{printsLabel(p)}</td>)}</tr>
+        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Online-Galerie (30 Tage)</th>{packages.map(() => <td class="p-4">✓</td>)}</tr>
+        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Lieferung und Aufbau</th>{packages.map(() => <td class="p-4">folgt</td>)}</tr>
+      </tbody>
+    </table>
+  </div>
+  <h2 class="text-3xl sm:text-4xl mt-20">Lieferung</h2>
+  <p class="mt-4 text-muted max-w-[62ch]">Wir liefern in die Ostschweiz und in den Kanton Zürich. Die Lieferkosten richten sich nach der Entfernung und erscheinen in der Buchung, bevor Sie verbindlich bestätigen.</p>
+  <p class="mt-6"><span class="placeholder-tag">Preise werden derzeit festgelegt</span></p>
+</ContentLayout>

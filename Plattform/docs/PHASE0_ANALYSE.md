@@ -1,6 +1,7 @@
 # Phase 0 – Analyse und kritische Prüfung
 
-Stand: 2026-11-25 · Status: **Entwurf zur Freigabe**
+Stand: 2026-11-25 · Status: **Version 1 – teilweise überholt.** Architektur, Kosten und Datenbank gelten jetzt in Version 2
+(`ARCHITECTURE.md`, `COSTS.md`, `DATABASE.md`). Die kritische Prüfung unten bleibt gültig.
 
 ## 1. Ausgangslage (geprüft, nicht angenommen)
 

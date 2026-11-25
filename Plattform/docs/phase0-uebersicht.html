@@ -53,8 +53,8 @@ footer{color:var(--muted);font-size:.82rem}
 <header>
   <span class="eyebrow">Fotikaste · Plattform · Phase 0</span>
   <h1>Vom Fotobox-Prototyp zur Vermietungsplattform</h1>
-  <p class="lead">Konzeptvorschlag vom 25. November 2026. Noch kein Code, keine Konten, nichts gekauft. Alle Details stehen in <code>Plattform/docs/</code>.</p>
-  <div class="status"><span class="pill gold">Wartet auf Freigabe</span><span class="pill">Fotobox-Software unverändert</span><span class="pill">9 offene Entscheide</span></div>
+  <p class="lead">Konzept vom 25. November 2026, Version 2: umgestellt auf CHF 0 pro Monat mit Cloudflare. Noch kein Code, keine Konten, nichts gekauft. Alle Details stehen in <code>Plattform/docs/</code>.</p>
+  <div class="status"><span class="pill gold">Version 2 · wartet auf Freigabe</span><span class="pill">Fotobox-Software unverändert</span><span class="pill">6 offene Entscheide</span></div>
 </header>
 
 <section>
@@ -70,31 +70,33 @@ footer{color:var(--muted);font-size:.82rem}
 
 <section>
   <h3>Architektur</h3>
-  <h2>Eine Anwendung, eine Datenbank, ein privater Fotospeicher</h2>
-  <p>Empfohlen ist Variante A: Next.js auf Vercel, Supabase (Postgres und Anmeldung) in der EU, Fotos privat in Cloudflare R2, E-Mails über Resend. Keine Microservices. Die Fotobox bleibt ein eigenständiges Gerät.</p>
+  <h2>Alles auf deinem Cloudflare-Konto, für CHF 0 pro Monat</h2>
+  <p>Die öffentlichen Seiten werden beim Bauen fertig erzeugt und kosten keine Rechenzeit. Nur Buchung, Portal, Galerie, Admin und Geräte-API laufen als kleine Worker. Daten in D1, Fotos privat in R2, Admin-Login über Cloudflare Access, E-Mails über Resend Free.</p>
 <pre class="mermaid">
 flowchart LR
-  K[Kunde / Besucher] --> APP
-  G[Gast mit QR-Code] --> APP
-  subgraph APP[Next.js-App, EU]
-    W[Webseite] --- B[Buchung] --- P[Kundenportal]
-    GA[Galerie] --- A[Admin] --- API[Geräte-API]
+  K[Kunde / Besucher] --> S[Statische Seiten]
+  K --> W
+  G[Gast mit QR-Code] --> W
+  A[Admin] --> AC[Cloudflare Access + 2FA] --> W
+  subgraph W[Worker]
+    B[Buchung] --- P[Portal] --- GA[Galerie] --- AD[Admin] --- API[Geräte-API]
   end
-  APP --> DB[(Postgres<br/>Supabase EU)]
-  APP -- kurze Download-Links --> R2[(R2 privat)]
+  W --> DB[(D1)]
+  W -- Foto nach Prüfung --> R2[(R2 privat)]
   FB[Fotobox Pi<br/>läuft offline] -- Geräte-Token --> API
   FB -- vorsignierter Upload --> R2
-  APP --> M[E-Mail]
+  W --> M[Resend]
 </pre>
   <div class="scroll"><table>
-    <thead><tr><th>Variante</th><th>Monatlich (Produktion)</th><th>Wartung</th><th>Für dich geeignet</th></tr></thead>
+    <thead><tr><th>Dienst</th><th>Gratisgrenze (geprüft 25.11.2026)</th><th>Am Limit</th></tr></thead>
     <tbody>
-      <tr><td><strong>A</strong> Vercel + Supabase + R2</td><td>ca. CHF 45–70</td><td>gering</td><td class="yes">empfohlen</td></tr>
-      <tr><td>B Eigener Server (VPS)</td><td>ca. CHF 10–25</td><td>hoch, 2–4 h/Monat</td><td class="no">nein</td></tr>
-      <tr><td>C Cloudflare Workers + Neon</td><td>ca. CHF 5–30</td><td>mittel</td><td class="part">möglich</td></tr>
+      <tr><td>Workers</td><td>100 000 Aufrufe/Tag, 10 ms CPU; statische Seiten unbegrenzt</td><td class="yes">Fehler, keine Rechnung</td></tr>
+      <tr><td>D1</td><td>5 Mio. Lese-, 100 000 Schreibzeilen/Tag, 500 MB</td><td class="yes">Fehler, keine Rechnung</td></tr>
+      <tr><td>Resend</td><td>100 Mails/Tag, 3 000/Monat</td><td class="yes">blockiert</td></tr>
+      <tr><td>R2</td><td>10 GB, 1 Mio. Schreib-, 10 Mio. Lesevorgänge/Monat</td><td class="part">wird verrechnet → harte App-Grenze 8 GB</td></tr>
     </tbody>
   </table></div>
-  <p class="lead" style="font-size:.88rem">Während der Entwicklung kostet alles CHF 0 (Gratisstufen). Preise aus meinem Wissensstand; ich prüfe sie vor dem Entscheid auf den offiziellen Seiten.</p>
+  <div class="warn"><strong>Der Engpass ist der Fotospeicher.</strong> Bei 6 Events im Monat mit Originalen wären es rund 16 GB. Mit Web-Versionen online und Originalen auf USB-Stick bleibt es unter 10 GB. Wird die Grenze erreicht, behält die Fotobox die Fotos lokal und druckt weiter.</div>
 </section>
 
 <section>
@@ -113,7 +115,7 @@ flowchart LR
   <h3>Buchung</h3>
   <h2>Doppelbuchungen verhindert die Datenbank selbst</h2>
   <div class="cols">
-    <div class="box"><strong>Eine Belegungstabelle</strong><p>Buchungen, Reservierungen während des Buchens (15 Minuten), Wartung und gesperrte Tage stehen in derselben Tabelle. Eine Regel in Postgres verbietet, dass sich zwei Zeiträume derselben Fotobox überschneiden, inklusive Lieferung und Puffer.</p></div>
+    <div class="box"><strong>Ein Tag, eine Zeile</strong><p>Jeder belegte Tag einer Fotobox ist eine Zeile, und die Datenbank erlaubt pro Box und Tag nur eine. Die Reservierung wird in einem Schritt geschrieben, der ganz oder gar nicht gilt. Buchen zwei Kunden gleichzeitig, gewinnt genau einer.</p></div>
     <div class="box"><strong>Neu: du als Ressource</strong><p>Die knappste Ressource bist du. Zwei Lieferungen am selben Abend an weit entfernten Orten gehen nicht. Deshalb plane ich auch die Liefer-Kapazität ein.</p></div>
   </div>
 </section>
@@ -185,13 +187,13 @@ erDiagram
 </section>
 
 <section>
-  <h3>Markt</h3>
-  <h2>Zwei Lücken bei der Konkurrenz</h2>
+  <h3>Markt und Marke</h3>
+  <h2>Was die Konkurrenz zeigt</h2>
   <div class="cols">
-    <div class="box"><strong>Transparente Preise</strong><p>Bei den meisten gefundenen Anbietern fehlen konkrete Preise. Klare Preise und eine Vergleichstabelle helfen Kunden und KI-Suchsystemen.</p></div>
-    <div class="box"><strong>Direkte Online-Buchung</strong><p>Fast alle arbeiten mit Anfrageformularen. Eine sofortige Verfügbarkeitsprüfung hebt Fotikaste ab.</p></div>
+    <div class="box"><strong>Preisniveau</strong><p>Mit Lieferung, Aufbau und Druck kosten die Anbieter in der Ostschweiz laut ihren Webseiten CHF 400 bis 650. Angebote ab CHF 189 sind Abholung oder Postversand ohne Aufbau.</p></div>
+    <div class="box"><strong>Lücke: sofort verbindlich buchen</strong><p>Einige haben einen Online-Kalender, bestätigen aber erst nach 24 bis 48 Stunden. Datenschutz bei Gästefotos thematisiert fast niemand.</p></div>
   </div>
-  <p class="lead" style="font-size:.88rem">Vorrecherche mit 10 Anbietern, vieles noch aus Verzeichnissen und ungeprüft. Die Detailanalyse mit Messungen folgt vor dem Schreiben der Webseitentexte.</p>
+  <div class="warn"><strong>Markenname:</strong> «Fotikaste» und «momntbox» sind in Swissreg und Zefix frei, die .ch- und .com-Domains sind nicht registriert. Aber «Event Fotibox» ist eine eingetragene Marke eines Mitbewerbers in Bettwiesen TG, in derselben Klasse (Events). Vor dem Domainkauf braucht es eine Ähnlichkeitsprüfung durch eine Fachperson.</div>
 </section>
 
 <section>
@@ -200,15 +202,12 @@ erDiagram
   <div class="scroll"><table>
     <thead><tr><th>#</th><th>Frage</th><th>Mein Vorschlag</th></tr></thead>
     <tbody>
-      <tr><td>D1</td><td>Markenname Fotikaste oder momntbox?</td><td>Erst Markenprüfung, dann festlegen</td></tr>
-      <tr><td>D2</td><td>Architektur A freigeben?</td><td>Ja</td></tr>
-      <tr><td>D3</td><td>Sofortbuchung oder Anfrage?</td><td>Sofort im Liefergebiet ab 7 Tagen Vorlauf, sonst Anfrage</td></tr>
-      <tr><td>D4</td><td>Tatsächliches Liefergebiet?</td><td>Deine Angabe</td></tr>
-      <tr><td>D5</td><td>Anzahlung oder Kaution?</td><td>30 % Anzahlung per Rechnung, keine Kaution</td></tr>
-      <tr><td>D6</td><td>Nur Kunden in der Schweiz?</td><td>Ja</td></tr>
-      <tr><td>D7</td><td>Inhalte für KI-Training freigeben?</td><td>Deine Wahl, KI-Suche bleibt erlaubt</td></tr>
-      <tr><td>D8</td><td>Node.js auf deinem PC installieren?</td><td>Ja</td></tr>
-      <tr><td>D9</td><td>MWST-pflichtig? Echte Druckkosten pro Abzug?</td><td>Deine Angabe</td></tr>
+      <tr><td>E1</td><td>Cloudflare-Architektur mit CHF 0 statt Vercel und Supabase bestätigen?</td><td>Ja</td></tr>
+      <tr><td>E2</td><td>Astro statt Next.js?</td><td>Ja, schneller und sparsamer auf Cloudflare</td></tr>
+      <tr><td>E3</td><td>Welches Designkonzept: A Galerie, B Abendlicht oder C Postkarte?</td><td>C, mit der Ruhe von A</td></tr>
+      <tr><td>E4</td><td>Originale nur auf Wunsch hochladen, online nur Web-Version?</td><td>Ja</td></tr>
+      <tr><td>E5</td><td>Waren bisher nur Testbilder online?</td><td>Deine Bestätigung</td></tr>
+      <tr><td>E6</td><td>Node.js 24 LTS über winget installieren?</td><td>Ja</td></tr>
     </tbody>
   </table></div>
 </section>
