@@ -60,15 +60,18 @@ test("Startseite: keine erfundenen Bewertungen, Preise als Platzhalter", async (
 test("Bildschirmfotos für den Phasenbericht", async ({ page }, info) => {
   for (const path of ["/", "/preise", "/fotobox"]) {
     await page.goto(path);
-    await page.waitForTimeout(1200);
+    // Langsam scrollen, damit «lazy» geladene Bilder auch im Ganzseiten-Bildschirmfoto erscheinen
+    await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } window.scrollTo(0, 0); });
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(800);
     await page.screenshot({ path: `test-results/ansicht-${info.project.name}${path === "/" ? "-start" : path.replace("/", "-")}.png`, fullPage: true });
   }
 });
 
-test("KI-Bilder sind als Symbolbild gekennzeichnet und haben feste Masse", async ({ page }) => {
-  for (const path of ["/", "/hochzeit"]) {
+test("KI-Bilder sind als Visualisierung gekennzeichnet und haben feste Masse", async ({ page }) => {
+  for (const path of ["/", "/hochzeit", "/fotobox"]) {
     await page.goto(path);
-    await expect(page.getByText(/Symbolbild(er)? \(KI-generiert\)/).first()).toBeVisible();
+    await expect(page.getByText(/Visualisierung(en)? \(KI-generiert\)/).first()).toBeVisible();
     const imgs = page.locator("picture img");
     expect(await imgs.count()).toBeGreaterThan(0);
     for (const img of await imgs.all()) {

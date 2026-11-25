@@ -2,6 +2,10 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
+## 2026-11-25 – Eigene Bilder des Benutzers eingebaut
+- Canva-Bilder entfernt, 9 gelieferte Visualisierungen optimiert (WebP bis Originalbreite, nie hochskaliert; JPEG-Rückfall ≤ 1200 px) und eingebaut.
+- Gekennzeichnet als «Visualisierung (KI-generiert)». Tests: 13 Unit, 48 Browser grün. Lighthouse: Start/Fotobox/Preise 94–100, LCP ≤ 2.0 s, CLS 0.
+
 ## 2026-11-25 – Design freigegeben, KI-Symbolbilder eingebaut
 - Design vom Benutzer freigegeben → Phase 0–1 nach `main` übernommen.
 - 6 Bilder mit Canva generiert (Vorgaben: keine Fotobox, keine erkennbaren Kunden, Farbpalette). Canva lieferte die Originale nur über ein

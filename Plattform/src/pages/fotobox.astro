@@ -1,6 +1,7 @@
 ---
 import ContentLayout from "../layouts/ContentLayout.astro";
-import PostcardStack from "../components/PostcardStack.astro";
+import Picture from "../components/Picture.astro";
+import { images, AI_LABEL_PLURAL } from "../data/images";
 import { productFacts } from "../data/content";
 import { serviceJsonLd } from "../lib/seo";
 ---
@@ -18,6 +19,6 @@ import { serviceJsonLd } from "../lib/seo";
       <h2 class="text-3xl sm:text-4xl mt-14">Ohne Internet zuverlässig</h2>
       <p class="mt-4 text-muted max-w-[60ch]">Fotografieren und Drucken funktionieren auch ohne Internetverbindung. Digitale Fotos werden automatisch nachgeladen, sobald wieder eine Verbindung besteht. Die Fotobox sagt das den Gästen offen, statt einen sofortigen Download zu versprechen.</p>
     </div>
-    <div class="lg:sticky lg:top-28"><PostcardStack priority /><p class="text-center text-sm text-muted mt-2">Produktfotos der Fotobox folgen.</p></div>
+    <div class="lg:sticky lg:top-28 flex flex-col gap-4"><Picture image={images.fotoboxStudio} priority sizes="(min-width: 1024px) 560px, 100vw" class="w-full h-auto" /><Picture image={images.fotoboxLobby} sizes="(min-width: 1024px) 560px, 100vw" class="w-full h-auto" /><p class="text-sm text-muted">{AI_LABEL_PLURAL} · Fotos der fertigen Fotobox folgen.</p></div>
   </div>
 </ContentLayout>

@@ -67,3 +67,10 @@ Gesichter; jedes Bild ist auf der Seite als «Symbolbild (KI-generiert)» gekenn
 Beispielgalerie und Produktfotos bleiben bewusst Platzhalter, bis echte Fotos (mit Einwilligung) vorhanden sind.
 Bilder werden mit `tools/bilder/optimieren.py` in WebP 480–1600 px + JPEG-Rückfall ohne Metadaten umgewandelt (`public/bilder/`).
 Nutzungsrechte: gemäss Canva-Bedingungen für KI-generierte Inhalte – vor Go-Live prüfen.
+
+## ADR-023 Bilder vom Benutzer ersetzen die Canva-Bilder — *angenommen (2026-11-25)*
+Der Benutzer hat 10 KI-generierte Visualisierungen geliefert (9 verschiedene, zwei identisch). Sie zeigen eine Fotobox mit Holzgehäuse,
+Stativ, Leuchte und Drucker sowie Gäste an Anlässen. Kennzeichnung auf der Seite: «Visualisierung(en) (KI-generiert)».
+Einsatz: Hero-Postkarten, Erlebnis, Anlasskarten/-seiten, Fotobox-Seite, Beispielgalerie (mit Hinweis «echte Eventfotos folgen»).
+Offen: Stimmt das gezeigte Gehäuse mit der echten Fotobox überein? Falls nicht, Kennzeichnung beibehalten und bald durch echte Fotos ersetzen.
+Die Canva-Bilder (ADR-022) sind entfernt.

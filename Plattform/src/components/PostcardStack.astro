@@ -1,20 +1,20 @@
 ---
-/** Zwei Postkarten 10×15 mit Symbolbildern (KI-generiert, gekennzeichnet). Später: echte Abzüge der Fotobox. */
+/** Zwei Postkarten 10×15 mit Visualisierungen (KI-generiert, gekennzeichnet). Später: echte Abzüge der Fotobox. */
 import Picture from "./Picture.astro";
-import { images } from "../data/images";
+import { images, AI_LABEL_PLURAL } from "../data/images";
 interface Props { compact?: boolean; priority?: boolean; }
 const { compact = false, priority = false } = Astro.props;
 ---
 <div class="flex flex-col items-center">
   <div class:list={["relative mx-auto w-full", compact ? "max-w-xs h-72" : "max-w-[17rem] h-60 sm:max-w-md sm:h-[22rem] lg:h-[27rem]"]}>
     <figure class="absolute left-[4%] top-8 w-[58%] aspect-[2/3] bg-white p-3 pb-12 shadow-[0_22px_45px_-28px_rgba(40,30,10,.5)] -rotate-6 m-0">
-      <Picture image={images.postkarteHochzeit} sizes="(min-width: 640px) 260px, 160px" class="h-full w-full object-cover" priority={priority} />
+      <Picture image={images.hochzeitGaeste} sizes="(min-width: 640px) 260px, 160px" class="h-full w-full object-cover" priority={priority} />
       <figcaption class="absolute bottom-3 inset-x-0 text-center font-display italic text-gold-text">Ein Abend im Juni</figcaption>
     </figure>
     <figure class="absolute right-[4%] top-0 w-[58%] aspect-[2/3] bg-white p-3 pb-12 shadow-[0_26px_50px_-26px_rgba(40,30,10,.55)] rotate-3 m-0">
-      <Picture image={images.postkarteHaende} sizes="(min-width: 640px) 260px, 160px" class="h-full w-full object-cover" priority={priority} />
-      <figcaption class="absolute bottom-3 inset-x-0 text-center font-display italic text-gold-text">Zum Mitnehmen</figcaption>
+      <Picture image={images.fotoboxBlumen} sizes="(min-width: 640px) 260px, 160px" class="h-full w-full object-cover" priority={priority} />
+      <figcaption class="absolute bottom-3 inset-x-0 text-center font-display italic text-gold-text">Die Fotobox</figcaption>
     </figure>
   </div>
-  <p class="mt-10 sm:mt-6 text-xs text-muted relative z-10">Symbolbilder (KI-generiert)</p>
+  <p class="mt-10 sm:mt-6 text-xs text-muted relative z-10">{AI_LABEL_PLURAL}</p>
 </div>

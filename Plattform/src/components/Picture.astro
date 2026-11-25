@@ -4,10 +4,11 @@ import type { SiteImage } from "../data/images";
 interface Props { image: SiteImage; sizes: string; class?: string; priority?: boolean; }
 const { image, sizes, class: cls, priority = false } = Astro.props;
 const widths = [480, 800, 1200, 1600].filter((w) => w <= image.width);
+if (image.width < 1600 && !widths.includes(image.width)) widths.push(image.width);
 const srcset = widths.map((w) => `/bilder/${image.name}-${w}.webp ${w}w`).join(", ");
 ---
 <picture>
   <source type="image/webp" srcset={srcset} sizes={sizes} />
-  <img src={`/bilder/${image.name}-1200.jpg`} alt={image.alt} width={image.width} height={image.height}
+  <img src={`/bilder/${image.name}.jpg`} style={image.position ? `object-position:${image.position}` : undefined} alt={image.alt} width={image.width} height={image.height}
     loading={priority ? "eager" : "lazy"} decoding={priority ? "sync" : "async"} fetchpriority={priority ? "high" : "auto"} class={cls} />
 </picture>
