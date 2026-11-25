@@ -1,0 +1,35 @@
+---
+import Logo from "./Logo.astro";
+import { brand } from "../config/brand";
+import { mainNav } from "../config/site";
+interface Props { currentPath: string; }
+const { currentPath } = Astro.props;
+---
+<header class="bg-white/95 border-b border-line sticky top-0 z-40 backdrop-blur-sm">
+  <div class="container-page flex items-center justify-between gap-6 h-[4.5rem]">
+    <a href="/" aria-label={`${brand.name} – zur Startseite`} class="shrink-0"><Logo /></a>
+    <nav aria-label="Hauptnavigation" class="hidden lg:block">
+      <ul class="flex gap-7 text-[0.92rem]">
+        {mainNav.map((item) => (
+          <li><a href={item.href} class:list={["py-2 hover:text-gold-text transition-colors", currentPath === item.href && "text-gold-text"]} aria-current={currentPath === item.href ? "page" : undefined}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+    <div class="flex items-center gap-3">
+      <a href="/verfuegbarkeit" class="btn btn-primary hidden sm:inline-flex">Jetzt buchen</a>
+      <details class="lg:hidden relative group">
+        <summary class="list-none cursor-pointer w-11 h-11 flex items-center justify-center" aria-label="Menü öffnen">
+          <span aria-hidden="true" class="block w-6 h-3 border-y-[1.5px] border-charcoal"></span>
+        </summary>
+        <nav aria-label="Mobile Navigation" class="fixed inset-x-0 top-[4.5rem] bg-white border-b border-line shadow-sm">
+          <ul class="container-page py-4 flex flex-col">
+            {mainNav.map((item) => (
+              <li><a href={item.href} class="block py-3 text-lg border-b border-line">{item.label}</a></li>
+            ))}
+            <li class="pt-4"><a href="/verfuegbarkeit" class="btn btn-primary w-full">Jetzt buchen</a></li>
+          </ul>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>

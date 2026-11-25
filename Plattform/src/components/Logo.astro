@@ -1,0 +1,11 @@
+---
+/** Typografisches Logo: kursive Wortmarke + kleine Unterzeile. Name aus brand.ts. */
+import { brand } from "../config/brand";
+interface Props { size?: "sm" | "md" | "lg"; tagline?: boolean; }
+const { size = "md", tagline = true } = Astro.props;
+const cls = { sm: "text-2xl", md: "text-[1.9rem]", lg: "text-5xl" }[size];
+---
+<span class="inline-flex items-baseline gap-3 leading-none">
+  <span class={`font-display italic font-medium tracking-tight ${cls}`}>{brand.name}</span>
+  {tagline && <span class="hidden sm:inline text-[0.65rem] font-semibold tracking-[0.24em] uppercase text-gold-text">Fotobox</span>}
+</span>

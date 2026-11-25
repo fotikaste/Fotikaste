@@ -2,21 +2,20 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
-## 2026-11-25 – Phase 0, Version 2 (Branch `plattform/entwicklung`)
-- Architektur auf **Cloudflare-Gratisstufen** umgestellt (Workers + statische Assets, D1, R2 privat, Access, Turnstile) + Resend Free + GitHub Free.
-  Gratisgrenzen, Verhalten am Limit und Bedingungen auf den offiziellen Seiten gelesen (Quellen in `COSTS.md`).
-- Doppelbuchungsschutz für D1 entworfen (`allocation_days` UNIQUE + `batch()`), Anmeldung ohne Supabase (Access, Magic Link).
-- Verbrauchsschutz entworfen (harte R2-Grenze 8 GB, Warnungen, Mail-Drossel).
-- Sicherheitsanalyse der bestehenden Online-Galerie (nur gelesen) und Migrationsplan mit Schlüsselrotation: `R2_MIGRATION.md`.
-- Markenprüfung Swissreg/Zefix/RDAP/Websuche: `BRAND_CHECK.md` (Treffer «Event Fotibox», Bettwiesen).
-- Wettbewerbsanalyse mit 11 direkt abgerufenen Webseiten: `COMPETITOR_ANALYSIS.md` (2 Seiten nicht ladbar).
-- Drei Designkonzepte (Desktop + Handy) erstellt und **im Browser gerendert geprüft**: `design/startseite-konzepte.html`.
-- Node.js-LTS ermittelt (24.22.3 / 26.13.1), **nicht installiert** (wartet auf Zustimmung).
-- `.claude/launch.json` um Vorschau-Eintrag `plattform-design` ergänzt.
-- **Nicht** gemacht: Code, Konten, Käufe, Änderungen an der Fotobox oder am Cloudflare-Konto.
+## 2026-11-25 – Phase 1 umgesetzt (Branch `plattform/entwicklung`)
+- Entscheide E1–E6 umgesetzt (Cloudflare CHF 0, Astro, Design C+A, Originale lokal, E5 offen → nichts gelöscht, Node 24).
+- Node.js 24.22.3 per winget installiert (Zustimmung vorhanden), Kompatibilität mit Astro 7.4 / Wrangler 4 / Vitest 5 geprüft.
+- Bildtest mit 4 echten Canon-Fotos: 2400 px / q85 ≈ 0.39 MB (−94 %), PSNR ≥ 40 dB, SSIM ≥ 0.995, EXIF entfernt → `IMAGES.md`.
+- `COST_CONTROL.md` (verhinderbar vs. nur reduzierbar, Speicherreservierung), `CLOUDFLARE_SICHERHEIT.md` (Schritt-für-Schritt, ohne Löschungen).
+- Astro-Webseite mit Designsystem, Startseite, 17 Seiten, SEO-/KI-Fundament. Tests: 13 Unit, 46 Browser, Lighthouse 99–100 in allen Kategorien → `PHASE1_BERICHT.md`.
+- Fotobox-Software unverändert, 116 Tests grün.
+- **Nicht** gemacht: Veröffentlichung, Konten, Domain, Löschungen in Cloudflare, Merge nach `main`.
+
+## 2026-11-25 – Phase 0, Version 2
+Cloudflare-Architektur, D1-Modell, R2-Migrationsplan, Markenprüfung, Wettbewerbsanalyse, drei Designkonzepte.
 
 ## 2026-11-25 – Phase 0, Version 1 (auf `main`)
-Erste Analyse, Architektur mit Vercel/Supabase (überholt), Doku-Grundgerüst.
+Erste Analyse (Vercel/Supabase, überholt).
 
 ## Nächster Schritt
-Antworten auf E1–E6 (`README.md`), Sofortmassnahme 0b, dann Phase 1.
+Design-Sichtprüfung durch dich, Merge nach `main`, Teil A der Cloudflare-Anleitung, E5 klären, dann Phase 2.

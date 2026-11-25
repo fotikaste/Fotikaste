@@ -1,0 +1,12 @@
+---
+import ContentLayout from "../layouts/ContentLayout.astro";
+import { regions } from "../data/content";
+export function getStaticPaths() {
+  return Object.keys(regions).map((region) => ({ params: { region } }));
+}
+const { region } = Astro.params as { region: keyof typeof regions };
+const r = regions[region];
+---
+<ContentLayout path={`/${region}`} eyebrow={`Region ${r.name}`} heading={r.title} lead={r.intro}>
+  <p class="placeholder-tag">Regionalseite im Aufbau – für Suchmaschinen gesperrt</p>
+</ContentLayout>

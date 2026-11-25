@@ -3,7 +3,9 @@
 Webseite, Direktbuchung, Kundenportal, Event-Galerien, Geräteverwaltung und Administration für die Fotobox-Vermietung.
 Die Fotobox-Software liegt in `../System/` und funktioniert unabhängig von dieser Plattform. «Fotikaste» ist Arbeitsname.
 
-**Stand 2026-11-25:** Phase 0 in Version 2 (Cloudflare, CHF 0/Monat). **Noch kein Code.** Entwicklung auf Branch `plattform/entwicklung`.
+**Stand 2026-11-25:** Phase 1 umgesetzt und lokal getestet (Astro-Startseite, Designsystem, SEO-Fundament) – siehe [docs/PHASE1_BERICHT.md](docs/PHASE1_BERICHT.md). Branch `plattform/entwicklung`, nicht veröffentlicht.
+
+**Lokal ansehen:** `npm run build`, dann `npx wrangler dev --port 8788` und `http://localhost:8788` öffnen.
 Fortschritt: [docs/PROGRESS.md](docs/PROGRESS.md)
 
 ## Dokumente
@@ -33,17 +35,12 @@ Fortschritt: [docs/PROGRESS.md](docs/PROGRESS.md)
 | D8 | Node.js LTS ermitteln, erst nach Zustimmung installieren | unten «Vorbereitung Phase 1» |
 | D9 | 0.15 CHF/Abzug vorläufig, keine MWST bis geklärt | `settings`, `COSTS.md` |
 
-## Offene Entscheide (brauchen deine Antwort)
-| # | Frage | Mein Vorschlag |
-|---|---|---|
-| E1 | Cloudflare-Architektur (CHF 0) bestätigt, Vercel/Supabase verworfen? Deine beiden Nachrichten widersprechen sich hier. | Ja, Cloudflare |
-| E2 | Framework **Astro** statt Next.js? | Ja |
-| E3 | Designkonzept A, B oder C (oder Mischung)? | C «Postkarte» mit der Ruhe von A |
-| E4 | Online nur Web-Version, Originale auf Wunsch/USB-Stick? (hält R2 unter 10 GB) | Ja |
-| E5 | Waren bisher nur Testbilder online (keine echten Gäste-QR-Codes)? | – deine Bestätigung – |
-| E6 | Node.js **24 LTS** per winget installieren? | Ja |
+## Entscheide E1–E6 (2026-11-25)
+E1 Cloudflare ✅ · E2 Astro ✅ · E3 Design C + Ruhe von A ✅ (vorläufig, bis zur Sichtprüfung) · E4 Originale lokal, online 2400 px/q85, 30 Tage ✅ ·
+**E5 offen** (Testbilder oder echte Gästefotos online? – bis dahin nichts löschen) · E6 Node 24 installiert ✅.
+Geschäftsmodell: Fotikaste (Arbeitsname), Ostschweiz inkl. Zürich, Direktbuchung, 100 % Zahlung auf Rechnung vor dem Event, CHF, de-CH, 0.15 CHF/Abzug vorläufig.
 
-## Vorbereitung Phase 1 (D8)
+## Entwicklungsumgebung
 - **Node.js:** aktuelle LTS-Linien laut nodejs.org (Abruf 2026-11-25): **v26.13.1 «Lithium»** (Active LTS seit Okt. 2026) und **v24.22.3 «Krypton»** (Maintenance LTS).
   Empfehlung **Node 24** (am längsten erprobt mit Astro/Wrangler); Node 26 ist auch möglich.
 - **Installation (nach deiner Zustimmung, systemweit):** in PowerShell `winget install --id OpenJS.NodeJS.24 -e`. Erwartet: «Erfolgreich installiert».

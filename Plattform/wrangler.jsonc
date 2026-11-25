@@ -1,0 +1,17 @@
+// Cloudflare-Konfiguration (ohne Geheimnisse). Phase 1: reine statische Assets, kein Worker-Code.
+// Statische Asset-Anfragen sind im Free-Plan kostenlos und zählen nicht gegen das Worker-Limit.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fotikaste",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "drop-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  // Keine alternativen Adressen (*.workers.dev, Vorschau-URLs): sie könnten später
+  // Cloudflare Access umgehen. Zugriff nur über die eigene Domain (ab Phase 7).
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": { "enabled": false }
+}

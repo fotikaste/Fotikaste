@@ -34,7 +34,7 @@ Stand: 2026-11-25 · **An der produktiven Fotobox wird nichts verändert, bevor 
 ## 4. Migrationsplan
 | Schritt | Was | Wer | Fotobox betroffen? |
 |---|---|---|---|
-| **0 – Sofort, ohne Code** | Cloudflare-Dashboard → R2 → «Manage API Tokens»: Rechte von «fotobox-pi» und dem Laptop-Token ansehen. Soll: «Object Read & Write», **nur Bucket fotikiste**. Ist es «Admin», sofort einen eingeschränkten Token erstellen und den alten löschen. Lifecycle-Regel «Objekte nach 30 Tagen löschen» setzen. Budgetwarnung USD 1 einrichten. | du (ich erkläre jeden Klick) | nein |
+| **0 – Sofort, nur ansehen** | `CLOUDFLARE_SICHERHEIT.md` Teil A: Budgetwarnung, Abo prüfen, Token-Rechte und Bucket-Inhalt **ansehen**, PIN ändern. **Nichts löschen** (E5 offen). Rotation/Lifecycle erst in Teil B nach E5. | du (ich erkläre jeden Klick) | nur PIN |
 | 1 – Plattform-Grundlage | Worker mit Geräte-API, privater Bucket, Geräte-Tokens, Simulator, Tests | ich | nein |
 | 2 – Fotobox-Erweiterung | Neue Klasse `PlattformGalerie` in `galerie.py` **zusätzlich** zu Simuliert/R2 (Auswahl auf der Betriebsseite); Vorschaubilder mit Pillow; Geräte-Token-Feld; neue Tests. Bestehende Funktionen bleiben, 85 bestehende Tests müssen grün bleiben. | ich, am Laptop | nein (nur Laptop) |
 | 3 – Test am Laptop | Laptop-Fotobox gegen lokale Plattform (`wrangler dev`) und Simulator | ich | nein |

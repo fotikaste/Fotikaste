@@ -58,7 +58,7 @@ erDiagram
 | Buchung | `allocations` | ● | Typ `hold/booking/maintenance/block`, booking_id?, `expires_at` (bei hold) |
 | Buchung | `allocation_days` | ● | allocation_id, resource_id, `day` (YYYY-MM-DD, Europe/Zurich), `slot`; **UNIQUE(resource_id, day, slot)** |
 | Buchung | `booking_history` | ● | wer, wann, Feld, alt → neu |
-| Zahlung | `payment_schedule` | ● | Art `deposit/balance/security_deposit`, Betrag oder %, fällig am, Status |
+| Zahlung | `payment_schedule` | ● | Art `full/deposit/balance/security_deposit`, Betrag oder %, fällig am, Status. **Standard (D5 neu): 100 % auf Rechnung, fällig vor dem Event** (Frist in Tagen einstellbar); Anzahlung/Kaution bleiben als Optionen |
 | Geräte | `devices`, `device_tokens`, `device_reports` | ● | wie V1; Token nur als Hash |
 | Galerie | `events`, `galleries`, `photos` | ● | wie V1; `photos` mit Objektpfaden Original/Web/Vorschau, Bytes, `client_photo_id` UNIQUE je Gerät |
 | Finanzen | `invoices`, `invoice_items`, `payments` | ● | Nummer lückenlos, nach Ausstellung gesperrt (Trigger verhindert UPDATE), PDF-Pfad + SHA-256 |
@@ -66,7 +66,8 @@ erDiagram
 | Mail | `email_templates`, `outbox` | ● | `dedupe_key` UNIQUE, Status, Versuche, Testmodus, Sendetag (für 80/Tag-Drossel) |
 | Inhalte | `content_blocks`, `faqs`, `posts`, `redirects`, `seo_meta` | ●/○ | alle mit `locale` (Standard `de-CH`) |
 | System | `settings` | ● | u. a. `print_cost_rappen`=15, `vat_enabled`=0, `vat_rate`, `deposit_percent`=30 (vorläufig), `hold_minutes`=15, `min_lead_days`=7, R2-Grenzen |
-| System | `usage_counters` | ● | Tag/Monat, Dienst, Zähler (R2-Bytes, A/B-Vorgänge, Mails, Uploads) |
+| System | `usage_counters` | ● | Tag/Monat, Dienst, Zähler (R2-Bytes, A/B-Vorgänge, Mails, Uploads), Herkunft `app/cloudflare/geschaetzt` |
+| System | `storage_budget`, `storage_reservations` | ● | `used`, `reserved`, `limit` (8 GB); Reservierung pro Upload mit Ablauf – siehe `COST_CONTROL.md` |
 | System | `audit_log` | ● | nur anhängen |
 
 ## Buchungs-Batch (Pseudo-SQL)
@@ -84,6 +85,21 @@ INSERT INTO allocation_days (allocation_id, resource_id, day, slot) VALUES
 Abschluss: `UPDATE allocations SET type='booking', booking_id=…, expires_at=NULL WHERE id=:a AND type='hold' AND expires_at > :now`
 plus `INSERT INTO bookings …` im selben Batch; der Worker prüft, dass das UPDATE genau 1 Zeile geändert hat, sonst Abbruch.
 **Test:** 50 gleichzeitige Buchungsversuche auf denselben Tag → genau einer gewinnt (automatischer Test, Phase 3).
+
+## Was belegt wird
+| Fall | Belegte Tage/Ressourcen |
+|---|---|
+| Eintägiges Event mit Lieferung | Fotobox: Liefertag (falls Vortag), Eventtag, Abholtag (falls Folgetag) + Puffertage laut Zone · Lieferung: Slot am Liefer- und am Abholtag |
+| Mehrtägige Miete (z. B. Fr–So) | Fotobox: jeder Tag von Lieferung bis Abholung · Lieferung: nur Liefer- und Abholtag |
+| Selbstabholung | Fotobox: Abhol- bis Rückgabetag · keine Liefer-Kapazität |
+| Wartung | `allocations.type='maintenance'` auf der Fotobox |
+| Gesperrter Tag (Ferien) | `type='block'` auf «Lieferung» (alle Slots) oder einer Fotobox |
+Liefergebiet Start: **Ostschweiz inkl. Zürich** (Kantone TG, SG, AR, AI, SH, GL, ZH; als Zonen mit PLZ-Bereichen und km-Preisen im Admin pflegbar).
+
+## Rechnungen trotz Browser-PDF fälschungssicher
+Beträge werden **nur im Worker** aus den gespeicherten Buchungspositionen berechnet und beim Ausstellen in `invoices`/`invoice_items`
+festgeschrieben (Trigger verhindert Änderungen). Der Browser erzeugt nur die PDF-Darstellung dieser Serverdaten; massgeblich ist immer
+der Datensatz in D1. Beim Ablegen des PDFs speichert der Worker dessen SHA-256 und die Prüfsumme der Rechnungsdaten.
 
 ## Statusmodelle
 - **Buchung:** `request` (kurzfristig/ausserhalb Zone) · `confirmed` (Direktbuchung) → `deposit_paid` → `completed`; `cancelled`, `expired`.

@@ -45,3 +45,18 @@ robots.txt aus Konfiguration erzeugt: Such-Crawler (Googlebot, Bingbot, OAI-Sear
 Zusätzlich Cloudflare-Einstellung «AI Crawl Control/Bot-Schutz» prüfen, damit erlaubte Such-Crawler nicht blockiert werden.
 
 ## ADR-016 Sprache de-CH, Mehrsprachigkeit vorbereitet — *angenommen (D6)*
+
+## ADR-009/010/012 — *angenommen (E1, E2, 2026-11-25)*
+
+## ADR-017 Schriften lokal statt Google Fonts — *angenommen (Phase 1)*
+Schneller (kein Fremd-Server), datenschutzfreundlich (keine IP-Übermittlung an Google), vorgeladen gegen Layoutverschiebung.
+
+## ADR-018 Phase 1 rein statisch, Cloudflare-Adapter erst ab Phase 2 — *angenommen*
+Öffentliche Seiten bleiben auch danach statisch (prerender); nur Buchung/Portal/Admin/API werden Server-Routen.
+
+## ADR-019 Platzhalterseiten noindex — *angenommen*
+Anlass-, Regional-, Rechts- und Kontaktseiten sind bis zu echtem Inhalt `noindex` und nicht in der Sitemap (gegen dünne Inhalte).
+
+## ADR-020 Galeriebilder 2400 px / JPEG 85 / ohne Metadaten — *vorläufig (E4)*, siehe `IMAGES.md`.
+
+## ADR-021 Zahlung 100 % auf Rechnung vor dem Event — *angenommen (Geschäftsmodell, ersetzt 30 %-Vorschlag)*

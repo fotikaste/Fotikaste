@@ -1,0 +1,63 @@
+---
+import "../styles/global.css";
+import fontDisplay from "@fontsource/cormorant-garamond/files/cormorant-garamond-latin-500-normal.woff2?url";
+import fontDisplayItalic from "@fontsource/cormorant-garamond/files/cormorant-garamond-latin-500-italic.woff2?url";
+import fontText from "@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { brand } from "../config/brand";
+import { absoluteUrl, pageTitle, graph, organizationJsonLd, websiteJsonLd, breadcrumbJsonLd } from "../lib/seo";
+
+interface Props {
+  title?: string;
+  description?: string;
+  path: string;
+  /** false = Entwurf/Platzhalter → noindex, nicht in Sitemap */
+  indexable?: boolean;
+  jsonLd?: Record<string, unknown>[];
+  breadcrumbs?: { name: string; path: string }[];
+}
+const { title, description = brand.description, path, indexable = true, jsonLd = [], breadcrumbs } = Astro.props;
+const canonical = absoluteUrl(path);
+const fullTitle = pageTitle(title);
+const nodes = [organizationJsonLd(), websiteJsonLd(), ...jsonLd];
+if (breadcrumbs?.length) nodes.push(breadcrumbJsonLd([{ name: "Startseite", path: "/" }, ...breadcrumbs]));
+---
+<!doctype html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={indexable ? "index, follow, max-image-preview:large" : "noindex, follow"} />
+    <meta name="theme-color" content={brand.colors.ivory} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={fontDisplay} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fontDisplayItalic} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fontText} as="font" type="font/woff2" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="de_CH" />
+    <meta property="og:site_name" content={brand.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={absoluteUrl("/og-bild.png")} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={graph(...nodes)} />
+  </head>
+  <body class="min-h-dvh flex flex-col">
+    <a href="#inhalt" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 btn btn-primary">Zum Inhalt springen</a>
+    <Header currentPath={path} />
+    <main id="inhalt" class="flex-1">
+      {!indexable && (
+        <div class="bg-paper border-b border-line">
+          <p class="container-page py-2 text-sm text-muted"><span class="placeholder-tag mr-2">Entwurf</span>Diese Seite enthält Platzhalter und ist für Suchmaschinen noch gesperrt.</p>
+        </div>
+      )}
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

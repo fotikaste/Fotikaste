@@ -1,0 +1,11 @@
+---
+import ContentLayout from "./ContentLayout.astro";
+import { occasions } from "../data/content";
+interface Props { path: "/hochzeit" | "/geburtstag" | "/firmenanlass"; heading: string; }
+const { path, heading } = Astro.props;
+const o = occasions.find((x) => x.href === path)!;
+---
+<ContentLayout path={path} eyebrow="Anlass" heading={heading} lead={o.text}>
+  <p class="placeholder-tag">Eigenständiger Inhalt folgt</p>
+  <p class="mt-6 text-muted max-w-[62ch]">Diese Seite erhält konkrete Empfehlungen für den Anlass – zum Beispiel Anzahl Ausdrucke pro Gästezahl, Platzierung und passende Pakete. Bis dahin ist sie für Suchmaschinen gesperrt.</p>
+</ContentLayout>

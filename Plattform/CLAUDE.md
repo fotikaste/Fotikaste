@@ -31,3 +31,9 @@ Geld in Rappen (integer). Zeit als ISO-8601-Text in UTC, Anzeige `Europe/Zurich`
 - Keine scheinbar funktionierende Zahlungsfunktion. MWST nur konfigurierbar, nie automatisch.
 - Rechtstexte als «ENTWURF – nicht rechtlich geprüft» kennzeichnen.
 - Commits nach abgeschlossenen Schritten, deutsche Commit-Nachrichten.
+
+## Befehle (im Ordner Plattform, Node 24 unter C:\Program Files
+odejs)
+- `npm run build` (astro check + Build nach `dist/`) · `npx wrangler dev --port 8788` (lokal wie Cloudflare)
+- `npm test` (Vitest) · `npx playwright test` (Browser, Desktop + Handy, startet wrangler selbst) · `npm run lighthouse` (braucht laufendes wrangler auf 8788)
+- Private Pfade in `site.ts` mit Schrägstrich am Ende, wenn der Präfix sonst öffentliche Seiten trifft (Lehre: `/f` sperrte `/fotobox`).
