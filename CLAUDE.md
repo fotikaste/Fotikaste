@@ -19,7 +19,8 @@ Kamera und Drucker haben jeweils eine simulierte und echte Umsetzungen mit derse
 - Originalfotos nie verändern. Druckaufträge nie automatisch wiederholen.
 - Funktionierende Meilensteine mit verständlichen deutschen Commit-Nachrichten sichern.
 - Online-Galerie ist vom Benutzer gewünscht (2026-11-10); muss offline funktionieren (Warteschlange), Fotos nur über unerratbare Einzel-Links.
-- Nicht bauen: Bezahlung, Gesichtserkennung, Fernwartung, Online-Buchung, KI-Effekte.
+- Nicht bauen (in der Fotobox-Software `System/`): Bezahlung, Gesichtserkennung, Fernwartung, Online-Buchung, KI-Effekte.
+- Webseite/Buchung/Galerie-Plattform entsteht separat in `Plattform/` (eigene Regeln in `Plattform/CLAUDE.md`, seit 2026-11-25).
 
 ## Code (System/fotobox/)
 - `store.py` SQLite (Einstellungen, Veranstaltungen, Sitzungen, Druckaufträge; `sitzung_id` UNIQUE = kein Doppeldruck)

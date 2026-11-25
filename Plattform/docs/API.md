@@ -1,0 +1,22 @@
+# Geräte-API (Entwurf v1)
+
+Stand: 2026-11-25 · Noch **nicht implementiert**. Basis: `https://<domain>/api/device/v1` · nur HTTPS · JSON.
+
+## Authentifizierung
+`Authorization: Bearer <geraete-token>` – Token wird einmalig bei der Registrierung im Admin angezeigt (danach nie mehr),
+in der DB nur als Hash gespeichert, jederzeit widerrufbar. Rate Limit pro Gerät.
+
+## Endpunkte
+| Methode | Pfad | Zweck |
+|---|---|---|
+| `GET` | `/config` | Aktuelle Event-Konfiguration des Geräts (Event-ID, Name, Namen, Datum, Rahmen, Download an/aus, Token-Gültigkeit, Kontingent). `ETag` für «nichts geändert». |
+| `POST` | `/heartbeat` | Softwareversion, Zähler (Fotos, Drucke), Warteschlangenlänge, letzte Fehler (gekürzt). Antwort: Serverzeit. |
+| `POST` | `/uploads` | Upload anmelden: `{event_id, client_photo_id, sha256, bytes, taken_at, access_token_hash?}` → `{photo_id, upload_url, expires_at}` oder `{photo_id, already_uploaded: true}` |
+| `POST` | `/uploads/{photo_id}/complete` | Upload abschliessen; Server prüft Objekt, Grösse, Prüfsumme |
+
+## Fehler
+`401` Token ungültig/widerrufen · `403` Event nicht diesem Gerät zugewiesen oder geschlossen · `409` gleiche `client_photo_id` mit anderer Prüfsumme · `413` zu gross · `429` zu viele Anfragen.
+Der Pi wiederholt bei `5xx`/Netzwerkfehlern mit wachsendem Abstand; bei `4xx` (ausser 429) nicht automatisch.
+
+## Gäste-Endpunkte (Web)
+`GET /f/{token}` – Seite mit Foto und Download (vorsignierter Link, kurz gültig) oder «noch unterwegs» / «abgelaufen».
