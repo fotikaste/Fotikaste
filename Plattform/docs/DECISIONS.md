@@ -60,3 +60,10 @@ Anlass-, Regional-, Rechts- und Kontaktseiten sind bis zu echtem Inhalt `noindex
 ## ADR-020 Galeriebilder 2400 px / JPEG 85 / ohne Metadaten — *vorläufig (E4)*, siehe `IMAGES.md`.
 
 ## ADR-021 Zahlung 100 % auf Rechnung vor dem Event — *angenommen (Geschäftsmodell, ersetzt 30 %-Vorschlag)*
+
+## ADR-022 KI-generierte Symbolbilder bis echte Fotos vorliegen — *angenommen (Benutzerwunsch, 2026-11-25)*
+Erstellt mit Canva (Bildgenerierung). Regeln: zeigen **nicht** die Fotikaste-Fotobox und keine echten Kunden; keine erkennbaren
+Gesichter; jedes Bild ist auf der Seite als «Symbolbild (KI-generiert)» gekennzeichnet (Transparenz, keine Irreführung nach UWG);
+Beispielgalerie und Produktfotos bleiben bewusst Platzhalter, bis echte Fotos (mit Einwilligung) vorhanden sind.
+Bilder werden mit `tools/bilder/optimieren.py` in WebP 480–1600 px + JPEG-Rückfall ohne Metadaten umgewandelt (`public/bilder/`).
+Nutzungsrechte: gemäss Canva-Bedingungen für KI-generierte Inhalte – vor Go-Live prüfen.

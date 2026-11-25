@@ -38,3 +38,8 @@ Speicher pro Event (400 Fotos × (0.4 + 0.02 + 0.22 Postkarte)) ≈ **0.26 GB** 
 ## Aufbewahrung
 Standard 30 Tage online (pro Event einstellbar). Kunde erhält Hinweis-Mails **7 Tage und 1 Tag vor Löschung**. Täglicher Cron löscht
 abgelaufene Bilder in R2 und markiert sie in D1; zusätzlich R2-Lifecycle-Regel als Sicherheitsnetz (z. B. 120 Tage).
+
+## Webseitenbilder (nicht Galerie)
+Symbolbilder der Webseite: KI-generiert, gekennzeichnet, siehe `DECISIONS.md` ADR-022. Umwandlung mit `tools/bilder/optimieren.py`
+(WebP q80 in 480/800/1200/1600 px, JPEG-Rückfall 1200 px q82, ohne Metadaten). Einbindung über `src/components/Picture.astro`
+(srcset/sizes, feste width/height, Hero-Bilder mit `fetchpriority="high"`, übrige `loading="lazy"`).

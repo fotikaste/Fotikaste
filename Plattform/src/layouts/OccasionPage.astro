@@ -1,11 +1,14 @@
 ---
 import ContentLayout from "./ContentLayout.astro";
 import { occasions } from "../data/content";
+import Picture from "../components/Picture.astro";
+import { occasionImages as map } from "../data/images";
 interface Props { path: "/hochzeit" | "/geburtstag" | "/firmenanlass"; heading: string; }
 const { path, heading } = Astro.props;
 const o = occasions.find((x) => x.href === path)!;
 ---
 <ContentLayout path={path} eyebrow="Anlass" heading={heading} lead={o.text}>
+  <figure class="m-0 mb-12"><div class="aspect-[21/9] overflow-hidden"><Picture image={map[path]} priority sizes="(min-width: 1216px) 1150px, 100vw" class="w-full h-full object-cover object-[50%_40%]" /></div><figcaption class="mt-2 text-xs text-muted">Symbolbild (KI-generiert)</figcaption></figure>
   <p class="placeholder-tag">Eigenständiger Inhalt folgt</p>
   <p class="mt-6 text-muted max-w-[62ch]">Diese Seite erhält konkrete Empfehlungen für den Anlass – zum Beispiel Anzahl Ausdrucke pro Gästezahl, Platzierung und passende Pakete. Bis dahin ist sie für Suchmaschinen gesperrt.</p>
 </ContentLayout>

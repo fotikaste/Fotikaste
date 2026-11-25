@@ -2,6 +2,15 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
+## 2026-11-25 – Design freigegeben, KI-Symbolbilder eingebaut
+- Design vom Benutzer freigegeben → Phase 0–1 nach `main` übernommen.
+- 6 Bilder mit Canva generiert (Vorgaben: keine Fotobox, keine erkennbaren Kunden, Farbpalette). Canva lieferte die Originale nur über ein
+  automatisch erzeugtes Layout; Bilder daraus in hoher Auflösung exportiert, ausgeschnitten und begradigt. 1 Bild (Hochzeitstafel) fehlte im Export und wird nicht verwendet.
+- 5 Bilder als WebP 480–1600 px + JPEG-Rückfall (zusammen 2 MB, pro Seite geladen deutlich weniger), alle als «Symbolbild (KI-generiert)» gekennzeichnet.
+- Einsatz: Postkarten im Hero, «Das Erlebnis», Anlasskarten, Anlassseiten. Beispielgalerie und Produktfotos bleiben bewusst Platzhalter.
+- Tests: 13 Unit, 48 Browser grün. Lighthouse: Start 99–100 überall; /fotobox und /hochzeit Desktop Performance 90, LCP 2.0 s (Ziel ≤ 2.5 s); /hochzeit SEO 69 = gewollt (noindex).
+- In deinem Canva-Konto liegen dadurch 6 generierte Bilder und eine Hilfspräsentation «DAHb8ziOJCA» (kann gelöscht werden).
+
 ## 2026-11-25 – Phase 1 umgesetzt (Branch `plattform/entwicklung`)
 - Entscheide E1–E6 umgesetzt (Cloudflare CHF 0, Astro, Design C+A, Originale lokal, E5 offen → nichts gelöscht, Node 24).
 - Node.js 24.22.3 per winget installiert (Zustimmung vorhanden), Kompatibilität mit Astro 7.4 / Wrangler 4 / Vitest 5 geprüft.

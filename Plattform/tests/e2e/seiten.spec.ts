@@ -64,3 +64,17 @@ test("Bildschirmfotos für den Phasenbericht", async ({ page }, info) => {
     await page.screenshot({ path: `test-results/ansicht-${info.project.name}${path === "/" ? "-start" : path.replace("/", "-")}.png`, fullPage: true });
   }
 });
+
+test("KI-Bilder sind als Symbolbild gekennzeichnet und haben feste Masse", async ({ page }) => {
+  for (const path of ["/", "/hochzeit"]) {
+    await page.goto(path);
+    await expect(page.getByText(/Symbolbild(er)? \(KI-generiert\)/).first()).toBeVisible();
+    const imgs = page.locator("picture img");
+    expect(await imgs.count()).toBeGreaterThan(0);
+    for (const img of await imgs.all()) {
+      expect(await img.getAttribute("width")).toBeTruthy();
+      expect(await img.getAttribute("height")).toBeTruthy();
+      expect((await img.getAttribute("alt"))?.length).toBeGreaterThan(10);
+    }
+  }
+});
