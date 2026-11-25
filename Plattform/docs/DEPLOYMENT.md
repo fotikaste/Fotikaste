@@ -6,16 +6,16 @@ Noch nichts eingerichtet. Jeder Schritt, der ein Konto, Kosten oder eine Veröff
 | Umgebung | Zweck | Daten |
 |---|---|---|
 | Lokal | Entwicklung auf deinem PC | nur Testdaten |
-| Preview (Vercel) | Vorschau pro Änderung, passwortgeschützt, `noindex` | nur Testdaten |
+| Vorschau (Cloudflare `*.workers.dev`, hinter Cloudflare Access) | Vorschau pro Änderung, `noindex` | nur Testdaten |
 | Produktion | echte Kunden | erst nach Phase 7 |
 
 ## Checkliste Phase 7 (vor Go-Live)
 - [ ] Domain gekauft (Name entschieden, Markenprüfung gemacht)
 - [ ] DNS: Webseite, `files.`-Subdomain für R2 falls nötig, E-Mail **SPF/DKIM/DMARC**
-- [ ] Supabase Pro, Region EU, tägliche Backups, Wiederherstellung getestet
-- [ ] Umgebungsvariablen in Vercel gesetzt (nie im Code)
+- [ ] D1 Time Travel aktiv, wöchentlicher Export per GitHub Actions, Wiederherstellung getestet
+- [ ] Geheimnisse mit `wrangler secret put` gesetzt (nie im Code); Workers Paid **nicht** aktiviert; Budgetwarnung USD 1 aktiv
 - [ ] Mail-Testmodus **aus**, Testkonten gelöscht
-- [ ] Sicherheitsprüfung, `npm audit`, RLS-Tests grün
+- [ ] Sicherheitsprüfung, `npm audit`, Berechtigungstests grün
 - [ ] Rechtstexte geprüft, Impressum vollständig
 - [ ] robots.txt/Sitemap korrekt, Search Console + Bing verbunden
 - [ ] Überwachung (Uptime, Fehler-Mails)

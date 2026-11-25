@@ -1,125 +1,99 @@
-# Datenbank – vorläufiges Modell
+# Datenbank – Modell (Cloudflare D1 / SQLite)
 
-Stand: 2026-11-25 · Status: **Entwurf (Phase 0)**. Umsetzung in Phase 2 über versionierte Migrationen (`supabase/migrations/`).
+Stand: 2026-11-25 (Version 2, umgestellt von PostgreSQL auf D1) · Umsetzung über versionierte Migrationen in `Plattform/migrations/`.
 
 ## Was ist ein ER-Diagramm?
-**ER = Entity-Relationship** (Gegenstand–Beziehung). Jedes Kästchen ist eine **Tabelle** (z. B. `bookings`), jede Linie eine
-**Beziehung**. Die Zeichen an den Linienenden sagen «wie viele»: `||` = genau eins, `o{` = keins oder mehrere.
-Beispiel Fotikaste: *Ein Kunde hat keine oder mehrere Buchungen; jede Buchung gehört zu genau einem Kunden.*
-Verbunden werden Tabellen über **Fremdschlüssel**: `bookings.customer_id` zeigt auf `customers.id`.
+**ER = Entity-Relationship** (Gegenstand–Beziehung). Jedes Kästchen ist eine **Tabelle**, jede Linie eine **Beziehung**.
+`||` = genau eins, `o{` = keins oder mehrere. Beispiel: *Ein Kunde hat keine oder mehrere Buchungen; jede Buchung gehört zu genau einem Kunden.*
+Verbunden über **Fremdschlüssel**: `bookings.customer_id` zeigt auf `customers.id`.
 
-> **Primärschlüssel** – eindeutige Nummer jeder Zeile (`id`, bei uns UUID). **Fremdschlüssel** – Verweis auf den
-> Primärschlüssel einer anderen Tabelle; die Datenbank verhindert Verweise ins Leere.
+## Was ändert sich mit D1?
+| Thema | PostgreSQL (V1) | **D1 (V2)** |
+|---|---|---|
+| Doppelbuchung | Ausschlussregel auf Zeiträumen | **`allocation_days` mit UNIQUE(resource_id, day, slot)** + atomarer `batch()` |
+| Transaktionen | frei | nur als `batch()` (alle Befehle vorab festgelegt) – reicht für alle Buchungsschritte |
+| Zugriffsschutz | Row Level Security | **keine RLS** → Zugriff ausschliesslich über Worker-Code mit Rollenprüfung; Browser spricht nie direkt mit D1 |
+| Typen | uuid, timestamptz, jsonb | IDs als TEXT (zufällig, 128 Bit), Zeit als TEXT ISO-8601 UTC, JSON als TEXT mit `json_valid`-CHECK |
+| Fremdschlüssel | immer aktiv | in D1 aktiv (Prüfung im Test) |
+| Geld | integer Rappen | integer Rappen (unverändert) |
 
 ## ER-Diagramm (Kern)
-
 ```mermaid
 erDiagram
   customers ||--o{ bookings : bucht
-  customers ||--o{ invoices : erhaelt
   customers ||--o{ customer_notes : hat
-  profiles  ||--o| customers : "Login (optional)"
+  customers ||--o{ sessions : "Portal-Sitzungen"
   packages  ||--o{ package_items : enthaelt
   packages  ||--o{ bookings : gewaehlt
-  bookings  ||--o{ booking_items : "Positionen (Preis-Snapshot)"
-  add_ons   ||--o{ booking_items : als
-  bookings  ||--o{ resource_allocations : belegt
-  devices   ||--o{ resource_allocations : "wird belegt"
+  bookings  ||--o{ booking_items : "Preis-Snapshot"
+  bookings  ||--o{ allocations : belegt
+  allocations ||--o{ allocation_days : "je Tag"
+  resources ||--o{ allocation_days : "belegt (UNIQUE)"
+  devices   ||--|| resources : "ist Ressource"
+  delivery_zones ||--o{ bookings : "Liefergebiet"
   bookings  ||--o| events : "fuehrt zu"
   events    ||--|| galleries : hat
-  devices   ||--o{ events : "zugewiesen"
   galleries ||--o{ photos : enthaelt
   devices   ||--o{ photos : "laedt hoch"
-  devices   ||--o{ device_credentials : besitzt
-  devices   ||--o{ device_reports : meldet
+  devices   ||--o{ device_tokens : besitzt
+  bookings  ||--o{ payment_schedule : "Anzahlung, Rest, Kaution"
   bookings  ||--o{ invoices : verrechnet
   invoices  ||--o{ invoice_items : enthaelt
   invoices  ||--o{ payments : bezahlt
-  bookings  ||--o{ booking_history : protokolliert
-  email_templates ||--o{ outbox_messages : erzeugt
 ```
 
-## Tabellen (benötigt in V1 = ●, später = ○)
-
+## Tabellen (● V1, ○ später)
 | Modul | Tabelle | | Zweck / wichtige Felder |
 |---|---|---|---|
-| Auth | `profiles` | ● | 1:1 zu Supabase `auth.users`; `role` (owner/admin/staff/customer), `totp_required` |
-| CRM | `customers` | ● | Vorname, Nachname, Firma, E-Mail (eindeutig, klein geschrieben), Telefon, Rechnungsadresse, `profile_id?` |
-| CRM | `customer_notes` | ● | Notizen + Kommunikationshistorie (Typ: Notiz, E-Mail, Anruf) |
-| Katalog | `packages` | ● | Name, Slug, Grundpreis (Rappen), Mietdauer h, inkl. Abzüge, sichtbar, Reihenfolge |
-| Katalog | `package_items` | ● | Leistungen eines Pakets (Text + optional Menge) |
-| Katalog | `add_ons` | ● | Zusatzleistung, Preisart (pauschal / pro Stunde / pro 100 Abzüge), Preis |
-| Katalog | `delivery_zones` | ● | PLZ-Bereiche, Lieferpauschale, Sofortbuchung ja/nein |
-| Buchung | `bookings` | ● | Nummer, Status, Kunde, Paket, Event-Daten, Zeitraum, Adresse, Gäste, Lieferart, Gesamt (Snapshot), AGB-Version akzeptiert |
-| Buchung | `booking_items` | ● | Preis-**Snapshot** jeder Position (Beschreibung, Menge, Einzelpreis) – spätere Preisänderungen ändern alte Buchungen nicht |
-| Buchung | `resource_allocations` | ● | **Ersetzt `booking_holds` + `availability_blocks`**: Typ (hold/booking/maintenance/block), Gerät, Zeitraum inkl. Puffer, `expires_at` bei hold |
-| Buchung | `booking_history` | ● | Jede Änderung: wer, wann, alt → neu |
-| Geräte | `devices` | ● | Name, Seriennr., Status, Softwareversion, `last_seen_at` |
-| Geräte | `device_credentials` | ● | Token-**Hash**, erstellt, widerrufen_am – mehrere pro Gerät für Wechsel |
-| Geräte | `device_reports` | ● | Heartbeat: Zähler Fotos/Drucke, Warteschlange, Fehlermeldungen (begrenzt, 90 Tage) |
-| Galerie | `events` | ● | Slug, Name, Booking, Gerät, Status, Layout/Rahmen-Konfiguration (JSON), Aufbewahrung bis |
-| Galerie | `galleries` | ● | `shared` (Standard **false**), Passwort-Hash, Download erlaubt, ablauf_am |
-| Galerie | `photos` | ● | Event, Gerät, `client_photo_id` (eindeutig pro Gerät → kein Doppel-Upload), Objektpfade (Original/Web/Vorschau), sha256, `access_token_hash`, Token-Ablauf, Status (pending/uploaded/ready/deleted) |
-| Finanzen | `invoices` | ● | Nummer (fortlaufend, lückenlos), Status (draft/issued/paid/cancelled), Daten, Summen, **gesperrt nach Ausstellung** |
-| Finanzen | `invoice_items` | ● | Positionen (Kopie, unveränderlich nach Ausstellung) |
-| Finanzen | `payments` | ● | Betrag, Datum, Art (Überweisung/bar/später TWINT), Referenz |
-| Finanzen | `expenses` | ○ | Ausgaben mit Kategorie (Investition, Verbrauch, Transport, Cloud, Marketing) und Art (effektiv/kalkulatorisch) |
-| Mail | `email_templates` | ● | Schlüssel, Betreff, Text mit Platzhaltern, aktiv |
-| Mail | `outbox_messages` | ● | **Ersetzt `email_logs`**: `dedupe_key` UNIQUE (z. B. `booking_confirmed:<id>`), Status, Versuche, Testmodus |
-| Inhalte | `content_blocks`, `faqs`, `posts`, `redirects`, `seo_meta` | ● | Texte, FAQ, Ratgeber, Weiterleitungen, Titel/Beschreibung je Seite |
-| System | `settings` | ● | Schlüssel/Wert: Druckkosten pro Abzug (Standard 0.15), MWST-pflichtig, Satz, Puffer-Stunden, Hold-Dauer |
-| System | `audit_logs` | ● | Sicherheitsrelevante Aktionen (Login, Rollen, Rechnungen, Löschungen, Geräte) – nur anhängen, nie ändern |
-| System | `rate_limits` | ○ | falls kein externer Dienst |
+| Admin | `admin_users` | ● | E-Mail (muss zu Cloudflare-Access-Identität passen), Rolle `owner/admin/staff`, aktiv |
+| CRM | `customers` | ● | Name, Firma, E-Mail (`UNIQUE COLLATE NOCASE`), Telefon, Rechnungsadresse, Sprache |
+| CRM | `customer_notes` | ● | Notizen und Kommunikationshistorie |
+| Portal | `magic_links` | ● | `token_hash` UNIQUE, customer_id, `expires_at`, `used_at` |
+| Portal | `sessions` | ● | `session_hash` UNIQUE, customer_id, Ablauf, widerrufen |
+| Katalog | `packages`, `package_items`, `add_ons` | ● | Preise in Rappen, inkl. Abzüge, sichtbar, Reihenfolge; Texte mit `locale` |
+| Liefergebiet | `delivery_zones` | ● | Name, **Kantone** (Liste), **PLZ-Bereiche**, max. Distanz km, Pauschale + Preis/km, Abholung erlaubt, **Sofortbuchung erlaubt**, Mindestvorlauf Tage (Standard 7), Puffertage vor/nach |
+| Ressourcen | `resources` | ● | Typ `device` oder `delivery` (Liefer-Kapazität), Kapazität (Anzahl Slots/Tag) |
+| Buchung | `bookings` | ● | Nummer, Status, Kunde, Paket, Event-Daten, Adresse, PLZ, Gäste, Lieferart, Zone, Summen (Snapshot), AGB-Version |
+| Buchung | `booking_items` | ● | Positionen als Snapshot (Text, Menge, Einzelpreis Rappen) |
+| Buchung | `allocations` | ● | Typ `hold/booking/maintenance/block`, booking_id?, `expires_at` (bei hold) |
+| Buchung | `allocation_days` | ● | allocation_id, resource_id, `day` (YYYY-MM-DD, Europe/Zurich), `slot`; **UNIQUE(resource_id, day, slot)** |
+| Buchung | `booking_history` | ● | wer, wann, Feld, alt → neu |
+| Zahlung | `payment_schedule` | ● | Art `deposit/balance/security_deposit`, Betrag oder %, fällig am, Status |
+| Geräte | `devices`, `device_tokens`, `device_reports` | ● | wie V1; Token nur als Hash |
+| Galerie | `events`, `galleries`, `photos` | ● | wie V1; `photos` mit Objektpfaden Original/Web/Vorschau, Bytes, `client_photo_id` UNIQUE je Gerät |
+| Finanzen | `invoices`, `invoice_items`, `payments` | ● | Nummer lückenlos, nach Ausstellung gesperrt (Trigger verhindert UPDATE), PDF-Pfad + SHA-256 |
+| Finanzen | `expenses` | ○ | Ausgaben effektiv/kalkulatorisch |
+| Mail | `email_templates`, `outbox` | ● | `dedupe_key` UNIQUE, Status, Versuche, Testmodus, Sendetag (für 80/Tag-Drossel) |
+| Inhalte | `content_blocks`, `faqs`, `posts`, `redirects`, `seo_meta` | ●/○ | alle mit `locale` (Standard `de-CH`) |
+| System | `settings` | ● | u. a. `print_cost_rappen`=15, `vat_enabled`=0, `vat_rate`, `deposit_percent`=30 (vorläufig), `hold_minutes`=15, `min_lead_days`=7, R2-Grenzen |
+| System | `usage_counters` | ● | Tag/Monat, Dienst, Zähler (R2-Bytes, A/B-Vorgänge, Mails, Uploads) |
+| System | `audit_log` | ● | nur anhängen |
 
-**Nicht übernommen:** `roles` (fixe Rollenliste genügt), `print_jobs` einzeln (Gerät meldet Zähler in `device_reports`; einzelne Druckaufträge bleiben auf dem Pi), `upload_jobs` (Status steht am Foto, die Warteschlange lebt auf dem Pi).
-
-## Doppelbuchungen – von der Datenbank verhindert
-PostgreSQL kann mit einer **Ausschlussregel** (Exclusion Constraint) garantieren, dass sich zwei Zeiträume desselben Geräts
-nie überschneiden – auch wenn zwei Kunden in derselben Millisekunde buchen:
-
+## Buchungs-Batch (Pseudo-SQL)
 ```sql
-create extension if not exists btree_gist;
-alter table resource_allocations add constraint no_overlap
-  exclude using gist (device_id with =, period with &&)
-  where (status = 'active');
+-- alles in EINEM db.batch([...]) → atomar
+DELETE FROM allocation_days WHERE allocation_id IN (SELECT id FROM allocations WHERE type='hold' AND expires_at < :now);
+DELETE FROM allocations WHERE type='hold' AND expires_at < :now;
+INSERT INTO allocations (id, type, expires_at) VALUES (:a, 'hold', :now_plus_15);
+INSERT INTO allocation_days (allocation_id, resource_id, day, slot) VALUES
+  (:a, :device, '2027-06-11', 1),   -- Liefertag/Puffer
+  (:a, :device, '2027-06-12', 1),   -- Eventtag
+  (:a, :delivery, '2027-06-11', :freier_slot);
+-- UNIQUE-Verletzung irgendwo → gesamter Batch zurückgerollt
 ```
-`period` ist ein `tstzrange` **inklusive Liefer-, Auf-/Abbau- und Pufferzeit**. Ablauf beim Buchen:
-1. Kunde wählt Datum → Server sucht freies Gerät und legt eine `hold`-Belegung an (15 min gültig).
-2. Abgelaufene Holds werden in derselben Transaktion vor dem Einfügen auf `expired` gesetzt (zusätzlich minütlicher Job).
-3. Beim Abschluss wird der Hold in eine `booking`-Belegung umgewandelt – nur, wenn er noch gültig ist.
-4. Scheitert die Regel, bekommt der zweite Kunde «Dieses Datum wurde soeben vergeben» und Alternativen.
-
-**Liefer-Kapazität** (du als Person): zusätzliche Ressource `staff` in derselben Tabelle, damit z. B. maximal eine
-Lieferung pro Zeitfenster geplant wird. (Konfigurierbar, in V1 einfach gehalten.)
+Abschluss: `UPDATE allocations SET type='booking', booking_id=…, expires_at=NULL WHERE id=:a AND type='hold' AND expires_at > :now`
+plus `INSERT INTO bookings …` im selben Batch; der Worker prüft, dass das UPDATE genau 1 Zeile geändert hat, sonst Abbruch.
+**Test:** 50 gleichzeitige Buchungsversuche auf denselben Tag → genau einer gewinnt (automatischer Test, Phase 3).
 
 ## Statusmodelle
-- **Buchung:** `request` → `confirmed` → `deposit_paid` → `completed`; Seitenwege `cancelled` (mit Grund), `expired` (Anfrage nicht bestätigt).
-- **Rechnung:** `draft` → `issued` → `paid` / `overdue` → Korrektur nur über **Gutschrift/Storno-Rechnung**, nie durch Bearbeiten.
-- **Event:** `planned` → `active` (Gerät darf hochladen) → `closed` (Upload gesperrt) → `archived` (Fotos gelöscht).
-- **Foto:** `pending` (Token reserviert) → `uploaded` → `ready` (Vorschaubilder fertig) → `deleted`.
-- **Gerät:** `active` / `maintenance` / `retired`; Zugang einzeln widerrufbar.
+- **Buchung:** `request` (kurzfristig/ausserhalb Zone) · `confirmed` (Direktbuchung) → `deposit_paid` → `completed`; `cancelled`, `expired`.
+- **Rechnung:** `draft` → `issued` → `paid`/`overdue`; Korrektur nur per Gutschrift.
+- **Event:** `planned` → `active` → `closed` → `archived`. **Foto:** `pending` → `uploaded` → `ready` → `deleted`.
 
-## Löschregeln und Aufbewahrung (Entwurf, rechtlich zu prüfen)
-| Daten | Aufbewahrung | Löschart |
-|---|---|---|
-| Event-Fotos | Standard 30 Tage nach Event, einstellbar (max. z. B. 365) | Objekte in R2 + Zeilen; täglicher Job |
-| Abgebrochene Buchungs-Holds | 24 h | löschen |
-| Anfragen ohne Buchung | 12 Monate | anonymisieren |
-| Buchungen, Rechnungen, Zahlungen | **10 Jahre** (Schweizer Aufbewahrungspflicht für Geschäftsbücher, Art. 958f OR) | danach löschen; vorher nur sperren |
-| Geräteberichte | 90 Tage | löschen |
-| Audit-Logs | 2 Jahre | löschen |
+## Aufbewahrung (Entwurf, rechtlich zu prüfen)
+Fotos: Web-Version Standard 30 Tage, Originale (falls hochgeladen) 14 Tage · Holds 24 h · Anfragen ohne Buchung 12 Monate ·
+Buchhaltungsrelevantes 10 Jahre (Art. 958f OR) · Gerätedaten 90 Tage · Audit-Log 2 Jahre.
 
-Fremdschlüssel-Löschverhalten: Kunden mit Rechnungen können **nicht** gelöscht werden (`on delete restrict`), nur anonymisiert.
-Fotos hängen mit `on delete cascade` an der Galerie.
-
-## Zugriffsrechte (Row Level Security, Kurzfassung)
-- Alle Tabellen: RLS **eingeschaltet**, Standard «kein Zugriff».
-- `staff/admin/owner`: über Funktion `has_role()`; Finanzen nur `owner`.
-- `customer`: nur Zeilen mit eigener `customer_id`.
-- Gäste und Geräte greifen **nie direkt** auf die Datenbank zu, nur über Server-Endpunkte mit eigener Prüfung.
-- Jede Policy erhält einen automatischen Test (Phase 2).
-
-## Indizes (Auswahl)
-`customers(lower(email))` unique · `bookings(status, event_start)` · `resource_allocations` GiST auf `period` ·
-`photos(device_id, client_photo_id)` unique · `photos(access_token_hash)` unique · `outbox_messages(dedupe_key)` unique ·
-`invoices(number)` unique.
+## Backups
+D1 Time Travel (7 Tage, gratis) + wöchentlicher `wrangler d1 export` (GitHub Actions) → privater R2-Ordner `backups/` (wenige MB)
++ monatliche Wiederherstellungsprobe in eine Test-Datenbank.

@@ -1,160 +1,160 @@
 # Architektur – Fotikaste-Plattform
 
-Stand: 2026-11-25 · Status: **Vorschlag (Phase 0), noch nicht freigegeben**
+Stand: 2026-11-25 (Version 2) · Status: **überarbeitet nach Vorgabe «CHF 0 pro Monat»**, wartet auf Freigabe (Entscheide E1–E3 in `README.md`)
+
+> Version 1 (Vercel + Supabase, ca. CHF 45–70/Monat) ist ersetzt, siehe `DECISIONS.md` ADR-009.
 
 ## 1. Grundprinzip
-Ein **modularer Monolith**: eine einzige Next.js-Anwendung mit klar getrennten Modulen, eine PostgreSQL-Datenbank,
-ein privater Fotospeicher. Keine Microservices. Die Fotobox bleibt ein **eigenständiges Gerät**, das die Cloud nur nutzt,
-wenn Internet da ist.
+Alles läuft auf deinem **bestehenden Cloudflare-Konto** in den Gratisstufen. Eine Anwendung, eine Datenbank, ein privater
+Fotospeicher. Öffentliche Seiten werden **beim Bauen fertig erzeugt** (statisch) und verbrauchen keine Rechenzeit. Nur Buchung,
+Portal, Galerie, Admin und Geräte-API laufen als kleine Server-Funktionen (Worker).
 
-> **Modularer Monolith** – *Was?* Ein Programm, intern in Module geteilt. *Wozu?* Einfach zu betreiben (ein Deployment),
-> trotzdem ordentlich getrennt. *Wie?* Jedes Modul hat einen eigenen Ordner und spricht andere nur über definierte Funktionen an.
-> *Wo?* `src/modules/booking`, `src/modules/gallery`, …
+**Einzige Kostenquelle mit Restrisiko:** R2 (bei hinterlegter Zahlungsmethode wird Mehrverbrauch verrechnet). Dagegen gibt es
+harte Grenzen in der App, siehe §7. Alle anderen Dienste **sperren** bei Erreichen des Limits statt zu verrechnen.
 
-## 2. Architekturvarianten
+## 2. Bausteine
 
-| | **A – Managed (empfohlen)** | B – Eigener Server | C – Cloudflare-only |
-|---|---|---|---|
-| App | Next.js auf **Vercel** (Region Frankfurt) | Next.js in Docker auf VPS (Infomaniak/Hetzner) | Next.js auf Cloudflare Workers (OpenNext) |
-| Datenbank | **Supabase Postgres** (EU) | eigenes Postgres | Neon oder Supabase |
-| Login | Supabase Auth (Magic Link, TOTP-2FA) | Auth-Bibliothek selbst betreiben | Bibliothek |
-| Fotos | **Cloudflare R2, privat** | R2 | R2 |
-| E-Mail | Resend (EU-Region) | Resend | Resend |
-| Wartung | gering | **hoch** (Updates, Backups, Firewall selbst) | mittel (Kompatibilitätsfragen) |
-| Kosten/Monat* | ca. CHF 45–55 | ca. CHF 10–25 | ca. CHF 5–30 |
-| Eignung Anfänger | ✅ | ❌ | ⚠️ |
+| Aufgabe | Dienst (Gratisstufe) | Warum |
+|---|---|---|
+| Webseite + Server-Funktionen | **Cloudflare Workers** mit statischen Assets | Statische Dateien gratis und unbegrenzt; 100 000 Worker-Aufrufe/Tag |
+| Framework | **Astro** (empfohlen, Entscheid E2) | Erzeugt statische Seiten (ideal für SEO/Ladezeit), Server-Seiten nur wo nötig; gehört seit Jan. 2026 zu Cloudflare, bleibt Open Source (MIT) |
+| Datenbank | **Cloudflare D1** (SQLite) | 5 Mio. gelesene / 100 000 geschriebene Zeilen pro Tag, 500 MB pro DB, 7 Tage Time Travel |
+| Fotos | **Cloudflare R2**, neuer **privater** Bucket, EU-Jurisdiktion | Bereits vorhanden; 10 GB, 1 Mio. Schreib-/10 Mio. Lesevorgänge pro Monat; Download gratis |
+| Admin-Schutz | **Cloudflare Access** (Zero Trust Free, < 50 Benutzer) | Login vor der App, mit Google/GitHub inkl. deren 2FA; App prüft das Access-Token zusätzlich |
+| Bot-Schutz | **Cloudflare Turnstile** | Gratis-Captcha-Alternative für Buchung und Magic-Link-Anfrage |
+| E-Mail senden | **Resend Free** | 100/Tag, 3 000/Monat, blockiert bei Limit (kein Mehrverbrauch) |
+| E-Mail empfangen | **Cloudflare Email Routing** | `info@<domain>` → dein bestehendes Postfach |
+| Zeitgesteuerte Aufgaben | Worker **Cron Triggers** (5 gratis) | Reservierungen aufräumen, E-Mails, Löschfristen, Verbrauchsprüfung |
+| Code | **GitHub Free** (privates Repository) | Versionen, Sicherung; GitHub Actions für Tests/Deploy |
+| Bilder der Webseite | beim Bauen optimiert (AVIF/WebP) | kein kostenpflichtiger Bilddienst |
 
-\*Details und Annahmen in `COSTS.md`. Alle Preise vor Entscheid auf den offiziellen Seiten prüfen.
-
-**Empfehlung A**, weil du Einsteiger bist und Sicherheit/Backups bei Managed-Diensten professionell gelöst sind.
-Die Abhängigkeit bleibt begrenzt: Postgres ist Standard-SQL (umziehbar), R2 spricht die Standard-S3-Schnittstelle.
+### Bewusst NICHT verwendet
+Cloudflare Images (verrechnet), Workers Paid (USD 5/Monat), Vercel, Supabase, kostenpflichtige Analyse-Tools.
 
 ## 3. Architekturdiagramm
 
 ```mermaid
 flowchart LR
-  subgraph Kunden
-    B[Besucher / Kunde<br>Browser, Handy]
+  subgraph Nutzer
+    B[Besucher, Kunde]
     G[Gast mit QR-Code]
+    A[Du als Admin]
   end
-  subgraph Vercel["Next.js-App (Vercel, EU)"]
-    W[Öffentliche Webseite<br>statisch + SSR]
-    BK[Buchung]
-    P[Kundenportal]
-    GA[Galerie]
-    AD[Admin]
-    API[Geräte-API /api/device/v1]
-    JOB[Geplante Jobs<br>E-Mails, Löschfristen]
+  subgraph CF["Cloudflare (Gratisstufen)"]
+    S[Statische Seiten<br>Start, Preise, Ratgeber …]
+    W[Worker<br>Buchung, Portal, Galerie,<br>Admin, Geräte-API, Cron]
+    AC[Access<br>Admin-Login + 2FA]
+    D1[(D1 Datenbank)]
+    R2[(R2 privat<br>Fotos)]
+    T[Turnstile]
   end
-  DB[(Supabase Postgres<br>EU)]
-  AU[Supabase Auth]
-  R2[(Cloudflare R2<br>privater Bucket, EU)]
-  M[Resend E-Mail]
-  subgraph Event["Veranstaltungsort"]
-    FB[Fotobox Raspberry Pi<br>läuft auch offline]
-  end
-  B --> W & BK & P
-  G --> GA
-  AD & BK & P & GA & API --> DB
-  P & AD --> AU
-  GA -- vorsignierte Download-Links --> R2
-  FB -- Geräte-Token, HTTPS --> API
+  M[Resend<br>E-Mail]
+  FB[Fotobox Pi<br>läuft offline]
+  B --> S & W
+  B -.-> T
+  G --> W
+  A --> AC --> W
+  W --> D1
+  W -- Foto streamen nach Prüfung --> R2
+  FB -- Geräte-Token --> W
   FB -- vorsignierter Upload --> R2
-  JOB --> M
+  W --> M
 ```
 
-## 4. Fotobox-Integration (ohne Eingriff in Kamera/Druck/Ablauf)
+## 4. Sichere Anmeldung ohne Supabase
 
-**Neu im Pi-Code (später, nur nach deiner Freigabe):** eine Klasse `PlattformGalerie(Galerie)` in `galerie.py`, wählbar
-neben «simuliert» und «Cloudflare R2». Alles andere bleibt.
-
-Ablauf pro Foto:
-1. Gast will Foto aufs Handy → Fotobox erzeugt lokal `token = secrets.token_urlsafe(24)` (192 Bit).
-   QR-Code zeigt `https://<domain>/f/<token>` – **funktioniert sofort, auch offline**.
-2. Arbeiter (bestehende Warteschlange) fragt sobald online: `POST /api/device/v1/uploads` mit `{event_id, client_photo_id, sha256, token_hash}`.
-3. Plattform prüft: Gerät aktiv? Event diesem Gerät zugewiesen? Foto schon vorhanden (gleiche `client_photo_id`)? → liefert **vorsignierte Upload-URL** (5 min gültig, nur dieser eine Objektpfad).
-4. Pi lädt direkt in R2 hoch → `POST …/uploads/{id}/complete` → Plattform prüft Grösse/Prüfsumme, erstellt Vorschaubilder.
-5. Ruft ein Gast `/f/<token>` auf, bevor das Foto da ist: freundliche Seite «Dein Foto ist noch unterwegs – bitte später nochmals öffnen».
-
-Eigenschaften: **idempotent** (doppelter Upload erzeugt kein zweites Foto), Token in der DB nur als **Hash**
-gespeichert, Pi besitzt **keinen** R2-Schlüssel mehr, Gerät sieht nur seine zugewiesenen Events, kein Fernzugriff auf den Pi.
-
-> **Idempotent** – derselbe Auftrag zweimal ausgeführt hat dieselbe Wirkung wie einmal. Wichtig, weil die Fotobox bei
-> Wackel-Internet nicht weiss, ob ein Upload angekommen ist, und ihn wiederholt.
-
-Event-Konfiguration: Pi holt `GET /api/device/v1/config` (Eventname, Namen, Datum, Rahmen, Download an/aus, Druck-Kontingent)
-und speichert sie lokal. Ohne Internet läuft er mit der zuletzt bekannten Konfiguration bzw. manueller Einstellung weiter.
-
-## 5. Seitenstruktur
-
-### Öffentlich (indexierbar, statisch/serverseitig gerendert)
-| URL | Zweck |
-|---|---|
-| `/` | Startseite (Hero, Erlebnis, Vorteile, Ablauf, Pakete, Anlässe, Galerie, FAQ, CTA) |
-| `/fotobox` | Produktseite (Technik, Masse, Platz, Strom, Druck, Galerie) |
-| `/preise` | Pakete + Zusatzleistungen + Vergleichstabelle + Lieferkosten |
-| `/verfuegbarkeit` | Kalender mit sofortiger Prüfung → Buchung |
-| `/hochzeit`, `/geburtstag`, `/firmenanlass` | Anlassseiten mit eigenem Inhalt |
-| `/fotobox-thurgau`, `/fotobox-ostschweiz` (weitere nur bei echtem Liefergebiet) | Regionalseiten |
-| `/ratgeber`, `/ratgeber/[slug]` | Ratgeber-Beiträge |
-| `/galerie` | Beispielfotos (nur mit Einwilligung) |
-| `/faq`, `/ueber-uns`, `/kontakt` | |
-| `/impressum`, `/datenschutz`, `/agb` | Rechtstexte (Entwurf bis geprüft) |
-
-`/fotobox-mieten` wird **nicht** separat gebaut (würde mit `/` konkurrieren) – die Startseite zielt auf «Fotobox mieten».
-
-### Buchung (nicht indexiert)
-`/buchen` → Schritte Datum · Paket · Extras · Event · Kontakt · Übersicht · Bestätigung (`/buchen/danke`).
-
-### Geschützt (Zugriffskontrolle, zusätzlich noindex)
-| Bereich | URL | Zugang |
+| Wer | Verfahren | Details |
 |---|---|---|
-| Kundenportal | `/konto`, `/konto/buchung/[id]` | Magic Link |
-| Event-Galerie | `/event/[slug]` | standardmässig gesperrt; Veranstalter gibt frei, optional Passwort |
-| Einzelfoto | `/f/[token]` | nur mit Token |
-| Admin | `/admin/...` (Dashboard, Buchungen, Kalender, Events, Kunden, Rechnungen, Finanzen, Geräte, Inhalte, SEO, Einstellungen) | Konto + 2FA + Rolle |
-| Geräte-API | `/api/device/v1/...` | Geräte-Token |
+| **Admin (du)** | Cloudflare Access vor `/admin/*` und `/api/admin/*` | Anmeldung über Google- oder GitHub-Konto **mit eingeschalteter 2FA**; Access-Regel erlaubt nur deine E-Mail-Adresse. Der Worker prüft bei jeder Anfrage die Signatur des Access-Tokens (`Cf-Access-Jwt-Assertion`), damit ein Umgehen der Vorschaltung nichts nützt. Kein Passwort in unserer DB. |
+| **Kunde** | Eigener Magic Link | Zufallstoken 256 Bit, in D1 nur als SHA-256-Hash, 15 min gültig, einmal verwendbar. Danach Sitzungs-Cookie (`HttpOnly`, `Secure`, `SameSite=Lax`, 30 Tage, Sitzungs-ID als Hash in D1, jederzeit widerrufbar). Anfrage geschützt durch Turnstile + Begrenzung (max. 5 Links/E-Mail/Stunde). |
+| **Gast** | Foto-Token im QR-Code | 192 Bit, nur Hash in D1, Ablaufdatum |
+| **Fotobox** | Geräte-Token | einmal im Admin angezeigt, nur Hash in D1, widerrufbar, nur Upload ins zugewiesene aktive Event |
+| **Mitarbeiter (später)** | Access-Regel um seine E-Mail erweitern + Rolle in D1 | |
 
-## 6. Rollen und Berechtigungen (Prinzip minimaler Rechte)
+> **Cloudflare Access** – *Was?* Eine Türsteher-Seite von Cloudflare vor einer Webadresse. *Wozu?* Niemand erreicht den Admin, ohne
+> sich vorher bei Google/GitHub anzumelden. *Wie?* Cloudflare prüft die Anmeldung und gibt dem Browser ein signiertes Ticket mit,
+> das unser Worker kontrolliert. *Wo?* `/admin`.
 
-| Recht | Eigentümer | Admin | Mitarbeiter | Kunde | Gast | Gerät |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|
-| Öffentliche Seiten | ✅ | ✅ | ✅ | ✅ | ✅ | – |
-| Buchen | ✅ | ✅ | ✅ | ✅ | ✅ | – |
-| Eigene Buchung/Rechnung sehen | – | – | – | ✅ eigene | – | – |
-| Eigene Galerie verwalten (freigeben, Passwort) | ✅ | ✅ | – | ✅ eigene | – | – |
-| Freigegebenes Einzelfoto | ✅ | ✅ | – | ✅ | ✅ mit Token | – |
-| Buchungen/Kalender sehen | ✅ | ✅ | ✅ | – | – | – |
-| Buchungen ändern/stornieren | ✅ | ✅ | ⚠️ nur Status/Notizen | – | – | – |
-| Rechnungen ausstellen/stornieren | ✅ | ✅ | – | – | – | – |
-| Finanzen, Wirtschaftlichkeit | ✅ | – | – | – | – | – |
-| Preise, Pakete, Inhalte | ✅ | ✅ | – | – | – | – |
-| Geräte registrieren/widerrufen | ✅ | ✅ | – | – | – | – |
-| Benutzer & Rollen verwalten | ✅ | – | – | – | – | – |
-| Config des zugewiesenen Events lesen | – | – | – | – | – | ✅ |
-| Fotos ins zugewiesene Event hochladen | – | – | – | – | – | ✅ |
-| Status/Zähler melden | – | – | – | – | – | ✅ |
+## 5. Doppelbuchungen verhindern mit D1
+D1 kennt keine Ausschlussregel wie PostgreSQL. Dafür gelten zwei Eigenschaften, die wir ausnutzen:
+1. **Jede D1-Datenbank verarbeitet Schreibvorgänge nacheinander** (ein Schreiber).
+2. **`batch()` ist eine Transaktion**: scheitert ein Befehl, wird der ganze Stapel zurückgerollt (laut Cloudflare-Doku).
 
-Durchsetzung **doppelt**: in der Server-Logik (jede Aktion prüft Rolle) **und** in der Datenbank (Row Level Security).
-2FA Pflicht für Eigentümer, Admin, Mitarbeiter.
+Lösung: Tabelle `allocation_days` mit **`UNIQUE(resource_id, day)`** – eine Zeile pro belegtem Tag und Ressource (Fotobox,
+Liefer-Kapazität). Eine Reservierung schreibt in **einem** Batch:
+```
+1. DELETE abgelaufene Holds (und ihre Tage)
+2. INSERT allocation (Typ hold, läuft in 15 min ab)
+3. INSERT allocation_days für jeden belegten Tag inkl. Liefer-/Puffertag
+```
+Ist auch nur ein Tag schon vergeben, verletzt Schritt 3 die UNIQUE-Regel → der **ganze** Batch wird verworfen → der zweite Kunde
+erhält «Dieser Termin wurde soeben vergeben» und Alternativen. Zwei gleichzeitige Kunden können also nie beide gewinnen.
 
-## 7. Projektstruktur (geplant für Phase 1)
+Warum Tage statt Minuten? Eine Fotobox ist realistisch pro Tag einmal vermietet; Liefertag und Puffer werden als eigene Tage
+gesperrt. Liefer-Kapazität: Ressource «Lieferung» mit `slot`-Nummer (z. B. max. 2 Lieferungen pro Tag = Slots 1 und 2).
+Eine stundengenaue Planung (zwei kurze Anlässe am selben Tag) ist als spätere Erweiterung möglich (Halbtages-Slots).
+
+## 6. Fotobox-Integration
+Ablauf wie in Version 1 (Token entsteht auf der Fotobox → QR funktioniert offline), mit zwei Anpassungen für die Gratisstufe:
+- Die **Fotobox erzeugt Vorschau- und Galeriebild selbst** (Pillow ist bereits installiert) und lädt drei Dateien hoch: Original,
+  Web (ca. 1600 px), Vorschau (ca. 400 px). So braucht die Cloud keine Bildverarbeitung.
+- Uploads gehen per **vorsignierter URL direkt in R2** (Worker erzeugt nur die Unterschrift, wenig Rechenzeit).
+- **Gesamt-Download als ZIP** erzeugt der Browser des Kunden aus den Einzelbildern (keine Server-Rechenzeit).
+Details: `API.md`, Migration vom heutigen öffentlichen Bucket: `R2_MIGRATION.md`.
+
+## 7. Verbrauchsüberwachung und harte Grenzen
+
+| Dienst | Gratisgrenze | Verhalten bei Überschreitung | Unsere Schutzmassnahme |
+|---|---|---|---|
+| Workers | 100 000 Aufrufe/Tag, 10 ms CPU | Fehler 1027/1102, **keine Kosten** | Öffentliche Seiten statisch (zählen nicht); Workers Paid nie aktivieren |
+| D1 | 5 Mio. Lese-/100 000 Schreibzeilen/Tag, 500 MB | Abfragen scheitern, **keine Kosten** | Indizes, Zähler im Dashboard |
+| Resend | 100/Tag, 3 000/Monat | Versand blockiert (HTTP 429) | Outbox: max. 80/Tag, Rest am nächsten Tag; Priorität Buchung > Erinnerung |
+| **R2** | 10 GB, 1 Mio. A-, 10 Mio. B-Vorgänge/Monat | **wird verrechnet** (Zahlungsmittel hinterlegt) | Harte App-Grenzen (unten) + Cloudflare-Budgetwarnung |
+| Cron | 5 Trigger | – | wir nutzen 2 |
+
+**Harte R2-Grenzen in der App** (alle im Admin einstellbar):
+- Gesamtspeicher-Obergrenze **8 GB** (Puffer zu 10 GB). Darüber verweigert die Geräte-API neue Uploads mit `507`; die Fotobox
+  behält die Fotos lokal in der Warteschlange (Drucken geht weiter), Admin bekommt sofort eine Warnung.
+- Max. 15 MB pro Original, max. 2 000 Fotos pro Event, Uploads nur für aktive Events.
+- Monatszähler für Schreib-/Lesevorgänge in D1 mitgeführt; Stopp bei 80 % der Gratismenge.
+- Löschfristen automatisch (Standard 30 Tage) + R2-Lifecycle-Regel als zweite Sicherung.
+- Downloads gehen durch den Worker (Rate-Limit pro Token), damit niemand massenhaft abruft.
+
+**Warnungen:** täglicher Cron berechnet Verbrauch (eigene Zähler, optional Cloudflare-Analyse-API) und schickt bei 50/80/95 %
+eine E-Mail; Anzeige «Verbrauch» im Admin-Dashboard. Zusätzlich richtest **du** im Cloudflare-Dashboard eine Budgetwarnung bei
+USD 1 ein (Cloudflare-Budgetwarnungen informieren nur, sie stoppen nichts – deshalb die App-Grenzen).
+
+## 8. Seitenstruktur, Rollen, Sprachen
+- Seitenstruktur und Rollenmatrix unverändert gegenüber Version 1 (siehe `PHASE0_ANALYSE.md`, Abschnitt Rollen in `SECURITY.md`).
+- **Sprachen:** Schweizer Hochdeutsch (`de-CH`) ohne Präfix; später `/fr/`, `/it/`, `/en/`. Alle Texte von Anfang an über
+  Übersetzungsschlüssel bzw. Inhaltstabellen mit Spalte `locale`; `hreflang` wird erst ausgegeben, wenn eine Sprache existiert.
+- **Markenname zentral:** eine Konfigurationsdatei `src/config/brand.ts` (Name, Kurzname, Domain, Farben, Logo-Pfade); E-Mails,
+  Rechnungen, JSON-LD und Meta-Titel lesen nur daraus.
+
+## 9. Was diese Architektur nicht oder schlechter kann (ehrliche Auswirkungen)
+
+| Thema | Auswirkung | Umgang |
+|---|---|---|
+| Keine Garantie/Haftung für Gratisdienste | Cloudflare darf Free Services ändern oder beenden | Standard-Technik (SQLite, S3), Export jederzeit möglich |
+| 10 ms CPU pro Aufruf | Keine aufwendigen Berechnungen auf dem Server | Bilder auf der Fotobox, PDF/ZIP im Browser, statische Seiten |
+| PDF-Rechnungen | Kein Server-PDF | Rechnung wird im Admin-Browser als PDF erzeugt, unveränderlich in R2 abgelegt (Hash in D1) |
+| Backups | Time Travel nur 7 Tage | Wöchentlicher Export (`wrangler d1 export`) per GitHub Actions in privaten R2-Ordner + lokale Kopie |
+| E-Mail-Daten in den USA (Resend) | Auftragsbearbeiter im Ausland | DPA mit Standardvertragsklauseln vorhanden; in Datenschutzerklärung nennen; Alternativen bei Bedarf prüfen |
+| Kreditkarten | Cloudflare-Free-Bedingungen verbieten das Verarbeiten von Kartendaten auf Free-Webseiten | Spätere Zahlung nur über gehostete Zahlungsseite des Anbieters (Kartendaten nie bei uns) – vor Umsetzung prüfen |
+| D1-Datenstandort | Ort der D1-Daten nicht wählbar dokumentiert (gefunden: keine EU-Option auf den Seiten) | Nur nötige Personendaten; in Datenschutzerklärung offenlegen; vor Go-Live erneut prüfen |
+| Mehrere Anlässe pro Tag und Box | V1 tageweise | spätere Halbtages-Slots |
+
+## 10. Projektstruktur (Phase 1)
 ```
 Plattform/
-  src/app/(public)/...      öffentliche Seiten
-  src/app/buchen/...        Buchungsstrecke
-  src/app/konto/...         Kundenportal
-  src/app/admin/...         Administration
-  src/app/api/device/v1/... Geräte-API
-  src/modules/<modul>/      Logik je Modul (booking, pricing, gallery, devices, invoices, content, mail)
-  src/lib/                  Datenbank, Auth, Geld, Zeit (Europe/Zurich)
-  supabase/migrations/      Datenbank-Migrationen (SQL, versioniert)
-  tests/                    Unit, Integration, Playwright
-  tools/fotobox-simulator/  Simulator für Geräte-API
+  src/config/brand.ts        Markenname, Domain, Farben (einzige Quelle)
+  src/pages/                 öffentliche Seiten (statisch) + Server-Seiten
+  src/components/            Designsystem-Komponenten
+  src/content/               Texte, FAQ, Ratgeber (später aus D1/Admin)
+  src/server/                Module: booking, pricing, gallery, devices, invoices, mail, usage
+  migrations/                D1-Migrationen (SQL)
+  tests/                     Vitest (Logik, Worker) + Playwright
+  tools/fotobox-simulator/   Geräte-Simulator
+  wrangler.jsonc             Cloudflare-Konfiguration (ohne Geheimnisse)
 ```
-
-## 8. Querschnittsregeln
-- **Geld** immer als ganze Rappen (`integer`), nie Kommazahlen. Anzeige `CHF 1'250.00`.
-- **Zeit** in der DB als `timestamptz` (UTC); Anzeige und Tagesgrenzen in `Europe/Zurich`.
-- **Preise** werden nur serverseitig berechnet; Browser sendet nur Auswahl (Paket-ID, Extras-IDs).
-- **E-Mails** über eine Ausgangs-Warteschlange mit eindeutigem Schlüssel (keine Doppel-Mails); Testmodus leitet alles an deine Adresse um.
+Lokal läuft alles **ohne Internet und gratis**: `wrangler dev` simuliert Worker, D1, R2 und Cron auf deinem PC.
