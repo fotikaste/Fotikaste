@@ -8,4 +8,9 @@ export interface Env {
   ACCESS_JWKS?: string; // nur Tests/Entwicklung: eigene Prüfschlüssel
   DEV_ADMIN_EMAIL?: string; // nur lokale Entwicklung
   TURNSTILE_SECRET_KEY?: string;
+  // E-Mail (Phase 3). Ohne MAIL_TEST_MODE="false" geht nie eine Mail an Kunden.
+  MAIL_TEST_MODE?: string;
+  MAIL_TEST_RECIPIENT?: string;
+  MAIL_FROM?: string;
+  RESEND_API_KEY?: string;
 }

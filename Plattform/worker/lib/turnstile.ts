@@ -17,3 +17,17 @@ export async function pruefeTurnstile(token: string | null, secret: string | und
     return false;
   }
 }
+
+const LOKAL = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+/**
+ * Turnstile für öffentliche Formulare. Ohne Geheimschlüssel nur in Tests bzw. lokaler Entwicklung (localhost) übersprungen;
+ * in Produktion ohne Schlüssel immer abgelehnt.
+ */
+export async function menschGeprueft(request: Request, env: { ENVIRONMENT: string; TURNSTILE_SECRET_KEY?: string }, token: unknown): Promise<boolean> {
+  if (!env.TURNSTILE_SECRET_KEY) {
+    if (env.ENVIRONMENT === "test") return true;
+    return env.ENVIRONMENT === "development" && LOKAL.has(new URL(request.url).hostname);
+  }
+  return pruefeTurnstile(typeof token === "string" ? token : null, env.TURNSTILE_SECRET_KEY, request.headers.get("CF-Connecting-IP"));
+}
