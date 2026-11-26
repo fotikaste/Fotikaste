@@ -24,10 +24,12 @@ und `/ablehnen` (`bookings:write`); dieselben Aktionen als Formular unter `/admi
 `deposit_percent` 0 · `security_deposit_rappen` 0 · `payment_due_days_before` null (= nach Absprache) · `terms_version` · `mail_daily_limit` 80.
 Die Bearbeitung im Admin folgt in Phase 4; bis dahin per Migration.
 
-## Postleitzahlen importieren (braucht Freigabe für den Download)
-1. Offizielles «Amtliches Ortschaftenverzeichnis» von swisstopo als CSV in **WGS84** herunterladen (gratis, offene Daten).
-2. `node tools/plz-import.mjs <datei.csv> > plz.sql` – das Werkzeug prüft, dass alle Koordinaten in der Schweiz liegen.
-3. Lokal: `npx wrangler d1 execute DB --local --file plz.sql` · später produktiv ohne `--local`.
+## Postleitzahlen
+Enthalten in Migration `0003_postleitzahlen.sql` (amtliches Ortschaftenverzeichnis, swisstopo, Stand 2026-11-01, 3190 PLZ, je Hauptort:
+Zusatzziffer 00, grösster Adressenanteil). Aktualisieren (Download nur nach Freigabe):
+1. `ortschaftenverzeichnis_plz_4326.csv.zip` von data.geo.admin.ch (WGS84) herunterladen und entpacken.
+2. `node tools/plz-import.mjs AMTOVZ_CSV_WGS84.csv` – prüft, dass alle Koordinaten in der Schweiz liegen.
+3. Ausgabe als **neue** Migration ablegen (nie die alte ändern). Quellenangabe «swisstopo» im Impressum.
 
 ## E-Mail
 Ohne `MAIL_TEST_MODE=false` geht nie eine Mail an Kunden. Mit `RESEND_API_KEY`, `MAIL_FROM` und `MAIL_TEST_RECIPIENT` gehen Testmails an diese eine Adresse

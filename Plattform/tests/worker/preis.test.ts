@@ -83,3 +83,18 @@ describe("Webseite und Datenbank zeigen dieselben Preise", () => {
   });
   it("Schweizer Schreibweise", () => expect(chf(125000)).toBe("CHF 1'250.00"));
 });
+
+describe("Postleitzahlen (amtliches Verzeichnis, Migration 0003)", () => {
+  const sql = readFileSync("migrations/0003_postleitzahlen.sql", "utf8");
+  it("enthält Ausgangsort und Hauptorte mit Kanton", () => {
+    expect(sql).toMatch(/\('8370', 'Sirnach', 'TG', 47\.\d+, 8\.\d+\)/);
+    expect(sql).toMatch(/\('8500', 'Frauenfeld', 'TG',/);
+    expect(sql).toMatch(/\('8001', 'Zürich', 'ZH',/);
+  });
+  it("Sirnach → Frauenfeld 17 km (Pauschale CHF 50), Sirnach → Zürich 47 km (CHF 82.40)", () => {
+    const koord = (plz: string) => { const m = sql.match(new RegExp(`\\('${plz}', '[^']+', '[A-Z]*', ([0-9.]+), ([0-9.]+)\\)`))!; return { lat: Number(m[1]), lon: Number(m[2]) }; };
+    expect(geschaetzteKm(luftlinieKm(koord("8370"), koord("8500")), 1.3)).toBe(17);
+    expect(geschaetzteKm(luftlinieKm(koord("8370"), koord("8001")), 1.3)).toBe(47);
+    expect(fahrtRappen(47, ZONE)).toBe(8240);
+  });
+});

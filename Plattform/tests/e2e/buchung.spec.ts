@@ -24,7 +24,7 @@ test("Buchung A–Z: Datum, Preis vom Server, Reservierung, Kontakt, Bestätigun
   await page.goto(`/buchen?datum=${tag}`);
   await expect(page.locator("#event")).toHaveValue(tag);
   await page.locator("#plz").fill("8500");
-  // Testdaten (tools/dev-plz.sql): Sirnach → Frauenfeld, Paket Premium
+  // Amtliches Verzeichnis (Migration 0003): Sirnach → Frauenfeld, Paket Premium
   await expect(page.locator("#zf")).toContainText("Frauenfeld");
   await expect(page.locator("#zf")).toContainText("CHF 450.00");
   await expect(page.locator("#zf")).toContainText("sofort verbindlich buchbar");

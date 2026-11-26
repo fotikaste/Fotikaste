@@ -29,8 +29,10 @@ async function bucheKomplett(w: Wahl, email = "kunde.a@example.ch") {
 }
 
 beforeAll(async () => {
-  // TESTDATEN: erfundene Koordinaten in der separaten Testdatenbank, damit die Distanzen exakt bekannt sind.
+  // TESTDATEN: Das echte Verzeichnis (Migration 0003) wird in der separaten Testdatenbank durch erfundene Koordinaten ersetzt,
+  // damit die Distanzen exakt bekannt sind.
   await (await db()).batch([
+    (await db()).prepare("DELETE FROM postal_codes"),
     (await db()).prepare("INSERT INTO postal_codes (plz, ort, kanton, lat, lon) VALUES ('8370', 'Startort (Test)', 'TG', 47.0, 9.0), ('8500', 'Nahort (Test)', 'TG', 47.1, 9.0), ('8001', 'Fernort (Test)', 'ZH', 47.2, 9.0), ('3000', 'Aussenort (Test)', 'BE', 47.3, 9.0)"),
   ]);
 });

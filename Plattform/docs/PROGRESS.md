@@ -7,7 +7,8 @@ Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Eintr�
   Magic Links, Sitzungen, Outbox. Serverseitige Preise, Hold 15 Min., Direktbuchung + Anfrage-Weg, Admin bestätigen/ablehnen,
   Kundenportal mit Magic Link, Seiten /buchen, /verfuegbarkeit (Kalender), /konto → `PHASE3_BERICHT.md`, `BUCHUNG.md`.
 - Tests: 77 Vitest (inkl. 50 gleichzeitige Reservierungen → genau 1), 70 Playwright grün (Desktop + Handy, zweimal hintereinander). Fotobox-Software unverändert.
-- Offen: PLZ-Verzeichnis (Download braucht Freigabe) → bis dahin werden produktiv alle Lieferungen zu Anfragen. Mails nur im Testmodus.
+- Nachtrag: amtliches PLZ-Verzeichnis (swisstopo, mit Freigabe heruntergeladen) als Migration 0003 – 3190 PLZ. Tests danach: 79 Vitest, 70 Playwright grün.
+- Offen: Mails nur im Testmodus; Quellenangabe swisstopo im Impressum (Phase 7).
 
 ## 2026-11-26 – Preise festgelegt und auf der Webseite
 - Essential 290 (ohne Drucker) · Premium 450 (300 Abzüge) · Signature 590 (600 Abzüge) · Zusatztag 45 · Fahrt 50 bis 20 km ab 8370 Sirnach, +1.20/km
@@ -50,4 +51,4 @@ Cloudflare-Architektur, D1-Modell, R2-Migrationsplan, Markenprüfung, Wettbewerb
 Erste Analyse (Vercel/Supabase, überholt).
 
 ## Nächster Schritt
-Freigabe PLZ-Download, Sichtprüfung der Buchungsseiten, Merge nach `main`, dann Phase 4 (Administration).
+Sichtprüfung der Buchungsseiten, Merge nach `main`, dann Phase 4 (Administration).

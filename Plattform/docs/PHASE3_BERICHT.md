@@ -46,9 +46,10 @@ Details und alle Endpunkte: `docs/BUCHUNG.md`.
 Hinweis: Im Ganzseiten-Bildschirmfoto erscheint die fixierte Kopfzeile mitten im Bild – das ist eine Eigenheit des Fotos, nicht der Seite.
 
 ## Bekannte Lücken und Risiken
-- **Postleitzahlen fehlen**: Produktiv ist `postal_codes` leer → jede Lieferung wird eine Anfrage mit offenem Fahrpreis (ehrlich, aber nicht ideal).
-  Lösung: offizielles Ortschaftenverzeichnis (swisstopo, gratis) herunterladen und mit `tools/plz-import.mjs` importieren – **braucht deine Freigabe für den Download**.
-  Lokal gibt es 5 Test-PLZ mit ungefähren Koordinaten (`tools/dev-plz.sql`, nur Entwicklung).
+- **Postleitzahlen** (Nachtrag 2026-11-26, mit deiner Freigabe): amtliches Ortschaftenverzeichnis von swisstopo heruntergeladen (193 KB, Stand 2026-11-01)
+  und als Migration `0003_postleitzahlen.sql` abgelegt: 3190 PLZ, je Hauptort. Beispiele: Sirnach → Frauenfeld 17 km = CHF 50.00, → Zürich 47 km = CHF 82.40.
+  Die PLZ wird jährlich aktualisiert → neue Datei, Werkzeug, neue Migration. **Quellenangabe «swisstopo»** gehört vor Go-Live ins Impressum (Phase 7).
+  Liechtenstein (kein Kanton) und PLZ ausserhalb der Zonen werden zur Anfrage.
 - Luftlinie × 1.3 kann von der echten Strasse abweichen (Berge, Seen) → deshalb «geschätzt» und massgebend ist die Bestätigung.
 - Kundenseitige Stornierung im Portal fehlt (Absage per E-Mail); Bearbeiten von Buchungen im Admin folgt in Phase 4.
 - Mails werden nach dem Buchungs-Batch eingereiht (nicht im selben Batch). Fällt genau dazwischen etwas aus, fehlt die Mail – die Buchung ist trotzdem korrekt und im Admin sichtbar.
@@ -63,7 +64,7 @@ Hinweis: Im Ganzseiten-Bildschirmfoto erscheint die fixierte Kopfzeile mitten im
 - Buchungsnummern `FK-JJJJ-NNNN`.
 
 ## Nächster Schritt
-1. Freigabe: PLZ-Verzeichnis herunterladen und importieren? 2. Sichtprüfung der Buchungsseiten (Bildschirmfotos).
+1. ~~PLZ-Verzeichnis~~ erledigt. 2. Sichtprüfung der Buchungsseiten (Bildschirmfotos).
 3. Merge nach `main` (Tests grün). 4. Phase 4: Administration (Kalender, Kunden, Buchungen bearbeiten, Inhalte/Preise ohne Code).
 
 ## Drei Verständnisfragen
