@@ -9,7 +9,7 @@ export const pages: PageEntry[] = [
   { path: "/fotobox", title: "Unsere Fotobox", indexable: true },
   { path: "/preise", title: "Angebote und Preise", indexable: true },
   { path: "/faq", title: "Häufige Fragen", indexable: true },
-  { path: "/verfuegbarkeit", title: "Verfügbarkeit", indexable: false },
+  { path: "/verfuegbarkeit", title: "Verfügbarkeit", indexable: false, private: true },
   { path: "/galerie", title: "Galerie", indexable: false },
   { path: "/kontakt", title: "Kontakt", indexable: false },
   { path: "/ueber-uns", title: "Über uns", indexable: false },
@@ -22,6 +22,9 @@ export const pages: PageEntry[] = [
   { path: "/impressum", title: "Impressum", indexable: false },
   { path: "/datenschutz", title: "Datenschutz", indexable: false },
   { path: "/agb", title: "AGB", indexable: false },
+  { path: "/buchen", title: "Fotobox buchen", indexable: false, private: true },
+  { path: "/konto", title: "Kundenkonto", indexable: false, private: true },
+  { path: "/konto/anmelden", title: "Anmelden", indexable: false, private: true },
 ];
 
 export function pageByPath(path: string): PageEntry {

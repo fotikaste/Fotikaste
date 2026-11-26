@@ -1,0 +1,60 @@
+---
+import ContentLayout from "../../layouts/ContentLayout.astro";
+import Turnstile from "../../components/Turnstile.astro";
+---
+<ContentLayout path="/konto" eyebrow="Kundenkonto" heading="Ihre Buchungen" lead="Anmelden ohne Passwort: Sie erhalten einen persönlichen Link per E-Mail." description="Kundenkonto: Buchungen, Positionen und Zahlungsinformationen einsehen. Anmeldung über einen persönlichen Link per E-Mail.">
+  <div id="laden" class="text-muted">Wird geladen …</div>
+
+  <form id="link-form" class="hidden max-w-md flex-col gap-4" novalidate>
+    <div><label class="feld-label" for="email">E-Mail-Adresse Ihrer Buchung</label><input class="feld" id="email" name="email" type="email" autocomplete="email" required /></div>
+    <Turnstile />
+    <button class="btn btn-primary self-start" type="submit">Anmeldelink senden</button>
+    <p id="link-meldung" class="meldung" hidden role="status"></p>
+  </form>
+
+  <section id="liste" class="hidden">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <p class="text-muted" id="wer"></p>
+      <button id="abmelden" class="btn btn-outline" type="button">Abmelden</button>
+    </div>
+    <div id="buchungen" class="mt-8 flex flex-col gap-6"></div>
+  </section>
+</ContentLayout>
+
+<script>
+  import { chf, datumCh, post, STATUS, turnstileToken, ZAHLUNG } from "../../lib/format";
+  const $ = (id: string) => document.getElementById(id)!;
+  const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  type B = { number: string; status: string; package_slug: string; event_day: string; start_day: string; end_day: string; delivery: number; street: string | null; plz: string | null; city: string | null; flex_cancel_until: string | null; total_rappen: number; price_final: number; positionen: { text: string; qty: number; total_rappen: number }[]; zahlungsplan: { kind: string; amount_rappen: number; due_on: string | null; status: string }[] };
+
+  async function lade() {
+    const r = await fetch("/api/konto/buchungen", { credentials: "same-origin" });
+    $("laden").hidden = true;
+    if (r.status === 401) { $("link-form").classList.replace("hidden", "flex"); return; }
+    if (!r.ok) { $("laden").hidden = false; $("laden").textContent = "Das Kundenkonto ist gerade nicht erreichbar."; return; }
+    const d = (await r.json()) as { kunde: { name: string; email: string }; buchungen: B[] };
+    $("liste").classList.remove("hidden");
+    $("wer").textContent = `Angemeldet als ${d.kunde.name} (${d.kunde.email})`;
+    $("buchungen").innerHTML = d.buchungen.length ? d.buchungen.map((b) => `
+      <article class="bg-white border border-line p-6">
+        <div class="flex flex-wrap justify-between gap-2"><h2 class="text-2xl">${esc(b.number)}</h2><span class="placeholder-tag">${esc(STATUS[b.status] ?? b.status)}</span></div>
+        <p class="mt-2">Eventtag <strong>${datumCh(b.event_day)}</strong> · Miete ${datumCh(b.start_day)} bis ${datumCh(b.end_day)}</p>
+        <p class="text-muted text-sm">${b.delivery ? `Lieferung an ${esc(b.street)}, ${esc(b.plz)} ${esc(b.city ?? "")}` : "Selbstabholung"}</p>
+        <ul class="mt-4 text-[0.95rem]">${b.positionen.map((p) => `<li class="flex justify-between gap-4 py-2 border-b border-line"><span>${p.qty > 1 ? `${p.qty} × ` : ""}${esc(p.text)}</span><span class="whitespace-nowrap">${chf(p.total_rappen)}</span></li>`).join("")}</ul>
+        <p class="flex justify-between font-semibold mt-3"><span>Total</span><span>${chf(b.total_rappen)}${b.price_final ? "" : " + Fahrt (offen)"}</span></p>
+        ${b.zahlungsplan.length ? `<p class="text-sm text-muted mt-3">Zahlung (nach Absprache, nicht online): ${b.zahlungsplan.map((z) => `${ZAHLUNG[z.kind] ?? z.kind} ${chf(z.amount_rappen)}${z.due_on ? ` bis ${datumCh(z.due_on)}` : ""}${z.status === "paid" ? " – bezahlt" : ""}`).join(" · ")}</p>` : ""}
+        <p class="text-sm text-muted mt-1">${b.flex_cancel_until ? `Kostenlose Absage bis ${datumCh(b.flex_cancel_until)}.` : "Nicht stornierbar."}</p>
+      </article>`).join("") : `<p class="text-muted">Noch keine Buchungen.</p>`;
+  }
+
+  $("link-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const m = $("link-meldung");
+    const r = await post<{ text: string }>("/api/konto/link", { email: ($("email") as HTMLInputElement).value, turnstile: turnstileToken($("link-form")) });
+    m.hidden = false;
+    m.className = r.ok ? "meldung meldung-ok" : "meldung meldung-fehler";
+    m.textContent = r.data.text ?? "Bitte später erneut versuchen.";
+  });
+  $("abmelden").addEventListener("click", async () => { await post("/api/konto/abmelden", {}); location.reload(); });
+  lade();
+</script>

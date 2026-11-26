@@ -1,0 +1,234 @@
+---
+import ContentLayout from "../layouts/ContentLayout.astro";
+import Turnstile from "../components/Turnstile.astro";
+import { packages, terms } from "../data/content";
+const chfGanz = (n: number) => new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(n);
+---
+<ContentLayout path="/buchen" eyebrow="Buchung" heading="Fotobox buchen" lead="Paket und Datum wählen, Preis prüfen, verbindlich buchen. Online wird nichts bezahlt – die Zahlung vereinbaren wir danach per E-Mail oder persönlich." description="Fotobox online buchen: Paket, Datum und Lieferung wählen, Preis sofort sehen und den Termin verbindlich reservieren.">
+  <div class="grid gap-10 lg:grid-cols-[1fr_24rem] items-start">
+    <div>
+      <!-- Schritt 1: Wahl -->
+      <form id="wahl" class="flex flex-col gap-10" novalidate>
+        <fieldset>
+          <legend class="text-2xl font-display">1. Paket</legend>
+          <div class="mt-4 grid gap-3 sm:grid-cols-3">
+            {packages.map((p) => (
+              <label class="wahl">
+                <input type="radio" name="paket" value={p.slug} checked={p.slug === "premium"} />
+                <span><span class="font-semibold block">{p.name}</span><span class="text-sm text-muted">{chfGanz(p.priceChf)} · {p.prints ? `${p.prints} Abzüge` : "ohne Drucker"}</span></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="text-2xl font-display">2. Datum</legend>
+          <div class="mt-4 grid gap-4 sm:grid-cols-3">
+            <div><label class="feld-label" for="event">Eventtag</label><input class="feld" type="date" id="event" name="event" required /></div>
+            <div><label class="feld-label" for="start">Mietbeginn</label><input class="feld" type="date" id="start" name="start" required /></div>
+            <div><label class="feld-label" for="ende">Mietende</label><input class="feld" type="date" id="ende" name="ende" required /></div>
+          </div>
+          <p class="mt-3 text-sm text-muted">Inbegriffen sind {terms.includedDays} Miettage (z. B. Event- und Folgetag). Jeder weitere Tag {chfGanz(terms.extraDayChf)}.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend class="text-2xl font-display">3. Lieferung</legend>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="wahl"><input type="radio" name="lieferung" value="ja" checked /><span><span class="font-semibold block">Lieferung und Abholung</span><span class="text-sm text-muted">ab {chfGanz(terms.delivery.baseChf)}, Aufbau inbegriffen</span></span></label>
+            <label class="wahl"><input type="radio" name="lieferung" value="nein" /><span><span class="font-semibold block">Selbstabholung</span><span class="text-sm text-muted">ohne Fahrtkosten, Ort nach Absprache</span></span></label>
+          </div>
+          <div id="plz-feld" class="mt-4 max-w-xs">
+            <label class="feld-label" for="plz">Postleitzahl des Eventorts</label>
+            <input class="feld" id="plz" name="plz" inputmode="numeric" autocomplete="postal-code" maxlength="4" pattern="[0-9]{4}" placeholder="z. B. 8500" />
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="text-2xl font-display">4. Option</legend>
+          <label class="wahl mt-4"><input type="checkbox" name="stornierbar" /><span><span class="font-semibold block">Stornierbar (+ {chfGanz(terms.flexCancelChf)})</span><span class="text-sm text-muted">Kostenlose Absage bis {terms.flexCancelDays} Tage vor dem Event. Ohne diese Option ist die Buchung nicht stornierbar.</span></span></label>
+        </fieldset>
+      </form>
+
+      <!-- Schritt 2: Kontakt (erst nach Reservierung) -->
+      <form id="kontakt" class="hidden flex-col gap-5" novalidate>
+        <h2 class="text-3xl">Ihre Angaben</h2>
+        <p class="meldung" id="hold-info" role="status"></p>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div><label class="feld-label" for="name">Vor- und Nachname</label><input class="feld" id="name" name="name" autocomplete="name" required maxlength="100" /></div>
+          <div><label class="feld-label" for="firma">Firma <span class="font-normal text-muted">(optional)</span></label><input class="feld" id="firma" name="firma" autocomplete="organization" maxlength="100" /></div>
+          <div><label class="feld-label" for="email">E-Mail</label><input class="feld" id="email" name="email" type="email" autocomplete="email" required maxlength="254" /></div>
+          <div><label class="feld-label" for="telefon">Telefon</label><input class="feld" id="telefon" name="telefon" type="tel" autocomplete="tel" required maxlength="30" /></div>
+          <div id="strasse-feld" class="sm:col-span-2"><label class="feld-label" for="strasse">Strasse und Nr. des Eventorts</label><input class="feld" id="strasse" name="strasse" autocomplete="street-address" maxlength="120" /></div>
+          <div><label class="feld-label" for="gaeste">Anzahl Gäste <span class="font-normal text-muted">(optional)</span></label><input class="feld" id="gaeste" name="gaeste" type="number" min="1" max="5000" inputmode="numeric" /></div>
+          <div class="sm:col-span-2"><label class="feld-label" for="nachricht">Nachricht <span class="font-normal text-muted">(optional)</span></label><textarea class="feld min-h-28" id="nachricht" name="nachricht" maxlength="2000"></textarea></div>
+        </div>
+        <label class="flex gap-3 items-start"><input type="checkbox" name="agb" required class="mt-1.5 w-[1.1rem] h-[1.1rem] accent-charcoal" /><span>Ich akzeptiere die <a href="/agb" class="link-underline" target="_blank">AGB</a> und habe die <a href="/datenschutz" class="link-underline" target="_blank">Datenschutzerklärung</a> gelesen.</span></label>
+        <div class="flex flex-wrap gap-3">
+          <button class="btn btn-primary" id="abschliessen" type="submit">Verbindlich buchen</button>
+          <button class="btn btn-outline" id="zurueck" type="button">Zurück</button>
+        </div>
+      </form>
+
+      <!-- Schritt 3: Bestätigung -->
+      <section id="fertig" class="hidden" aria-live="polite" tabindex="-1">
+        <p class="eyebrow">Vielen Dank</p>
+        <h2 class="text-4xl mt-3" id="fertig-titel"></h2>
+        <p class="mt-4 text-muted max-w-[60ch]" id="fertig-text"></p>
+        <a href="/konto" class="btn btn-outline mt-6">Zum Kundenkonto</a>
+      </section>
+    </div>
+
+    <!-- Zusammenfassung -->
+    <aside class="bg-white border border-line p-6 lg:sticky lg:top-6" aria-labelledby="zf-titel">
+      <h2 id="zf-titel" class="text-2xl">Ihr Angebot</h2>
+      <div id="zf" aria-live="polite" class="mt-4">
+        <p class="text-muted text-sm">Bitte ein Datum wählen.</p>
+      </div>
+      <form id="halten-form" class="mt-2">
+        <Turnstile />
+        <button id="halten" class="btn btn-primary w-full mt-4" type="submit" disabled>Termin reservieren</button>
+      </form>
+      <p id="hold-hinweis" class="mt-3 text-xs text-muted">Der Termin wird 15 Minuten für Sie freigehalten, während Sie Ihre Angaben eingeben. Alle Preise in CHF.</p>
+    </aside>
+  </div>
+</ContentLayout>
+
+<script>
+  import { chf, datumCh, plusTage, heuteZurich, post, turnstileToken } from "../lib/format";
+
+  type Pos = { code: string; text: string; qty: number; total_rappen: number };
+  type Angebot = { positionen: Pos[]; total_rappen: number; preisFix: boolean; modus: "direkt" | "anfrage"; grund: string | null; frei: boolean; belegteTage: string[]; km: number | null; ort: string | null; stornoBis: string | null };
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const wahlForm = $<HTMLFormElement>("wahl");
+  const kontaktForm = $<HTMLFormElement>("kontakt");
+  const zf = $("zf");
+  const haltenBtn = $<HTMLButtonElement>("halten");
+  const ev = $<HTMLInputElement>("event"), st = $<HTMLInputElement>("start"), en = $<HTMLInputElement>("ende"), plz = $<HTMLInputElement>("plz");
+  let halteId: string | null = null;
+  let angebot: Angebot | null = null;
+  let timer: number | undefined;
+
+  const morgen = plusTage(heuteZurich(), 1);
+  for (const i of [ev, st, en]) i.min = morgen;
+  const vorgabe = new URLSearchParams(location.search).get("datum");
+  if (vorgabe && /^\d{4}-\d{2}-\d{2}$/.test(vorgabe) && vorgabe >= morgen) { ev.value = st.value = vorgabe; en.value = plusTage(vorgabe, 1); }
+
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  const lieferung = () => (wahlForm.elements.namedItem("lieferung") as RadioNodeList).value === "ja";
+
+  function wahl() {
+    const fd = new FormData(wahlForm);
+    return { paket: String(fd.get("paket")), event: ev.value, start: st.value, ende: en.value, lieferung: lieferung(), plz: plz.value.trim(), stornierbar: fd.get("stornierbar") === "on" };
+  }
+
+  function zeige(a: Angebot) {
+    const zeilen = a.positionen.map((p) => `<li class="flex justify-between gap-4 py-2 border-b border-line"><span>${p.qty > 1 ? `${p.qty} × ` : ""}${esc(p.text)}</span><span class="whitespace-nowrap">${chf(p.total_rappen)}</span></li>`).join("");
+    const status = !a.frei
+      ? `<p class="meldung meldung-fehler mt-4">Leider belegt: ${a.belegteTage.map(datumCh).join(", ")}. Bitte ein anderes Datum wählen – <a class="link-underline" href="/verfuegbarkeit">Kalender ansehen</a>.</p>`
+      : a.modus === "direkt"
+        ? `<p class="meldung meldung-ok mt-4">Frei – sofort verbindlich buchbar.</p>`
+        : `<p class="meldung mt-4">Frei – als <strong>Anfrage</strong> (${esc(a.grund ?? "")}). Wir bestätigen so rasch wie möglich, der Termin bleibt bis dahin reserviert.</p>`;
+    zf.innerHTML = `<ul class="text-[0.95rem]">${zeilen}</ul>
+      <p class="flex justify-between font-semibold text-lg mt-3"><span>Total</span><span>${chf(a.total_rappen)}</span></p>
+      ${a.preisFix ? "" : `<p class="text-sm text-muted">zuzüglich Fahrtkosten (folgen mit der Bestätigung)</p>`}
+      ${a.km !== null ? `<p class="text-xs text-muted mt-2">Distanz geschätzt (Luftlinie × 1.3) bis ${esc(plz.value)} ${esc(a.ort ?? "")}. Massgebend ist der Betrag in der Bestätigung.</p>` : ""}
+      ${status}`;
+    haltenBtn.disabled = !a.frei;
+    haltenBtn.textContent = a.modus === "direkt" ? "Termin reservieren" : "Termin für Anfrage reservieren";
+  }
+
+  let letzteWahl = "";
+  async function aktualisiere() {
+    // Nur neu rechnen, wenn sich die Wahl wirklich geändert hat (z. B. löst das Verlassen des PLZ-Felds erneut «change» aus)
+    const schluessel = JSON.stringify(wahl());
+    if (schluessel === letzteWahl && angebot) return;
+    letzteWahl = schluessel;
+    angebot = null;
+    haltenBtn.disabled = true;
+    $("plz-feld").hidden = !lieferung();
+    if (!ev.value || !st.value || !en.value) return;
+    if (lieferung() && !/^\d{4}$/.test(plz.value.trim())) { zf.innerHTML = `<p class="text-muted text-sm">Bitte die Postleitzahl des Eventorts angeben.</p>`; return; }
+    zf.innerHTML = `<p class="text-muted text-sm">Preis wird berechnet …</p>`;
+    const r = await post<Angebot>("/api/buchung/angebot", wahl());
+    if (!r.ok) { zf.innerHTML = `<p class="meldung meldung-fehler">${esc(r.data.text ?? "Das Angebot konnte nicht berechnet werden.")}</p>`; return; }
+    angebot = r.data;
+    zeige(r.data);
+  }
+
+  ev.addEventListener("change", () => {
+    if (ev.value) { if (!st.value || st.value > ev.value) st.value = ev.value; if (!en.value || en.value < ev.value) en.value = plusTage(ev.value, 1); }
+    aktualisiere();
+  });
+  let warte: number | undefined;
+  wahlForm.addEventListener("change", (e) => { if (e.target !== ev) aktualisiere(); });
+  plz.addEventListener("input", () => { clearTimeout(warte); warte = window.setTimeout(aktualisiere, 400); });
+
+  $<HTMLFormElement>("halten-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!angebot?.frei) return;
+    haltenBtn.disabled = true;
+    const r = await post<{ halteId: string; gueltigBis: string; angebot: Angebot }>("/api/buchung/halten", { wahl: wahl(), turnstile: turnstileToken($("halten-form")) });
+    if (!r.ok) { zf.insertAdjacentHTML("beforeend", `<p class="meldung meldung-fehler mt-4">${esc(r.data.text ?? "Reservierung nicht möglich.")}</p>`); haltenBtn.disabled = false; return; }
+    halteId = r.data.halteId;
+    zeige(r.data.angebot);
+    haltenBtn.hidden = true;
+    wahlForm.hidden = true;
+    kontaktForm.classList.replace("hidden", "flex");
+    $("strasse-feld").hidden = !lieferung();
+    $<HTMLButtonElement>("abschliessen").textContent = r.data.angebot.modus === "direkt" ? "Verbindlich buchen" : "Anfrage verbindlich senden";
+    const bis = new Date(r.data.gueltigBis);
+    const tick = () => {
+      const s = Math.max(0, Math.round((bis.getTime() - Date.now()) / 1000));
+      $("hold-info").textContent = s > 0 ? `Termin reserviert bis ${bis.toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" })} Uhr (noch ${Math.ceil(s / 60)} Min.).` : "Die Reservierung ist abgelaufen. Bitte zurück und erneut reservieren.";
+    };
+    tick();
+    timer = window.setInterval(tick, 15_000);
+    $<HTMLInputElement>("name").focus();
+  });
+
+  $("zurueck").addEventListener("click", async () => {
+    if (halteId) await post("/api/buchung/freigeben", { halteId });
+    halteId = null;
+    letzteWahl = "";
+    clearInterval(timer);
+    kontaktForm.classList.replace("flex", "hidden");
+    wahlForm.hidden = false;
+    haltenBtn.hidden = false;
+    aktualisiere();
+  });
+
+  kontaktForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    for (const el of kontaktForm.querySelectorAll<HTMLInputElement>("input, textarea")) el.removeAttribute("aria-invalid");
+    kontaktForm.querySelector(".meldung-fehler")?.remove();
+    const fd = new FormData(kontaktForm);
+    const btn = $<HTMLButtonElement>("abschliessen");
+    btn.disabled = true;
+    const r = await post<{ nummer: string; status: string; fehler?: string }>("/api/buchung/abschliessen", {
+      halteId,
+      kontakt: { name: fd.get("name"), firma: fd.get("firma"), email: fd.get("email"), telefon: fd.get("telefon"), strasse: fd.get("strasse"), gaeste: fd.get("gaeste"), nachricht: fd.get("nachricht"), agb: fd.get("agb") === "on" },
+    });
+    btn.disabled = false;
+    if (!r.ok) {
+      const feld = kontaktForm.querySelector<HTMLInputElement>(`[name="${r.data.fehler}"]`);
+      feld?.setAttribute("aria-invalid", "true");
+      btn.insertAdjacentHTML("beforebegin", `<p class="meldung meldung-fehler" role="alert">${esc(r.data.text ?? "Die Buchung konnte nicht abgeschlossen werden.")}</p>`);
+      feld?.focus();
+      return;
+    }
+    clearInterval(timer);
+    kontaktForm.classList.replace("flex", "hidden");
+    $("fertig").classList.remove("hidden");
+    zf.querySelectorAll(".meldung").forEach((m) => m.remove());
+    $("hold-hinweis").hidden = true;
+    $("zf-titel").textContent = "Ihre Buchung";
+    $("fertig-titel").textContent = r.data.status === "confirmed" ? `Buchung ${r.data.nummer} bestätigt` : `Anfrage ${r.data.nummer} erhalten`;
+    $("fertig-text").textContent = r.data.status === "confirmed"
+      ? "Sie erhalten die Bestätigung per E-Mail. Online wird nichts bezahlt – wir melden uns für die Zahlung per E-Mail oder persönlich."
+      : "Wir prüfen Ihre Anfrage und melden uns so rasch wie möglich. Der Termin bleibt bis dahin für Sie reserviert.";
+    $("fertig").focus();
+  });
+
+  aktualisiere();
+</script>

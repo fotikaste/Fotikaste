@@ -1,9 +1,71 @@
 ---
 import ContentLayout from "../layouts/ContentLayout.astro";
 ---
-<ContentLayout path="/verfuegbarkeit" eyebrow="Verfügbarkeit" heading="Wunschtermin prüfen" lead="Hier entsteht in Phase 3 der Verfügbarkeitskalender mit Direktbuchung.">
-  <div class="border border-dashed border-gold bg-white p-8 max-w-2xl">
-    <p class="placeholder-tag">Buchung ab Phase 3</p>
-    <p class="mt-4 text-muted">Der Kalender prüft dann in Echtzeit, ob eine Fotobox und die Lieferung an Ihrem Datum frei sind, und hält den Termin während der Buchung 15 Minuten für Sie frei.</p>
+<ContentLayout path="/verfuegbarkeit" eyebrow="Verfügbarkeit" heading="Wunschtermin prüfen" lead="Freie Tage direkt anklicken und buchen. Belegte Tage sind ausgegraut. Während der Buchung halten wir den Termin 15 Minuten für Sie frei.">
+  <div class="max-w-3xl">
+    <div class="flex items-center justify-between gap-4">
+      <button id="zurueck" class="btn btn-outline px-4" type="button" aria-label="Vorheriger Monat">←</button>
+      <h2 id="monat" class="text-3xl text-center" aria-live="polite"></h2>
+      <button id="weiter" class="btn btn-outline px-4" type="button" aria-label="Nächster Monat">→</button>
+    </div>
+    <table class="mt-6 w-full table-fixed border-collapse bg-white border border-line" aria-describedby="legende">
+      <caption class="sr-only">Verfügbarkeit der Fotobox</caption>
+      <thead><tr>{["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((t) => <th scope="col" class="py-3 text-xs uppercase tracking-[0.12em] text-muted font-semibold">{t}</th>)}</tr></thead>
+      <tbody id="tage"></tbody>
+    </table>
+    <ul id="legende" class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
+      <li class="flex items-center gap-2"><span class="inline-block w-4 h-4 border border-charcoal bg-white"></span>frei</li>
+      <li class="flex items-center gap-2"><span class="inline-block w-4 h-4 border border-dashed border-gold bg-paper"></span>kurzfristig – auf Anfrage</li>
+      <li class="flex items-center gap-2"><span class="inline-block w-4 h-4 bg-sand-light"></span>belegt oder vorbei</li>
+    </ul>
+    <p id="fehler" class="meldung meldung-fehler mt-4" hidden role="alert">Die Verfügbarkeit konnte nicht geladen werden. Bitte später erneut versuchen.</p>
+    <p class="mt-8"><a href="/buchen" class="btn btn-primary">Ohne Datum zur Buchung</a></p>
   </div>
 </ContentLayout>
+
+<script>
+  import { heuteZurich, plusTage } from "../lib/format";
+  const $ = (id: string) => document.getElementById(id)!;
+  const heute = heuteZurich();
+  let jahr = Number(heute.slice(0, 4));
+  let monat = Number(heute.slice(5, 7)); // 1–12
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  async function zeige() {
+    const erster = `${jahr}-${pad(monat)}-01`;
+    const tageImMonat = new Date(Date.UTC(jahr, monat, 0)).getUTCDate();
+    const letzter = `${jahr}-${pad(monat)}-${pad(tageImMonat)}`;
+    $("monat").textContent = new Date(Date.UTC(jahr, monat - 1, 1)).toLocaleDateString("de-CH", { month: "long", year: "numeric", timeZone: "UTC" });
+    ($("zurueck") as HTMLButtonElement).disabled = erster <= heute.slice(0, 8) + "01";
+    let belegt = new Set<string>();
+    let vorlauf = 7;
+    try {
+      const r = await fetch(`/api/verfuegbarkeit?von=${erster}&bis=${letzter}`);
+      if (!r.ok) throw new Error();
+      const d = (await r.json()) as { belegt: string[]; vorlaufTage: number };
+      belegt = new Set(d.belegt);
+      vorlauf = d.vorlaufTage;
+      $("fehler").hidden = true;
+    } catch {
+      $("fehler").hidden = false;
+    }
+    const grenze = plusTage(heute, vorlauf);
+    const versatz = (new Date(Date.UTC(jahr, monat - 1, 1)).getUTCDay() + 6) % 7; // Montag = 0
+    const zellen: string[] = Array.from({ length: versatz }, () => "<td></td>");
+    for (let t = 1; t <= tageImMonat; t++) {
+      const tag = `${jahr}-${pad(monat)}-${pad(t)}`;
+      const datum = new Date(`${tag}T00:00:00Z`).toLocaleDateString("de-CH", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+      const basis = "flex items-center justify-center h-12 sm:h-14 m-0.5 text-[0.95rem]";
+      if (tag <= heute || belegt.has(tag)) zellen.push(`<td><span class="${basis} bg-sand-light text-muted line-through decoration-1" aria-label="${datum}: ${tag <= heute ? "vorbei" : "belegt"}">${t}</span></td>`);
+      else if (tag < grenze) zellen.push(`<td><a href="/buchen?datum=${tag}" class="${basis} border border-dashed border-gold bg-paper hover:bg-white" aria-label="${datum}: kurzfristig, auf Anfrage">${t}</a></td>`);
+      else zellen.push(`<td><a href="/buchen?datum=${tag}" class="${basis} border border-charcoal bg-white font-semibold hover:bg-charcoal hover:text-white" aria-label="${datum}: frei, jetzt buchen">${t}</a></td>`);
+    }
+    while (zellen.length % 7) zellen.push("<td></td>");
+    const zeilen: string[] = [];
+    for (let i = 0; i < zellen.length; i += 7) zeilen.push(`<tr>${zellen.slice(i, i + 7).join("")}</tr>`);
+    $("tage").innerHTML = zeilen.join("");
+  }
+  $("zurueck").addEventListener("click", () => { monat--; if (monat < 1) { monat = 12; jahr--; } zeige(); });
+  $("weiter").addEventListener("click", () => { monat++; if (monat > 12) { monat = 1; jahr++; } zeige(); });
+  zeige();
+</script>

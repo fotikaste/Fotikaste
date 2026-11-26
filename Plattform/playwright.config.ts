@@ -5,7 +5,8 @@ export default defineConfig({
   testDir: "tests/e2e",
   outputDir: "test-results",
   reporter: [["list"]],
-  use: { baseURL: "http://127.0.0.1:8788" },
+  globalSetup: "./tests/e2e/vorbereitung.ts",
+  use: { baseURL: "http://127.0.0.1:8788", locale: "de-CH", timezoneId: "Europe/Zurich" },
   webServer: {
     command: "npm run db:lokal && npx wrangler dev --port 8788 --ip 127.0.0.1 --var ENVIRONMENT:development --var DEV_ADMIN_EMAIL:inhaber@example.ch",
     url: "http://127.0.0.1:8788/",
