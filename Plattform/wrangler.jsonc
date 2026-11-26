@@ -34,6 +34,8 @@
     "ACCESS_AUD": ""
   },
   // Keine alternativen Adressen (*.workers.dev, Vorschau-URLs), die Cloudflare Access umgehen könnten.
+  // Eigene Domain: Cloudflare legt den DNS-Eintrag und das Zertifikat beim Veröffentlichen selbst an.
+  "routes": [{ "pattern": "fotikaste.ch", "custom_domain": true }],
   "workers_dev": false,
   "preview_urls": false,
   "observability": { "enabled": false }

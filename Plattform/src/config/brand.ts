@@ -8,8 +8,8 @@ export const brand = {
   name: "Fotikaste",
   /** Name festgelegt vom Inhaber am 2026-11-26 (ADR-033); Verwechslungsrisiko mit «Event Fotibox» bewusst in Kauf genommen. */
   isWorkingName: false,
-  /** Platzhalter-Domain. Nicht registriert, nicht gekauft. */
-  siteUrl: "https://fotikaste.example",
+  /** Domain fotikaste.ch (gekauft bei Hostpoint, DNS bei Cloudflare, 2026-11-26). */
+  siteUrl: "https://fotikaste.ch",
   locale: "de-CH",
   claim: "Besondere Momente. Bleibende Erinnerungen.",
   description:
