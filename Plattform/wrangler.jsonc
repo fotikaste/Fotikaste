@@ -1,16 +1,34 @@
-// Cloudflare-Konfiguration (ohne Geheimnisse). Phase 1: reine statische Assets, kein Worker-Code.
-// Statische Asset-Anfragen sind im Free-Plan kostenlos und zählen nicht gegen das Worker-Limit.
+// Cloudflare-Konfiguration (ohne Geheimnisse).
+// Öffentliche Seiten = statische Assets (gratis, zählen nicht als Worker-Aufruf).
+// Nur /api/* und /admin laufen durch den Worker (run_worker_first).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "fotikaste",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     "html_handling": "drop-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*", "/admin", "/admin/*"]
   },
-  // Keine alternativen Adressen (*.workers.dev, Vorschau-URLs): sie könnten später
-  // Cloudflare Access umgehen. Zugriff nur über die eigene Domain (ab Phase 7).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "fotikaste",
+      // Platzhalter für die lokale Entwicklung. Die echte ID kommt beim Einrichten (Phase 7).
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    // Lokal überschrieben durch .dev.vars (ENVIRONMENT=development). In Produktion nie «development».
+    "ENVIRONMENT": "production",
+    "ACCESS_TEAM_DOMAIN": "",
+    "ACCESS_AUD": ""
+  },
+  // Keine alternativen Adressen (*.workers.dev, Vorschau-URLs), die Cloudflare Access umgehen könnten.
   "workers_dev": false,
   "preview_urls": false,
   "observability": { "enabled": false }

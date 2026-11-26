@@ -32,8 +32,12 @@ Geld in Rappen (integer). Zeit als ISO-8601-Text in UTC, Anzeige `Europe/Zurich`
 - Rechtstexte als «ENTWURF – nicht rechtlich geprüft» kennzeichnen.
 - Commits nach abgeschlossenen Schritten, deutsche Commit-Nachrichten.
 
+## Worker (ab Phase 2)
+`worker/` läuft nur für `/api/*` und `/admin`. Jede Admin-Route mit `verlangeRecht(request, env, "<recht>")`. Schreibende Routen: Herkunftsprüfung ist zentral.
+Neue Tabellen nur über neue Migrationsdatei in `migrations/` (nie bestehende ändern). Kostenrelevante Vorgänge vorher `istGesperrt()`/`reserviere()` prüfen.
+
 ## Befehle (im Ordner Plattform, Node 24 unter C:\Program Files
 odejs)
-- `npm run build` (astro check + Build nach `dist/`) · `npx wrangler dev --port 8788` (lokal wie Cloudflare)
+- `npm run build` (astro check + tsc Worker + Build nach `dist/`) · `npm run dev:worker` (lokale D1 + Worker auf 8788, Admin unter /admin) · `npx wrangler dev --port 8788` (lokal wie Cloudflare)
 - `npm test` (Vitest) · `npx playwright test` (Browser, Desktop + Handy, startet wrangler selbst) · `npm run lighthouse` (braucht laufendes wrangler auf 8788)
 - Private Pfade in `site.ts` mit Schrägstrich am Ende, wenn der Präfix sonst öffentliche Seiten trifft (Lehre: `/f` sperrte `/fotobox`).

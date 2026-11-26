@@ -7,7 +7,7 @@ export default defineConfig({
   reporter: [["list"]],
   use: { baseURL: "http://127.0.0.1:8788" },
   webServer: {
-    command: "npx wrangler dev --port 8788 --ip 127.0.0.1",
+    command: "npm run db:lokal && npx wrangler dev --port 8788 --ip 127.0.0.1 --var ENVIRONMENT:development --var DEV_ADMIN_EMAIL:inhaber@example.ch",
     url: "http://127.0.0.1:8788/",
     reuseExistingServer: true,
     env: { WRANGLER_SEND_METRICS: "false" },

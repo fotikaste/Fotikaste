@@ -2,6 +2,12 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
+## 2026-11-26 – Phase 2 umgesetzt (Datenbank und Sicherheit)
+- Worker für `/api/*` und `/admin`, D1-Migration 0001, Access-JWT-Prüfung (WebCrypto, kein Zusatzpaket), Rollen, Protokoll, Verbrauchszähler,
+  Warnstufen 50/75/90 %, Sperre ab 90 %, atomare Speicherreservierung, Anfragebegrenzung, Turnstile, Admin-Seite → `PHASE2_BERICHT.md`.
+- Tests: 37 Vitest (inkl. 20 gleichzeitige Uploads → genau 9 erlaubt), 56 Playwright grün. Fotobox-Software unverändert.
+- Entscheide: nur lokal; Google-Login mit 2FA; nur Inhaber; bestehendes Cloudflare-Konto (wird nur für Fotikaste genutzt).
+
 ## 2026-11-25 – Eigene Bilder des Benutzers eingebaut
 - Canva-Bilder entfernt, 9 gelieferte Visualisierungen optimiert (WebP bis Originalbreite, nie hochskaliert; JPEG-Rückfall ≤ 1200 px) und eingebaut.
 - Gekennzeichnet als «Visualisierung (KI-generiert)». Tests: 13 Unit, 48 Browser grün. Lighthouse: Start/Fotobox/Preise 94–100, LCP ≤ 2.0 s, CLS 0.

@@ -1,0 +1,4 @@
+# Lokale Entwicklung: nach .dev.vars kopieren (nicht in Git).
+# Die Abkürzung DEV_ADMIN_EMAIL wirkt NUR mit ENVIRONMENT=development UND Aufruf über localhost.
+ENVIRONMENT=development
+DEV_ADMIN_EMAIL=inhaber@example.ch

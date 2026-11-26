@@ -39,3 +39,9 @@ Ergänzt `Dokumente/GLOSSAR.md` (Fotobox). Je Begriff: Was? · Wozu? · Wo bei u
 | **MVP** | Kleinste sinnvolle Version | V1 in ROADMAP.md |
 | **Deckungsbeitrag** | Preis minus variable Kosten | Finanzmodul |
 | **Break-even** | Punkt, an dem Investition wieder eingespielt ist | Wirtschaftlichkeit |
+| **JWT** | Signiertes Ticket (JSON Web Token), das bestätigt, wer angemeldet ist | Cloudflare Access → Admin |
+| **JWKS** | Liste öffentlicher Schlüssel, mit denen man die Signatur eines JWT prüft | Access-Prüfung im Worker |
+| **Fail closed** | Im Zweifel ablehnen statt erlauben | fehlende Konfiguration, Turnstile-Fehler |
+| **Trigger** | Regel in der Datenbank, die bei Änderungen automatisch ausgeführt wird | Protokoll unveränderlich |
+| **Reservierung (Speicher)** | Platz wird vor dem Upload verbindlich vorgemerkt | Schutz vor Überschreiten der 8 GB |
+| **run_worker_first** | Cloudflare-Einstellung: nur bestimmte Adressen laufen durch den Worker | /api, /admin |

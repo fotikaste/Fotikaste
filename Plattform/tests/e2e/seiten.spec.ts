@@ -36,8 +36,8 @@ test("Unbekannte Adresse liefert 404", async ({ page }) => {
   await expect(page.locator("h1")).toContainText("gibt es nicht");
 });
 
-test("Private Bereiche sind nicht als Seiten vorhanden", async ({ request }) => {
-  for (const p of ["/admin", "/konto", "/api/device/v1/config"]) {
+test("Noch nicht gebaute private Bereiche liefern 404 (Admin: siehe admin.spec.ts)", async ({ request }) => {
+  for (const p of ["/konto", "/api/device/v1/config", "/admin/gibts-nicht"]) {
     const res = await request.get(p);
     expect(res.status()).toBe(404);
   }

@@ -74,3 +74,20 @@ Stativ, Leuchte und Drucker sowie Gäste an Anlässen. Kennzeichnung auf der Sei
 Einsatz: Hero-Postkarten, Erlebnis, Anlasskarten/-seiten, Fotobox-Seite, Beispielgalerie (mit Hinweis «echte Eventfotos folgen»).
 Offen: Stimmt das gezeigte Gehäuse mit der echten Fotobox überein? Falls nicht, Kennzeichnung beibehalten und bald durch echte Fotos ersetzen.
 Die Canva-Bilder (ADR-022) sind entfernt.
+
+## ADR-024 Worker getrennt von Astro, nur für /api und /admin — *angenommen (Phase 2)*
+Astro bleibt rein statisch; ein eigener Worker (`worker/`) mit `run_worker_first` für `/api/*` und `/admin`. Statische Seiten lösen keine
+Worker-Aufrufe aus (gratis). Alternative Astro-Cloudflare-Adapter: mehr Abhängigkeiten, schwerer zu testen.
+
+## ADR-025 Access-JWT-Prüfung mit WebCrypto statt Zusatzpaket — *angenommen (Phase 2)*
+Prüft RS256-Signatur, `iss`, `aud`, `exp`, `nbf`, E-Mail; Schlüssel von `https://<team>/cdn-cgi/access/certs`, 10 min Zwischenspeicher.
+Testschlüssel (`ACCESS_JWKS`) nur ausserhalb der Produktion. Ohne Konfiguration: Zugriff verweigert.
+
+## ADR-026 Entwicklungs-Abkürzung für lokalen Admin — *angenommen*
+Nur bei ENVIRONMENT=development **und** localhost **und** DEV_ADMIN_EMAIL. Produktion: ENVIRONMENT fest «production», keine workers.dev-/Vorschau-Adressen. Durch Tests abgesichert.
+
+## ADR-027 Bestehendes Cloudflare-Konto — *angenommen (Benutzer, 2026-11-25)*
+Wird ausschliesslich für Fotikaste genutzt → teilt keine Gratiskontingente mit anderen Projekten.
+
+## ADR-028 Sperre ab 90 % der App-Grenze — *angenommen*
+Fotospeicher: Uploads gesperrt ab 90 % von 8 GB (= 7.2 GB). Kontingente: Sperre kostenrelevanter Vorgänge ab 90 % der Gratisgrenze.
