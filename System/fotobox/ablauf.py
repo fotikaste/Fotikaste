@@ -18,7 +18,7 @@ from pathlib import Path
 
 from . import bild
 from .drucker import SimulierterDrucker, freier_speicher_mb
-from .galerie import GalerieFehler, R2Galerie, SimulierteGalerie
+from .galerie import GalerieFehler, PlattformGalerie, R2Galerie, SimulierteGalerie
 from .kamera import KameraFehler, SimulierteKamera, erstelle_kamera, mit_zeitlimit
 from .store import Store, jetzt as _jetzt
 
@@ -87,6 +87,14 @@ class Fotobox:
         if self._feste_galerie:
             return self._feste_galerie
         e = self.store.einstellungen()
+        if e["galerie_anbieter"] == "plattform":
+            schluessel = (e["plattform_url"], e["plattform_token"])
+            if getattr(self, "_plattform", None) is None or self._plattform[0] != schluessel:
+                # eine Instanz behalten, damit der Verbindungsstatus zwischengespeichert bleibt
+                self._plattform = (schluessel, PlattformGalerie(e["plattform_url"], e["plattform_token"],
+                                                               merken=self.store.setze_einstellung,
+                                                               erinnern=lambda k: self.store.einstellung(k)))
+            return self._plattform[1]
         if e["galerie_anbieter"] == "r2":
             return R2Galerie(e["r2_konto_id"], e["r2_bucket"], e["r2_zugangs_id"], e["r2_geheimnis"],
                              e["r2_oeffentliche_url"], eu=bool(e["r2_eu"]))
@@ -442,7 +450,7 @@ class Fotobox:
         if not s["karte"]:
             raise FotoboxFehler("keine_aufnahme")
         # Lange Zufallskennung: Die Adresse lässt sich nicht erraten (ca. 128 Bit)
-        schluessel = f"{s['veranstaltung_id']}/{secrets.token_urlsafe(16)}.jpg"
+        schluessel = self.galerie.neuer_schluessel(s["veranstaltung_id"])
         u = self.store.upload_anlegen(sid, s["veranstaltung_id"], s["karte"], schluessel, self.galerie.url(schluessel))
         threading.Thread(target=self.galerie_abarbeiten, daemon=True).start()  # sofort versuchen
         log.info("Sitzung %s: Foto für die Online-Galerie freigegeben", sid)

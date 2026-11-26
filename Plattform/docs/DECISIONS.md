@@ -101,3 +101,9 @@ Preise, FAQ, Paketleistungen und technische Angaben liegen in D1 und werden im A
 Die öffentlichen Seiten werden per «Webseite aktualisieren» neu erzeugt (`tools/inhalte-export.mjs` → `src/data/inhalte.json` → `astro build`);
 lokal über `tools/webseite-dienst.mjs`, online ab Phase 7 über GitHub Actions (gratis). Alternativen: Seiten live aus dem Worker (zählt jeden
 Seitenaufruf, langsamer) oder Inhalte im Code (keine Selbstverwaltung). FAQ-Platzhalter (`{preis:premium}`) halten Texte und Preise synchron.
+
+## ADR-031 Fotobox-Upload durch den Worker, Gäste-Link offline erzeugt — *angenommen (Phase 5)*
+Die Fotobox meldet ein Foto an (Grösse + SHA-256 je Variante) und lädt Web-Version und Vorschau per PUT durch den Worker in den privaten Bucket.
+Keine vorsignierten URLs → kein R2-Schlüssel auf der Fotobox **und** keiner im Worker (Binding genügt). Der Gäste-Link `/f/<zufall>` entsteht offline auf der
+Fotobox; die Plattform kennt nur dessen Hash. Originale werden nicht hochgeladen. Gemeinsame Galerie mit Passwort: später (Passwort-Hash im Gratis-Tarif zu CPU-intensiv).
+Ersetzt im API-Entwurf die vorsignierten URLs.

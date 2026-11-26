@@ -2,6 +2,7 @@
 export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
+  PHOTOS: R2Bucket; // privater Fotospeicher (Phase 5)
   ENVIRONMENT: string; // "production" | "development" | "test"
   ACCESS_TEAM_DOMAIN: string; // z. B. "fotikaste.cloudflareaccess.com"
   ACCESS_AUD: string; // «Application Audience (AUD) Tag» der Access-Anwendung

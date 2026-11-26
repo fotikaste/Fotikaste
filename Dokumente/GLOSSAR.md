@@ -77,3 +77,5 @@
 | **Bildschirmtastatur** | Tastatur, die auf dem Touchscreen erscheint | WLAN-Passwort eingeben ohne echte Tastatur |
 | **Auslöseverzögerung** | Zeit zwischen Auslöse-Befehl und dem Klick der Kamera | Wird mit «Auslösen vorziehen» ausgeglichen |
 | **Rollenzähler** | Eigene Zählung der Bilder auf der Papierrolle: Stand beim Einlegen minus gedruckte Abzüge | «noch ca. 390 Bilder» |
+| **Fotikaste-Plattform** | Eigene Webseite/Verwaltung; nimmt die Fotos der Fotobox entgegen | Betriebsseite → Online-Speicher «Fotikaste-Plattform» |
+| **Geräte-Token** | Schlüssel nur für diese Fotobox; darf ausschliesslich Fotos zum zugewiesenen Event hochladen | ersetzt den R2-Schlüssel auf der Fotobox |

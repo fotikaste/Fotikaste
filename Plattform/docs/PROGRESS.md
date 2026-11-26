@@ -2,6 +2,12 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
+## 2026-11-26 – Phase 5 umgesetzt (Fotobox-Integration, nur Laptop)
+- Plattform: Geräte + Token, Events (ein aktives pro Gerät), Geräte-API mit Prüfsumme und Speicherreservierung, privater Bucket (lokal simuliert),
+  Gäste-Link /f/, Veranstalter-Fotos im Kundenkonto, Admin Geräte/Events, täglicher Cron (Löschung nach 30 Tagen) → `PHASE5_BERICHT.md`, ADR-031.
+- Fotobox: `PlattformGalerie` zusätzlich zu Simulation/R2, Betriebsseite «Fotikaste-Plattform». Echter Durchlauf Laptop → lokale Plattform ok.
+- Tests: 109 Vitest, 76 Playwright, 125 Fotobox grün. **Pi nicht verändert** (Freigabe offen, sinnvoll ab Phase 7).
+
 ## 2026-11-26 – Phase 4 umgesetzt (Administration)
 - Admin mit Übersicht, Buchungen (Detail, Storno, Termin ändern, Positionen, Zahlung, Kontakt, Notizen), Kalender (Sperren), Kunden, Preise
   (Pakete, Konditionen, Liefergebiete), Inhalte (FAQ mit Platzhaltern, Leistungen, technische Angaben), Einstellungen → `PHASE4_BERICHT.md`.
@@ -57,4 +63,4 @@ Cloudflare-Architektur, D1-Modell, R2-Migrationsplan, Markenprüfung, Wettbewerb
 Erste Analyse (Vercel/Supabase, überholt).
 
 ## Nächster Schritt
-Sichtprüfung Admin, Merge nach `main`, dann Phase 5 (Fotobox-Integration).
+Sichtprüfung, Merge nach `main`, Phase 6 (Rechnungen). Pi-Update erst nach Freigabe und sobald die Plattform online ist.

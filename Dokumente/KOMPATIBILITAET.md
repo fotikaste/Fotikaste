@@ -66,3 +66,11 @@ Die ganze Fotobox lief im Ubuntu (eigene Python-Umgebung `~/fotobox-venv`). Bedi
 - **Nicht getestet:** Kabel ziehen während des Betriebs, Akku leer, mehrere Stunden Dauerbetrieb, echter Raspberry Pi
 
 **Noch offen für den Raspberry Pi:** Geschwindigkeit auf echter Pi-Hardware, GVFS-Automount (ein Dateimanager, der die Kamera belegt), Vorfokus bei Dunkelheit, Dauerbetrieb über Stunden.
+
+## Fotikaste-Plattform (Phase 5, 2026-11-26)
+| Komponente | Windows 11 (Laptop) | Raspberry Pi |
+|---|---|---|
+| `PlattformGalerie` gegen nachgebaute Plattform (9 automatische Tests) | ✅ 2026-11-26 | ❔ |
+| Laptop-Fotobox (simulierte Kamera) → lokale Plattform (wrangler dev) → Gäste-Link liefert Foto | ✅ 2026-11-26 | ❔ |
+| Pi-Update | – | ⛔ nicht ausgeführt, wartet auf Freigabe |
+

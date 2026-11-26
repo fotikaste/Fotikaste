@@ -16,6 +16,7 @@ import { kundenDetail, kundenListe, kundenName, kundenNotiz } from "../admin/kun
 import { aktualisiereWebseite, inhalteSeite, loescheFaq, speichereFakten, speichereFaq, speichereLeistungen } from "../admin/inhalte";
 import { formFehler, formular, MELDUNGEN, rappenAus, zurueck } from "../admin/layout";
 import { uebersicht } from "../admin/seite";
+import { adminFoto, eventAnlegen, eventDetail, eventGeraet, eventStatus, eventsSeite, geraetAnlegen, geraeteSeite, geraetToken, geraetWiderrufen } from "../admin/fotobox";
 
 type Seite = (env: Env, u: AdminUser, url: URL) => Promise<string | null>;
 type Aktion = (env: Env, u: AdminUser, form: Map<string, string>, teile: string[], url: URL) => Promise<Fehler | Record<string, unknown>>;
@@ -27,6 +28,9 @@ const SEITEN: [RegExp, Permission, Seite][] = [
   [/^\/admin\/kalender$/, "bookings:read", kalenderSeite],
   [/^\/admin\/kunden$/, "bookings:read", kundenListe],
   [/^\/admin\/kunden\/([0-9a-f]{32})$/, "bookings:read", (e, u, url) => kundenDetail(e, u, url.pathname.split("/")[3]!, url)],
+  [/^\/admin\/geraete$/, "devices:manage", (e, u, url) => geraeteSeite(e, u, url)],
+  [/^\/admin\/events$/, "devices:manage", eventsSeite],
+  [/^\/admin\/events\/([0-9a-f]{32})$/, "devices:manage", (e, u, url) => eventDetail(e, u, url.pathname.split("/")[3]!, url)],
   [/^\/admin\/preise$/, "settings:write", preiseSeite],
   [/^\/admin\/inhalte$/, "content:write", inhalteSeite],
   [/^\/admin\/einstellungen$/, "settings:write", einstellungenSeite],
@@ -59,12 +63,22 @@ const AKTIONEN: [RegExp, Permission, Aktion, (t: string[], f: Map<string, string
   [/^\/admin\/inhalte\/faq\/(\d+)\/loeschen$/, "content:write", (e, u, _f, t) => loescheFaq(e, u, Number(t[0])), () => "/admin/inhalte", "geloescht"],
   [/^\/admin\/inhalte\/leistungen\/([a-z]{2,20})$/, "content:write", (e, u, f, t) => speichereLeistungen(e, u, t[0]!, f.get("leistungen") ?? ""), () => "/admin/inhalte", "gespeichert"],
   [/^\/admin\/inhalte\/fakten$/, "content:write", (e, u, f) => speichereFakten(e, u, f), () => "/admin/inhalte", "gespeichert"],
+  [/^\/admin\/geraete\/([0-9a-f]{32})\/widerrufen$/, "devices:manage", (e, u, _f, t) => geraetWiderrufen(e, u, t[0]!), () => "/admin/geraete", "gespeichert"],
+  [/^\/admin\/events$/, "devices:manage", async (e, u, f) => { const r = await eventAnlegen(e, u, f); if ("id" in r) f.set("_neu", r.id); return r; }, (_t, f) => (f.get("_neu") ? `/admin/events/${f.get("_neu")}` : "/admin/events"), "gespeichert"],
+  [/^\/admin\/events\/([0-9a-f]{32})\/(aktivieren|schliessen|archivieren)$/, "devices:manage", (e, u, _f, t) => eventStatus(e, u, t[0]!, ({ aktivieren: "active", schliessen: "closed", archivieren: "archived" } as const)[t[1] as "aktivieren" | "schliessen" | "archivieren"]), (t) => `/admin/events/${t[0]}`, "gespeichert"],
+  [/^\/admin\/events\/([0-9a-f]{32})\/geraet$/, "devices:manage", (e, u, f, t) => eventGeraet(e, u, t[0]!, f.get("geraet") ?? ""), (t) => `/admin/events/${t[0]}`, "gespeichert"],
   [/^\/admin\/inhalte\/aktualisieren$/, "content:write", (e, u) => aktualisiereWebseite(e, u), () => "/admin/inhalte", "aktualisierung"],
 ];
 
 export async function adminRoute(request: Request, env: Env, pfad: string): Promise<Response | null> {
   const url = new URL(request.url);
   if (request.method === "GET") {
+    const foto = pfad.match(/^\/admin\/events\/([0-9a-f]{32})\/foto\/([0-9a-f]{32})\/(web|thumb)$/);
+    if (foto) {
+      const u = await verlangeRecht(request, env, "devices:manage");
+      if (u instanceof Response) return u;
+      return adminFoto(env, foto[1]!, foto[2]!, foto[3] as "web" | "thumb");
+    }
     for (const [muster, recht, seite] of SEITEN) {
       if (!muster.test(pfad)) continue;
       const u = await verlangeRecht(request, env, recht);
@@ -75,6 +89,14 @@ export async function adminRoute(request: Request, env: Env, pfad: string): Prom
     return null;
   }
   if (request.method !== "POST") return null;
+  // Neues Gerät / neues Token: Seite direkt zeigen (Token erscheint genau einmal, nie in einer Adresse)
+  const token = pfad === "/admin/geraete" ? [] : pfad.match(/^\/admin\/geraete\/([0-9a-f]{32})\/token$/)?.slice(1);
+  if (token) {
+    const u = await verlangeRecht(request, env, "devices:manage");
+    if (u instanceof Response) return u;
+    const r = token.length ? await geraetToken(env, u, token[0]!) : await geraetAnlegen(env, u, (await formular(request)).get("name") ?? "");
+    return "code" in r ? formFehler(u, r.text, "/admin/geraete", r.status) : html(await geraeteSeite(env, u, url, r));
+  }
   for (const [muster, recht, aktion, ziel, code] of AKTIONEN) {
     const m = pfad.match(muster);
     if (!m) continue;

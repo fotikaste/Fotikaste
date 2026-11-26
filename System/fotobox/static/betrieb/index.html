@@ -228,7 +228,8 @@ label.haken input{width:auto}
         <form class="formular" id="f-galerie">
           <label>Online-Speicher<select name="galerie_anbieter">
             <option value="simuliert">Simulation (Ordner auf diesem PC)</option>
-            <option value="r2">Cloudflare R2</option></select></label>
+            <option value="plattform">Fotikaste-Plattform (empfohlen)</option>
+            <option value="r2">Cloudflare R2 (alt)</option></select></label>
           <label>QR-Code für Gäste<select name="galerie_modus">
             <option value="nachfrage">Gast wird gefragt (empfohlen)</option>
             <option value="immer">immer anzeigen</option>
@@ -242,7 +243,15 @@ label.haken input{width:auto}
           <a href="/internet" class="link-knopf"><button type="button">Internet einrichten …</button></a>
         </form>
         <p class="hinweis">Ohne Internet bekommen Gäste den QR-Code trotzdem. Die Fotobox lädt das Foto hoch, sobald wieder Internet da ist.</p>
-        <h2 style="margin-top:20px">Zugang Cloudflare R2</h2>
+        <h2 style="margin-top:20px">Zugang Fotikaste-Plattform</h2>
+        <form class="formular" id="f-plattform">
+          <label>Adresse der Plattform<input name="plattform_url" placeholder="https://…" autocomplete="off" spellcheck="false"></label>
+          <label>Geräte-Token (64 Zeichen, aus dem Plattform-Admin)<input name="plattform_token" class="verdeckt" autocomplete="off" spellcheck="false" data-lpignore="true" placeholder="leer lassen = unverändert"></label>
+          <button class="primaer">Speichern</button>
+          <button type="button" id="plattform-testen">Verbindung testen</button>
+        </form>
+        <p class="hinweis" id="plattform-info">Die Fotobox braucht dafür keinen Speicherschlüssel. Das Geräte-Token darf nur Fotos für das zugewiesene Event hochladen und lässt sich im Plattform-Admin jederzeit widerrufen.</p>
+        <h2 style="margin-top:20px">Zugang Cloudflare R2 (alt)</h2>
         <form class="formular" id="f-r2">
           <label>Konto-ID (Account ID)<input name="r2_konto_id" autocomplete="off"></label>
           <label>Bucket-Name<input name="r2_bucket" autocomplete="off"></label>
@@ -450,6 +459,10 @@ async function laden(hintergrund = false) {
       }
     }
     kartenVorschau(true);
+    const pf = $('#f-plattform').elements;   // Geräte-Token wird nie angezeigt – nur, ob es gesetzt ist
+    pf.plattform_url.value = e.plattform_url || '';
+    pf.plattform_token.value = '';
+    pf.plattform_token.placeholder = e.plattform_token_gesetzt ? 'gespeichert – leer lassen = unverändert' : 'fehlt noch';
     const r2 = $('#f-r2').elements;   // Geheimnis wird nie angezeigt – nur, ob es gesetzt ist
     for (const k of ['r2_konto_id', 'r2_bucket', 'r2_oeffentliche_url', 'r2_zugangs_id']) r2[k].value = e[k] || '';
     r2.r2_eu.value = String(e.r2_eu);
@@ -580,6 +593,31 @@ $('#f-galerie').addEventListener('submit', async (e) => {
     meldung('Übernommen');
   } catch (err) { meldung(err.text || 'Ungültiger Wert'); }
   laden();
+});
+
+$('#f-plattform').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target.elements;
+  try {
+    await api('/api/betrieb/plattform', {plattform_url: f.plattform_url.value.trim(), plattform_token: f.plattform_token.value.trim()});
+    f.plattform_token.value = '';
+    formularGeladen = false;
+    meldung('Zugang gespeichert');
+    $('#plattform-info').textContent = '';
+  } catch (err) {
+    meldung('Speichern nicht möglich');
+    $('#plattform-info').textContent = '✕ ' + (err.text || 'Speichern nicht möglich');
+    return;
+  }
+  laden();
+});
+
+$('#plattform-testen').addEventListener('click', async () => {
+  $('#plattform-info').textContent = 'Teste Verbindung …';
+  try {
+    const r = await api('/api/betrieb/plattform/testen', {});
+    $('#plattform-info').textContent = (r.ok ? '✓ ' : '✕ ') + r.schritte.join(' · ');
+  } catch (err) { $('#plattform-info').textContent = '✕ ' + (err.text || 'Test nicht möglich'); }
 });
 
 $('#f-r2').addEventListener('submit', async (e) => {

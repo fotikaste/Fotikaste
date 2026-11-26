@@ -62,13 +62,13 @@ test("Buchung A–Z: Datum, Preis vom Server, Reservierung, Kontakt, Bestätigun
 
 test("Belegter Tag: Angebot meldet «belegt», Reservierung nicht möglich", async ({ page, request }) => {
   const tag = await freierTag(request);
-  const h = await request.post("/api/buchung/halten", { data: { wahl: { paket: "essential", event: tag, start: tag, ende: tag, lieferung: false, stornierbar: false } }, headers: { Origin: "http://127.0.0.1:8788" } });
+  const h = await request.post("/api/buchung/halten", { data: { wahl: { paket: "essential", event: tag, start: tag, ende: tag, lieferung: false, stornierbar: false } }, headers: { Origin: `http://127.0.0.1:${process.env.PW_PORT ?? "8788"}` } });
   expect(h.status()).toBe(201);
   await page.goto(`/buchen?datum=${tag}`);
   await page.getByText("Selbstabholung", { exact: true }).click();
   await expect(page.locator("#zf")).toContainText("Leider belegt");
   await expect(page.getByRole("button", { name: /reservieren/ })).toBeDisabled();
-  await request.post("/api/buchung/freigeben", { data: { halteId: (await h.json()).halteId }, headers: { Origin: "http://127.0.0.1:8788" } });
+  await request.post("/api/buchung/freigeben", { data: { halteId: (await h.json()).halteId }, headers: { Origin: `http://127.0.0.1:${process.env.PW_PORT ?? "8788"}` } });
 });
 
 test("Kalender und Kundenkonto: laden, barrierefrei, kein Überlauf", async ({ page }, info) => {

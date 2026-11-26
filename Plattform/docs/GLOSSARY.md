@@ -58,3 +58,8 @@ Ergänzt `Dokumente/GLOSSAR.md` (Fotobox). Je Begriff: Was? · Wozu? · Wo bei u
 | **Platzhalter** | Kürzel in geschweiften Klammern, das beim Erzeugen durch den aktuellen Wert ersetzt wird | `{preis:premium}` in FAQ-Antworten |
 | **Post/Redirect/Get** | Nach dem Absenden eines Formulars leitet der Server auf eine normale Seite weiter (kein doppeltes Absenden beim Neuladen) | alle Admin-Formulare |
 | **Webhook** | Adresse, die ein anderes Programm aufruft, um eine Aktion auszulösen | «Webseite aktualisieren» → Dienst/GitHub Actions |
+| **Geräte-Token** | Langer Zufallsschlüssel, mit dem sich die Fotobox bei der Plattform ausweist; darf nur Fotos zum eigenen Event hochladen | Admin → Geräte, Betriebsseite der Fotobox |
+| **Prüfsumme (SHA-256)** | Fingerabdruck einer Datei; ändert sich ein einziges Byte, ist er völlig anders | Server prüft jeden Upload |
+| **Privater Bucket** | Speicher ohne öffentliche Adresse; Dateien nur über die Plattform mit Prüfung | `fotikaste-fotos` |
+| **Cron** | Zeitplan, nach dem der Server eine Aufgabe automatisch ausführt | täglich 03:15 UTC: abgelaufene Fotos löschen |
+| **Widerrufen** | Ein Token ungültig machen; wer es kennt, kommt nicht mehr hinein | bei Verlust/Diebstahl der Fotobox |

@@ -27,7 +27,7 @@ Stand: 2026-11-25 · **An der produktiven Fotobox wird nichts verändert, bevor 
 - Neuer Bucket **`fotikaste-fotos`** (EU-Jurisdiktion), **ohne** r2.dev und ohne öffentliche Domain.
 - Die Fotobox hat **keinen R2-Schlüssel** mehr, nur noch ein **Geräte-Token** der Plattform: darf nur Uploads für das ihr zugewiesene,
   aktive Event anmelden. Kein Lesen, kein Auflisten, kein Löschen. Im Admin mit einem Klick widerrufbar.
-- Uploads per vorsignierter URL (5 min gültig, genau ein Dateipfad).
+- Uploads durch den Worker mit Prüfsumme (ADR-031) – kein Speicherschlüssel auf Fotobox oder im Worker.
 - Gäste sehen Fotos nur über die Plattform (`/f/<token>`), die bei jedem Abruf Token, Ablauf und Event-Status prüft.
 - Der R2-Schlüssel der Plattform liegt nur als verschlüsseltes Geheimnis im Worker (`wrangler secret`), nie im Code.
 
@@ -35,9 +35,9 @@ Stand: 2026-11-25 · **An der produktiven Fotobox wird nichts verändert, bevor 
 | Schritt | Was | Wer | Fotobox betroffen? |
 |---|---|---|---|
 | **0 – Sofort, nur ansehen** | `CLOUDFLARE_SICHERHEIT.md` Teil A: Budgetwarnung, Abo prüfen, Token-Rechte und Bucket-Inhalt **ansehen**, PIN ändern. **Nichts löschen** (E5 offen). Rotation/Lifecycle erst in Teil B nach E5. | du (ich erkläre jeden Klick) | nur PIN |
-| 1 – Plattform-Grundlage | Worker mit Geräte-API, privater Bucket, Geräte-Tokens, Simulator, Tests | ich | nein |
-| 2 – Fotobox-Erweiterung | Neue Klasse `PlattformGalerie` in `galerie.py` **zusätzlich** zu Simuliert/R2 (Auswahl auf der Betriebsseite); Vorschaubilder mit Pillow; Geräte-Token-Feld; neue Tests. Bestehende Funktionen bleiben, 85 bestehende Tests müssen grün bleiben. | ich, am Laptop | nein (nur Laptop) |
-| 3 – Test am Laptop | Laptop-Fotobox gegen lokale Plattform (`wrangler dev`) und Simulator | ich | nein |
+| 1 – Plattform-Grundlage ✅ 2026-11-26 | Worker mit Geräte-API, privater Bucket, Geräte-Tokens, Simulator, Tests | ich | nein |
+| 2 – Fotobox-Erweiterung ✅ 2026-11-26 | Neue Klasse `PlattformGalerie` in `galerie.py` **zusätzlich** zu Simuliert/R2 (Auswahl auf der Betriebsseite); Vorschaubilder mit Pillow; Geräte-Token-Feld; neue Tests. Bestehende Funktionen bleiben, 85 bestehende Tests müssen grün bleiben. | ich, am Laptop | nein (nur Laptop) |
+| 3 – Test am Laptop ✅ 2026-11-26 | Laptop-Fotobox gegen lokale Plattform (`wrangler dev`) und Simulator | ich | nein |
 | **4 – Freigabe** | Du gibst das Update für den Pi frei | du | – |
 | 5 – Pi umstellen | Update per USB-Stick, Geräte-Token eintragen, auf «Plattform» umschalten, Testfoto mit Handy | du + ich | ja, nach Freigabe |
 | 6 – Alte Schlüssel weg | R2-Tokens «fotobox-pi» und Laptop-Token **in Cloudflare löschen** (Rotation abgeschlossen), Einstellungen `r2_zugangs_id`/`r2_geheimnis` auf beiden Geräten leeren | du + ich | ja |

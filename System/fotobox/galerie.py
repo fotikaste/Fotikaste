@@ -15,6 +15,8 @@ Jede Galerie (simuliert oder echt) bietet dieselben Funktionen:
 from __future__ import annotations
 
 import hashlib
+import secrets
+import time
 import hmac
 import shutil
 import urllib.error
@@ -40,6 +42,10 @@ class Galerie:
 
     def hochladen(self, datei: Path, schluessel: str) -> None:
         raise NotImplementedError
+
+    def neuer_schluessel(self, veranstaltung_id: str) -> str:
+        """Speicherpfad des Fotos; enthält eine lange Zufallskennung (ca. 128 Bit, nicht erratbar)."""
+        return f"{veranstaltung_id}/{secrets.token_urlsafe(16)}.jpg"
 
 
 class SimulierteGalerie(Galerie):
@@ -176,3 +182,121 @@ class R2Galerie(Galerie):
         self.loeschen(schluessel)
         schritte.append("Löschen: ok")
         return schritte
+
+
+# ---------------------------------------------------------------------------
+# Fotikaste-Plattform (Phase 5): kein Speicherschlüssel mehr auf der Fotobox
+# ---------------------------------------------------------------------------
+# Die Fotobox kennt nur ein Geräte-Token. Damit darf sie bei der Plattform ausschliesslich Fotos für das
+# ihr zugewiesene Event anmelden und hochladen – nicht lesen, nicht auflisten, nicht löschen.
+# Gäste-Link: <plattform>/f/<zufall>. Die Plattform speichert nur einen Fingerabdruck (SHA-256) davon.
+# Der Link entsteht offline auf der Fotobox; das Foto folgt, sobald Internet da ist.
+
+class PlattformGalerie(Galerie):
+    name = "Fotikaste-Plattform"
+    simuliert = False
+    STATUS_GUELTIG_S = 60  # Verbindungsstatus so lange zwischenspeichern (die Betriebsseite fragt oft)
+
+    def __init__(self, basis_url: str, geraete_token: str, merken=None, erinnern=None, zeitlimit_s: float = 30):
+        """merken(schluessel, wert) / erinnern(schluessel) speichern die zuletzt bekannte Event-Kennung
+        (z. B. in den Einstellungen), damit Fotos auch offline dem richtigen Event zugeordnet werden."""
+        self.basis = basis_url.rstrip("/")
+        self._token = geraete_token
+        self._merken = merken or (lambda k, v: None)
+        self._erinnern = erinnern or (lambda k: "")
+        self.zeitlimit_s = zeitlimit_s
+        self._status = None
+        self._status_zeit = 0.0
+        self._bild = {"lange_seite_px": 2400, "jpeg_qualitaet": 85, "vorschau_px": 400}
+
+    @property
+    def eingerichtet(self) -> bool:
+        return bool(self.basis.startswith(("https://", "http://")) and len(self._token) >= 32)
+
+    def _anfrage(self, methode: str, pfad: str, json_daten=None, daten: bytes | None = None, zeitlimit=None):
+        import json as _json
+        kopf = {"Authorization": f"Bearer {self._token}", "User-Agent": "Fotobox"}
+        nutzlast = None
+        if json_daten is not None:
+            nutzlast = _json.dumps(json_daten).encode()
+            kopf["Content-Type"] = "application/json"
+        elif daten is not None:
+            nutzlast = daten
+            kopf["Content-Type"] = "image/jpeg"
+        req = urllib.request.Request(f"{self.basis}/api/device/v1{pfad}", data=nutzlast, method=methode, headers=kopf)
+        try:
+            with urllib.request.urlopen(req, timeout=zeitlimit or self.zeitlimit_s) as r:
+                return r.status, _json.loads(r.read() or b"{}")
+        except urllib.error.HTTPError as e:
+            try:
+                text = _json.loads(e.read()).get("text", "")
+            except Exception:  # noqa: BLE001
+                text = ""
+            raise GalerieFehler(f"Plattform antwortet {e.code}: {text}".strip()) from e
+        except (urllib.error.URLError, OSError, ValueError) as e:
+            raise GalerieFehler(f"Keine Verbindung zur Plattform: {e}") from e
+
+    def konfiguration(self) -> dict:
+        """Aktives Event und Bildvorgaben von der Plattform holen und merken."""
+        _, k = self._anfrage("GET", "/config", zeitlimit=10)
+        ev = k.get("event") or {}
+        self._merken("plattform_event_id", ev.get("id", ""))
+        self._merken("plattform_event_name", ev.get("name", ""))
+        self._bild.update({x: k.get("bild", {}).get(x, self._bild[x]) for x in self._bild})
+        return k
+
+    def status(self):
+        if not self.eingerichtet:
+            return {"bereit": False, "text": "Adresse oder Geräte-Token fehlt"}
+        if self._status and time.monotonic() - self._status_zeit < self.STATUS_GUELTIG_S:
+            return self._status
+        try:
+            k = self.konfiguration()
+            ev = k.get("event")
+            self._status = ({"bereit": True, "text": f"Verbunden – Event «{ev['name']}»"} if ev
+                            else {"bereit": False, "text": "Verbunden, aber kein aktives Event zugewiesen (Fotos warten)"})
+        except GalerieFehler as e:
+            self._status = {"bereit": False, "text": str(e)[:200]}
+        self._status_zeit = time.monotonic()
+        return self._status
+
+    def neuer_schluessel(self, veranstaltung_id: str) -> str:
+        # «<Event der Plattform>/<Gäste-Link>»; 0 = Event noch unbekannt (offline seit Start) → Plattform nimmt das aktive Event
+        return f"{self._erinnern('plattform_event_id') or '0'}/{secrets.token_urlsafe(16)}"
+
+    def url(self, schluessel):
+        return f"{self.basis}/f/{schluessel.split('/')[-1]}"
+
+    def _varianten(self, datei: Path) -> tuple[bytes, bytes]:
+        """Web-Version (lange Seite laut Plattform) und Vorschau – nie vergrössern, Original bleibt unverändert."""
+        import io
+        from PIL import Image
+        with Image.open(datei) as bild:
+            bild = bild.convert("RGB")
+            ergebnis = []
+            for kante in (int(self._bild["lange_seite_px"]), int(self._bild["vorschau_px"])):
+                kopie = bild.copy()
+                kopie.thumbnail((kante, kante), Image.LANCZOS)
+                puffer = io.BytesIO()
+                kopie.save(puffer, "JPEG", quality=int(self._bild["jpeg_qualitaet"]) if kante > 1000 else 80, optimize=True)
+                ergebnis.append(puffer.getvalue())
+        return ergebnis[0], ergebnis[1]
+
+    def hochladen(self, datei, schluessel):
+        if not self.eingerichtet:
+            raise GalerieFehler("Plattform nicht eingerichtet (Adresse oder Geräte-Token fehlt)")
+        event, gast = schluessel.split("/", 1) if "/" in schluessel else ("0", schluessel)
+        web, vorschau = self._varianten(Path(datei))
+        anmeldung = {
+            "event_id": None if event in ("", "0") else event,
+            "client_photo_id": hashlib.sha256(schluessel.encode()).hexdigest()[:32],
+            "token_hash": hashlib.sha256(gast.encode()).hexdigest(),
+            "taken_at": datetime.fromtimestamp(Path(datei).stat().st_mtime, timezone.utc).isoformat(),
+            "web": {"bytes": len(web), "sha256": hashlib.sha256(web).hexdigest()},
+            "thumb": {"bytes": len(vorschau), "sha256": hashlib.sha256(vorschau).hexdigest()},
+        }
+        _, antwort = self._anfrage("POST", "/uploads", json_daten=anmeldung)
+        if antwort.get("fertig"):
+            return
+        for variante in antwort.get("fehlend", ["web", "thumb"]):
+            self._anfrage("PUT", f"/uploads/{antwort['photo_id']}/{variante}", daten=web if variante == "web" else vorschau)

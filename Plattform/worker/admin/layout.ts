@@ -14,6 +14,8 @@ const NAV: { href: string; text: string; recht: Permission }[] = [
   { href: "/admin/buchungen", text: "Buchungen", recht: "bookings:read" },
   { href: "/admin/kalender", text: "Kalender", recht: "bookings:read" },
   { href: "/admin/kunden", text: "Kunden", recht: "bookings:read" },
+  { href: "/admin/events", text: "Events", recht: "devices:manage" },
+  { href: "/admin/geraete", text: "Geräte", recht: "devices:manage" },
   { href: "/admin/preise", text: "Preise", recht: "settings:write" },
   { href: "/admin/inhalte", text: "Inhalte", recht: "content:write" },
   { href: "/admin/einstellungen", text: "Einstellungen", recht: "settings:write" },

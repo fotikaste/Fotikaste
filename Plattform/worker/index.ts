@@ -12,12 +12,22 @@ import { bestaetige, lehneAb, listeBuchungen } from "./admin/buchungen";
 import { adminRoute } from "./routen/admin";
 import { istFehler } from "./lib/buchung";
 import { oeffentlicheRoute } from "./routen/oeffentlich";
+import { geraeteRoute } from "./routen/geraet";
+import { galerieRoute } from "./routen/galerie";
+import { wartung } from "./lib/wartung";
 
 export async function handle(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const pfad = url.pathname.replace(/\/+$/, "") || "/";
 
+  // Geräte-API: Anmeldung per Bearer-Token, ohne Cookie → keine CSRF-Gefahr, darum vor der Herkunftsprüfung
+  const geraet = await geraeteRoute(request, env, pfad);
+  if (geraet) return geraet;
+
   if (!sameOrigin(request)) return fehler(403, "herkunft", "Anfrage von fremder Herkunft abgelehnt.");
+
+  const galerie = await galerieRoute(request, env, pfad);
+  if (galerie) return galerie;
 
   if (pfad === "/api/health" && request.method === "GET") return json({ ok: true });
 
@@ -85,7 +95,7 @@ export async function handle(request: Request, env: Env): Promise<Response> {
     return json({ key, value: body.value });
   }
 
-  if (pfad.startsWith("/api/") || pfad.startsWith("/admin")) return fehler(404, "nicht_gefunden", "Diese Adresse gibt es nicht.");
+  if (pfad.startsWith("/api/") || pfad.startsWith("/admin") || pfad.startsWith("/f/")) return fehler(404, "nicht_gefunden", "Diese Adresse gibt es nicht.");
   return env.ASSETS.fetch(request);
 }
 
@@ -97,5 +107,9 @@ export default {
       console.error("Unerwarteter Fehler", e);
       return withSecurityHeaders(fehler(500, "intern", "Interner Fehler. Bitte später erneut versuchen."));
     }
+  },
+  /** Täglicher Cron (wrangler.jsonc): abgelaufene Galerien löschen, aufräumen, Mails nachsenden. */
+  async scheduled(_c: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(wartung(env));
   },
 } satisfies ExportedHandler<Env>;
