@@ -95,3 +95,9 @@ Fotospeicher: Uploads gesperrt ab 90 % von 8 GB (= 7.2 GB). Kontingente: Sperre 
 ## ADR-029 Keine Onlinezahlung — *angenommen (Benutzer, 2026-11-26)*
 Ersetzt ADR-021 (100 % auf Rechnung vor dem Event): Bezahlung wird nach der Buchung per E-Mail oder persönlich vereinbart.
 Keine Zahlungsfunktion, keine Anzahlung/Kaution online. Buchung trotzdem verbindlich. Preisvorschlag und offene Punkte: `PREISE.md`.
+
+## ADR-030 Inhalte im Admin, Webseite bleibt statisch — *angenommen (Phase 4, Benutzer 2026-11-26)*
+Preise, FAQ, Paketleistungen und technische Angaben liegen in D1 und werden im Admin gepflegt. Buchung/Preise im Worker gelten sofort.
+Die öffentlichen Seiten werden per «Webseite aktualisieren» neu erzeugt (`tools/inhalte-export.mjs` → `src/data/inhalte.json` → `astro build`);
+lokal über `tools/webseite-dienst.mjs`, online ab Phase 7 über GitHub Actions (gratis). Alternativen: Seiten live aus dem Worker (zählt jeden
+Seitenaufruf, langsamer) oder Inhalte im Code (keine Selbstverwaltung). FAQ-Platzhalter (`{preis:premium}`) halten Texte und Preise synchron.

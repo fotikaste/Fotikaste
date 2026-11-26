@@ -2,3 +2,7 @@
 # Die Abkürzung DEV_ADMIN_EMAIL wirkt NUR mit ENVIRONMENT=development UND Aufruf über localhost.
 ENVIRONMENT=development
 DEV_ADMIN_EMAIL=inhaber@example.ch
+
+# «Webseite aktualisieren» lokal: Dienst tools/webseite-dienst.mjs (Schlüssel selbst erzeugen, mind. 32 Zeichen)
+REBUILD_HOOK_URL=http://127.0.0.1:8790/neu-bauen
+REBUILD_SECRET=

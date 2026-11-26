@@ -40,4 +40,6 @@ Neue Tabellen nur über neue Migrationsdatei in `migrations/` (nie bestehende ä
 odejs)
 - `npm run build` (astro check + tsc Worker + Build nach `dist/`) · `npm run dev:worker` (lokale D1 + Worker auf 8788, Admin unter /admin) · `npx wrangler dev --port 8788` (lokal wie Cloudflare)
 - `npm test` (Vitest) · `npx playwright test` (Browser, Desktop + Handy, startet wrangler selbst) · `npm run lighthouse` (braucht laufendes wrangler auf 8788)
+- `npm run inhalte` (Inhalte aus lokaler D1 → `src/data/inhalte.json`; `build` macht das automatisch) · `node tools/webseite-dienst.mjs` (lokaler Dienst für «Webseite aktualisieren», Port 8790)
+- Inhalte/Preise nie in `src/data/inhalte.json` von Hand ändern: Quelle ist D1 (Migrationen bzw. Admin), ADR-030.
 - Private Pfade in `site.ts` mit Schrägstrich am Ende, wenn der Präfix sonst öffentliche Seiten trifft (Lehre: `/f` sperrte `/fotobox`).

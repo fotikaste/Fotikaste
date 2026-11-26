@@ -54,3 +54,7 @@ Ergänzt `Dokumente/GLOSSAR.md` (Fotobox). Je Begriff: Was? · Wozu? · Wo bei u
 | **Haversine** | Formel für die Luftlinie zwischen zwei Punkten auf der Erde | Fahrtkosten-Schätzung |
 | **HttpOnly-Cookie** | Cookie, das Skripte auf der Seite nicht lesen können | Sitzung im Kundenkonto |
 | **Anfragebegrenzung (429)** | Zu viele Anfragen in kurzer Zeit werden abgewiesen | Schutz vor Missbrauch der Buchung |
+| **Statische Seite** | Fertig erzeugte HTML-Datei, die ohne Rechenarbeit ausgeliefert wird | öffentliche Webseite; Änderungen erst nach «Webseite aktualisieren» |
+| **Platzhalter** | Kürzel in geschweiften Klammern, das beim Erzeugen durch den aktuellen Wert ersetzt wird | `{preis:premium}` in FAQ-Antworten |
+| **Post/Redirect/Get** | Nach dem Absenden eines Formulars leitet der Server auf eine normale Seite weiter (kein doppeltes Absenden beim Neuladen) | alle Admin-Formulare |
+| **Webhook** | Adresse, die ein anderes Programm aufruft, um eine Aktion auszulösen | «Webseite aktualisieren» → Dienst/GitHub Actions |
