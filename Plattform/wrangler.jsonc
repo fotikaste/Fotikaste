@@ -17,8 +17,8 @@
     {
       "binding": "DB",
       "database_name": "fotikaste",
-      // Platzhalter für die lokale Entwicklung. Die echte ID kommt beim Einrichten (Phase 7).
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // Cloudflare D1 «fotikaste» (Westeuropa), angelegt 2026-11-26. Kein Geheimnis.
+      "database_id": "ab0b1235-e7c5-46d8-916b-4701208ba83b",
       "migrations_dir": "migrations"
     }
   ],
