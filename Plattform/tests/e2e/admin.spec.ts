@@ -6,7 +6,7 @@ test("Admin-Seite: angemeldet, Verbrauchsübersicht, barrierefrei", async ({ pag
   const res = await page.goto("/admin");
   expect(res?.status()).toBe(200);
   expect(res?.headers()["x-robots-tag"]).toContain("noindex");
-  await expect(page.getByText("inhaber@example.ch")).toBeVisible();
+  await expect(page.getByText(/Angemeldet: inhaber@example.ch/)).toBeVisible();
   await expect(page.getByText("Entwicklungsmodus")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Fotospeicher" })).toBeVisible();
   await expect(page.getByText("nicht verfügbar (lokal)").first()).toBeVisible();

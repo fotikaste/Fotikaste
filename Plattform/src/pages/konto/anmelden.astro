@@ -1,0 +1,24 @@
+---
+import ContentLayout from "../../layouts/ContentLayout.astro";
+---
+<ContentLayout path="/konto/anmelden" eyebrow="Kundenkonto" heading="Anmelden" lead="Bitte bestätigen Sie die Anmeldung. Der Link ist 15 Minuten gültig und nur einmal verwendbar." description="Anmeldung im Kundenkonto über den persönlichen Link aus der E-Mail. Ohne Passwort, einmalig gültig.">
+  <button id="anmelden" class="btn btn-primary" type="button">Jetzt anmelden</button>
+  <p id="meldung" class="meldung meldung-fehler mt-6 max-w-xl" hidden role="alert"></p>
+</ContentLayout>
+
+<script>
+  import { post } from "../../lib/format";
+  // Token steht im #-Teil der Adresse (wird nie an den Server übertragen) – sofort aus der Adresszeile entfernen.
+  const token = location.hash.slice(1);
+  history.replaceState(null, "", location.pathname);
+  const m = document.getElementById("meldung")!;
+  document.getElementById("anmelden")!.addEventListener("click", async () => {
+    const r = await post<{ text?: string }>("/api/konto/anmelden", { token });
+    if (r.ok) location.href = "/konto";
+    else {
+      m.hidden = false;
+      m.textContent = `${r.data.text ?? "Anmeldung fehlgeschlagen."} `;
+      m.insertAdjacentHTML("beforeend", `<a class="link-underline" href="/konto">Neuen Link anfordern</a>`);
+    }
+  });
+</script>

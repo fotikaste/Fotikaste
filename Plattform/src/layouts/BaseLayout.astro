@@ -16,8 +16,10 @@ interface Props {
   indexable?: boolean;
   jsonLd?: Record<string, unknown>[];
   breadcrumbs?: { name: string; path: string }[];
+  /** Privater Funktionsbereich: kein «Entwurf»-Hinweis */
+  privat?: boolean;
 }
-const { title, description = brand.description, path, indexable = true, jsonLd = [], breadcrumbs } = Astro.props;
+const { title, description = brand.description, path, indexable = true, jsonLd = [], breadcrumbs, privat = false } = Astro.props;
 const canonical = absoluteUrl(path);
 const fullTitle = pageTitle(title);
 const nodes = [organizationJsonLd(), websiteJsonLd(), ...jsonLd];
@@ -51,7 +53,7 @@ if (breadcrumbs?.length) nodes.push(breadcrumbJsonLd([{ name: "Startseite", path
     <a href="#inhalt" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 btn btn-primary">Zum Inhalt springen</a>
     <Header currentPath={path} />
     <main id="inhalt" class="flex-1">
-      {!indexable && (
+      {!indexable && !privat && (
         <div class="bg-paper border-b border-line">
           <p class="container-page py-2 text-sm text-muted"><span class="placeholder-tag mr-2">Entwurf</span>Diese Seite enthält Platzhalter und ist für Suchmaschinen noch gesperrt.</p>
         </div>

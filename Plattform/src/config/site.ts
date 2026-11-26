@@ -5,6 +5,8 @@ export interface PageEntry {
   title: string;
   /** false = Entwurf/Platzhalter: noindex und nicht in der Sitemap. */
   indexable: boolean;
+  /** true = Funktionsseite (Kalender, Buchung, Konto): noindex, aber kein «Entwurf»-Hinweis (enthält keine Platzhalter). */
+  private?: boolean;
 }
 
 export const mainNav = [

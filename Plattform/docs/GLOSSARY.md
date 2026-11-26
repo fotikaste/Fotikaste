@@ -45,3 +45,12 @@ Ergänzt `Dokumente/GLOSSAR.md` (Fotobox). Je Begriff: Was? · Wozu? · Wo bei u
 | **Trigger** | Regel in der Datenbank, die bei Änderungen automatisch ausgeführt wird | Protokoll unveränderlich |
 | **Reservierung (Speicher)** | Platz wird vor dem Upload verbindlich vorgemerkt | Schutz vor Überschreiten der 8 GB |
 | **run_worker_first** | Cloudflare-Einstellung: nur bestimmte Adressen laufen durch den Worker | /api, /admin |
+| **Hold (Reservierung)** | Termin wird für kurze Zeit vorgemerkt, damit niemand anderes ihn während der Eingabe wegschnappt | 15 Min. bei der Buchung |
+| **Snapshot** | Kopie der Werte zum Zeitpunkt der Buchung | Positionen und Preise einer Buchung ändern sich nie mehr |
+| **Magic Link** | Anmeldung ohne Passwort über einen einmaligen Link per E-Mail | Kundenkonto |
+| **Hash (SHA-256)** | Einweg-Fingerabdruck eines Werts; aus dem Hash kann man den Wert nicht zurückrechnen | Links und Sitzungen werden nur so gespeichert |
+| **Outbox** | Warteschlange für E-Mails: erst speichern, dann senden | keine doppelten oder verlorenen Mails |
+| **dedupe_key** | Eindeutiger Schlüssel pro Mail, verhindert Duplikate | z. B. «buchung:<id>:eingang» |
+| **Haversine** | Formel für die Luftlinie zwischen zwei Punkten auf der Erde | Fahrtkosten-Schätzung |
+| **HttpOnly-Cookie** | Cookie, das Skripte auf der Seite nicht lesen können | Sitzung im Kundenkonto |
+| **Anfragebegrenzung (429)** | Zu viele Anfragen in kurzer Zeit werden abgewiesen | Schutz vor Missbrauch der Buchung |
