@@ -91,3 +91,7 @@ Wird ausschliesslich für Fotikaste genutzt → teilt keine Gratiskontingente mi
 
 ## ADR-028 Sperre ab 90 % der App-Grenze — *angenommen*
 Fotospeicher: Uploads gesperrt ab 90 % von 8 GB (= 7.2 GB). Kontingente: Sperre kostenrelevanter Vorgänge ab 90 % der Gratisgrenze.
+
+## ADR-029 Keine Onlinezahlung — *angenommen (Benutzer, 2026-11-26)*
+Ersetzt ADR-021 (100 % auf Rechnung vor dem Event): Bezahlung wird nach der Buchung per E-Mail oder persönlich vereinbart.
+Keine Zahlungsfunktion, keine Anzahlung/Kaution online. Buchung trotzdem verbindlich. Preisvorschlag und offene Punkte: `PREISE.md`.
