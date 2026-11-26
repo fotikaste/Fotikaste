@@ -113,3 +113,12 @@ Ersetzt den Rechnungs-Teil der ursprünglichen Phase 6 (PDF-Rechnung, Storno/Gut
 Keine Bankdaten, keine Rechnungen, keine Erinnerungen, keine Anzahlung/Kaution. Erfasst wird nur von Hand: Zahlungseingang, Aufwand, Ausgaben,
 Anschaffungen, Fixkosten. Daraus: Wirtschaftlichkeit (Deckungsbeitrag, Ergebnis, Stundenlohn, Break-even) und CSV für Treuhand.
 Grund: Sicherheit (keine Zahlungsdaten), weniger Fehlerquellen, persönlicher Kontakt. Kalkulatorische Ansätze bleiben leer, bis der Inhaber sie festlegt.
+
+## ADR-033 Name «Fotikaste» — *angenommen (Inhaber, 2026-11-26)*
+Der Arbeitsname wird definitiv. Das Verwechslungsrisiko mit der CH-Marke «Event Fotibox» (Nr. 827082, Klasse 41, Bettwiesen TG) wird bewusst
+in Kauf genommen (BRAND_CHECK.md). Domain fotikaste.ch kauft der Inhaber selbst. Empfehlung bleibt: vor grösserer Werbung Fachperson fragen.
+
+## ADR-034 Veröffentlichung über privates GitHub-Repository — *angenommen (Inhaber, 2026-11-26)*
+GitHub Actions: Tests bei jeder Änderung; Veröffentlichung nur von main, nach grünen Tests, nach Freigabe in der Umgebung «produktion» und nur bei
+vollständiger Konfiguration (database_id, ACCESS_AUD, ENVIRONMENT=production). «Webseite aktualisieren» online per workflow_dispatch mit Token,
+das nur Actions dieses Repositorys starten darf. Wöchentliche Datensicherung als privates Artefakt (90 Tage) + D1 Time Travel.

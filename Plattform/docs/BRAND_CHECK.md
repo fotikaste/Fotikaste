@@ -28,3 +28,6 @@ eine Fachperson oder die kostenpflichtige Recherche des IGE beiziehen. Nichts ge
   Schreibweise ohne «e» muss man erklären.
 - Empfehlung: vor Domainkauf eine **Ähnlichkeitsrecherche** (IGE-Recherche oder Fachperson) für beide Namen in Klasse 41.
   Bis dahin bleibt «Fotikaste» Arbeitsname, technisch zentral änderbar (`src/config/brand.ts`).
+
+## Entscheid (2026-11-26)
+Inhaber behält **Fotikaste** und nimmt das Risiko bewusst in Kauf (ADR-033). `brand.isWorkingName = false`.

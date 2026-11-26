@@ -69,3 +69,9 @@ Ergänzt `Dokumente/GLOSSAR.md` (Fotobox). Je Begriff: Was? · Wozu? · Wo bei u
 | **Kalkulatorische Kosten** | Kosten, für die kein Geld fliesst, die aber einen Wert haben | eigene Arbeitszeit, eigenes Auto |
 | **Break-even** | Punkt, ab dem die Einnahmen alle Kosten decken | «nötige Buchungen pro Jahr» |
 | **CSV** | einfache Tabellendatei, die Excel und Treuhand-Programme öffnen | Export Einnahmen/Ausgaben |
+| **GitHub Actions** | Gratis-Automatik von GitHub, die bei Änderungen Befehle ausführt | Tests, Veröffentlichen, Datensicherung |
+| **Repository** | Ablage des Programmcodes mit allen Versionen | privates Repository «fotikaste» auf GitHub |
+| **CSP (Content Security Policy)** | Regel an den Browser, von wo Skripte und Bilder geladen werden dürfen | verhindert eingeschleusten Code |
+| **Anonymisieren** | Personendaten so entfernen, dass niemand mehr erkennbar ist | Löschbegehren nach DSG |
+| **Time Travel (D1)** | Cloudflare kann die Datenbank auf einen früheren Zeitpunkt zurücksetzen | Notfall-Wiederherstellung |
+| **Nameserver** | Sagt dem Internet, wer für eine Domain zuständig ist | beim Registrar auf Cloudflare stellen |

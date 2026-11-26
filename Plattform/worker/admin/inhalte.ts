@@ -130,7 +130,12 @@ export async function speichereFakten(env: Env, u: AdminUser, form: Map<string, 
 export async function aktualisiereWebseite(env: Env, u: AdminUser, fetcher: typeof fetch = fetch): Promise<Ok | Fehler> {
   if (!env.REBUILD_HOOK_URL || !env.REBUILD_SECRET) return f(503, "nicht_eingerichtet", "«Webseite aktualisieren» ist noch nicht eingerichtet.");
   try {
-    const r = await fetcher(env.REBUILD_HOOK_URL, { method: "POST", headers: { Authorization: `Bearer ${env.REBUILD_SECRET}` } });
+    // Online: GitHub «workflow_dispatch» (Workflow webseite.yml, Zweig main). Lokal: tools/webseite-dienst.mjs ignoriert den Inhalt.
+    const r = await fetcher(env.REBUILD_HOOK_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.REBUILD_SECRET}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "fotikaste-admin", "Content-Type": "application/json" },
+      body: JSON.stringify({ ref: "main" }),
+    });
     if (!r.ok) return f(502, "hook", `Der Dienst zum Erzeugen der Webseite hat abgelehnt (${r.status}).`);
   } catch {
     return f(502, "hook", "Der Dienst zum Erzeugen der Webseite ist nicht erreichbar.");

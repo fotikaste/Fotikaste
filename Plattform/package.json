@@ -16,7 +16,8 @@
     "check:worker": "tsc -p worker",
     "db:lokal": "wrangler d1 migrations apply DB --local && wrangler d1 execute DB --local --command \"INSERT OR IGNORE INTO admin_users (email, role) VALUES ('inhaber@example.ch', 'owner')\" && wrangler d1 execute DB --local --command \"DELETE FROM rate_limits\"",
     "dev:worker": "npm run db:lokal && wrangler dev --port 8788 --ip 127.0.0.1",
-    "inhalte": "node tools/inhalte-export.mjs"
+    "inhalte": "node tools/inhalte-export.mjs",
+    "sicherung:test": "node tools/sicherung-test.mjs"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "5.3.0",

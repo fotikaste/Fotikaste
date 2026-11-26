@@ -1,0 +1,38 @@
+# «Webseite aktualisieren» aus dem Admin: erzeugt die statischen Seiten mit den aktuellen Inhalten aus der Datenbank neu.
+# Ausgelöst vom Worker über die GitHub-Schnittstelle (workflow_dispatch) mit einem Token, das NUR diesen Workflow starten darf.
+name: Webseite aktualisieren
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: webseite
+  cancel-in-progress: false   # Nachfolgende Läufe warten; der letzte enthält alle Änderungen
+
+defaults:
+  run:
+    working-directory: Plattform
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: produktion
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm, cache-dependency-path: Plattform/package-lock.json }
+      - run: npm ci
+      - run: node tools/inhalte-export.mjs --remote
+      - run: npx astro build
+        env: { PUBLIC_TURNSTILE_SITE_KEY: "${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}" }
+      - run: npx wrangler deploy
+      - run: node tools/inhalte-export.mjs --remote --zeitstempel

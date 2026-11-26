@@ -1,4 +1,46 @@
 ---
-import SimplePage from "../layouts/SimplePage.astro";
+import ContentLayout from "../layouts/ContentLayout.astro";
+import Offen from "../components/Offen.astro";
+import { brand } from "../config/brand";
+import { packages, terms } from "../data/content";
+const chf = (n: number) => new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(n);
+const d = terms.delivery;
 ---
-<SimplePage path="/agb" lead="ENTWURF – nicht rechtlich geprüft. Die AGB regeln später Buchung, Zahlung vor dem Event, Stornierung und Haftung." tag="Entwurf" />
+<ContentLayout path="/agb" eyebrow="Rechtliches" heading="Allgemeine Geschäftsbedingungen" description={`Bedingungen für die Miete einer Fotobox bei ${brand.name}: Buchung, Preise, Zahlung, Stornierung, Lieferung, Haftung und Online-Galerie.`}>
+  <div class="rechtstext">
+    <p class="placeholder-tag">ENTWURF – nicht rechtlich geprüft</p>
+
+    <h2>1. Geltung</h2>
+    <p>Diese Bedingungen gelten für die Miete einer Fotobox von {brand.name} (nachfolgend «wir») durch Kundinnen und Kunden (nachfolgend «Sie»). Abweichungen gelten nur, wenn wir sie schriftlich bestätigen (E-Mail genügt).</p>
+
+    <h2>2. Buchung</h2>
+    <p>Mit «Verbindlich buchen» schliessen Sie einen verbindlichen Mietvertrag ab, sobald wir die Buchung per E-Mail bestätigen. Bei einer Anfrage (z. B. kurzfristig oder ausserhalb des Liefergebiets) entsteht der Vertrag erst mit unserer Bestätigung; bis dahin ist der Termin für Sie reserviert. Lehnen wir eine Anfrage ab, entstehen Ihnen keine Kosten.</p>
+
+    <h2>3. Preise</h2>
+    <p>Es gelten die Preise zum Zeitpunkt der Buchung in Schweizer Franken: {packages.map((p, i) => <>{i > 0 && ", "}{p.name} {chf(p.priceChf)}</>)}. Die Miete gilt für bis zu {terms.includedDays} Tage; jeder weitere Tag kostet {chf(terms.extraDayChf)}. Lieferung und Abholung kosten zusammen {chf(d.baseChf)} bis {d.includedKm} km ab {d.origin}, darüber {chf(d.perKmChf)} pro km (einfache Strecke). Die geschätzte Distanz wird bei der Buchung angezeigt; massgebend ist der Betrag in der Bestätigung.
+      Mehrwertsteuer: <Offen wert={null} was="MWST-Pflicht klären" /></p>
+
+    <h2>4. Zahlung</h2>
+    <p>Online wird nichts bezahlt. Wir nehmen nach der Buchung persönlich Kontakt mit Ihnen auf und vereinbaren Betrag, Zahlungsart und Zeitpunkt. <Offen wert={null} was="Zahlung vor oder nach dem Anlass festlegen" /></p>
+
+    <h2>5. Stornierung</h2>
+    <p>Die Buchung ist nicht stornierbar. Haben Sie die Option «stornierbar» ({chf(terms.flexCancelChf)}) gebucht, können Sie bis {terms.flexCancelDays} Tage vor dem Anlass kostenlos absagen; danach ist keine kostenlose Absage mehr möglich. <Offen wert={null} was="Folgen einer Absage ohne Option (ganzer Preis oder Anteil)" /></p>
+
+    <h2>6. Lieferung, Aufbau, Abholung</h2>
+    <p>Wir liefern, bauen auf und holen die Fotobox zum vereinbarten Zeitpunkt ab. Bei Selbstabholung vereinbaren wir Ort und Zeit. Sie sorgen für einen trockenen, ebenen Standplatz, einen Stromanschluss in der Nähe und freien Zugang. Kann die Fotobox aus Gründen, die bei Ihnen liegen, nicht aufgestellt werden, bleibt der Mietpreis geschuldet.</p>
+
+    <h2>7. Sorgfalt und Haftung</h2>
+    <p>Sie behandeln die Fotobox sorgfältig und schützen sie vor Nässe, Diebstahl und unsachgemässer Bedienung. Verändern oder öffnen Sie das Gerät nicht. Schäden und Verluste während der Mietdauer melden Sie uns sofort. <Offen wert={null} was="Haftung für Schäden (Betrag, Versicherung, Selbstbehalt)" />
+      Wir haften nicht für Ausfälle durch höhere Gewalt oder Ursachen ausserhalb unseres Einflusses; bei einem Ausfall der Fotobox, den wir zu vertreten haben, erstatten wir höchstens den Mietpreis.</p>
+
+    <h2>8. Fotos und Online-Galerie</h2>
+    <p>Sie informieren Ihre Gäste, dass eine Fotobox im Einsatz ist und dass Fotos auf Wunsch über einen persönlichen Link heruntergeladen werden können. Fotos bleiben 30 Tage nach dem Anlass online und werden danach automatisch gelöscht. Die Originalbilder bleiben bei uns auf der Fotobox; eine Herausgabe vereinbaren wir auf Wunsch separat. Wir verwenden Ihre Fotos nicht für Werbung, ausser Sie stimmen ausdrücklich zu.</p>
+
+    <h2>9. Datenschutz</h2>
+    <p>Wie wir Ihre Daten bearbeiten, steht in der <a href="/datenschutz" class="link-underline">Datenschutzerklärung</a>.</p>
+
+    <h2>10. Recht und Gerichtsstand</h2>
+    <p>Es gilt Schweizer Recht. Gerichtsstand ist <Offen wert={null} was="Gerichtsstand (z. B. Sitz des Inhabers)" />, soweit das Gesetz nichts anderes zwingend vorsieht.</p>
+    <p class="klein">Version: ENTWURF-2026-11</p>
+  </div>
+</ContentLayout>

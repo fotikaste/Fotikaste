@@ -1,4 +1,54 @@
 ---
-import SimplePage from "../layouts/SimplePage.astro";
+import ContentLayout from "../layouts/ContentLayout.astro";
+import Offen from "../components/Offen.astro";
+import { brand } from "../config/brand";
+const o = brand.owner, c = brand.contact;
 ---
-<SimplePage path="/datenschutz" lead="ENTWURF – nicht rechtlich geprüft. Die Datenschutzerklärung nennt später alle Auftragsbearbeiter (u. a. Cloudflare, Resend), Speicherorte und Löschfristen." tag="Entwurf" />
+<ContentLayout path="/datenschutz" eyebrow="Rechtliches" heading="Datenschutzerklärung" description={`Wie ${brand.name} Personendaten bei Buchung, Kundenkonto und Online-Galerie bearbeitet – nach dem Schweizer Datenschutzgesetz.`}>
+  <div class="rechtstext">
+    <p class="placeholder-tag">ENTWURF – nicht rechtlich geprüft</p>
+    <p>Diese Erklärung beschreibt, welche Personendaten wir bearbeiten, wozu und wie lange. Massgebend ist das Schweizer Datenschutzgesetz (DSG).</p>
+
+    <h2>1. Verantwortlich</h2>
+    <p>{brand.name}, <Offen wert={o.name} was="Inhaber" />, {c.address ? `${c.address.street}, ${c.address.postalCode} ${c.address.city}` : <Offen wert={null} was="Adresse" />}, E-Mail <Offen wert={c.email} was="E-Mail" /></p>
+
+    <h2>2. Welche Daten wir bearbeiten</h2>
+    <ul>
+      <li><strong>Buchung und Anfrage:</strong> Name, allenfalls Firma, E-Mail, Telefon, Adresse des Eventorts, Datum, gewähltes Paket, Gästezahl und Ihre Nachricht.</li>
+      <li><strong>Kundenkonto:</strong> Ihre E-Mail-Adresse und ein Sitzungscookie, solange Sie angemeldet sind. Es gibt kein Passwort; die Anmeldung erfolgt über einen einmaligen Link per E-Mail.</li>
+      <li><strong>Zahlung:</strong> Online wird nichts bezahlt. Wir speichern keine Bank- oder Kartendaten, nur ob und wann eine persönlich vereinbarte Zahlung eingegangen ist.</li>
+      <li><strong>Fotos aus der Fotobox:</strong> Nur Fotos, für die ein Gast den QR-Code nutzt, werden in die Online-Galerie hochgeladen (Web-Version und Vorschau, keine Originale).</li>
+      <li><strong>Technische Daten:</strong> Zum Schutz vor Missbrauch verarbeiten wir die IP-Adresse kurzfristig, z. B. für die Begrenzung der Anfragen (höchstens 24 Stunden) und für die Bot-Prüfung bei Formularen.</li>
+    </ul>
+
+    <h2>3. Zwecke</h2>
+    <p>Wir bearbeiten die Daten, um Ihre Buchung abzuwickeln (Bestätigung, Lieferung, Abholung, Kontaktaufnahme zur Zahlung), um die Online-Galerie bereitzustellen, um die Plattform vor Missbrauch zu schützen und um unsere gesetzlichen Aufbewahrungspflichten zu erfüllen. Wir verwenden keine Analyse-, Tracking- oder Werbedienste.</p>
+
+    <h2>4. Wer die Fotos sieht</h2>
+    <p>Ein Foto ist nur über den persönlichen Link aus dem QR-Code erreichbar; dieser lässt sich nicht erraten. Die Veranstalterin oder der Veranstalter sieht die Fotos ihres bzw. seines Anlasses im Kundenkonto. Die Fotos sind für Suchmaschinen gesperrt.</p>
+
+    <h2>5. Auftragsbearbeiter und Bekanntgabe ins Ausland</h2>
+    <ul>
+      <li><strong>Cloudflare, Inc.</strong> (USA): Betrieb der Webseite, Datenbank, privater Fotospeicher (Speicherort EU), Bot-Schutz (Turnstile), Zugangsschutz der Administration.</li>
+      <li><strong>Resend</strong> (USA): Versand der E-Mails (Buchungsbestätigung, Anmeldelink).</li>
+    </ul>
+    <p>Diese Anbieter können Daten in den USA bearbeiten. <span class="placeholder-tag">noch offen: Rechtsgrundlage der Bekanntgabe (z. B. Swiss-U.S. Data Privacy Framework oder Standardvertragsklauseln) je Anbieter prüfen und hier nennen</span></p>
+
+    <h2>6. Aufbewahrung</h2>
+    <ul>
+      <li>Fotos in der Online-Galerie: automatisch gelöscht 30 Tage nach dem Anlass (oder früher, wenn die Galerie geschlossen wird).</li>
+      <li>Anmeldelinks: höchstens 15 Minuten gültig, nach einem Tag gelöscht. Sitzungen im Kundenkonto: höchstens 30 Tage.</li>
+      <li>Gesendete E-Mails im Postausgang: 180 Tage.</li>
+      <li>Buchungs- und Zahlungsdaten: so lange, wie es die Aufbewahrungspflichten für Geschäftsunterlagen verlangen (in der Regel 10 Jahre). Danach werden sie gelöscht oder anonymisiert.</li>
+    </ul>
+
+    <h2>7. Cookies</h2>
+    <p>Wir setzen nur ein technisch notwendiges Cookie, wenn Sie sich im Kundenkonto anmelden (Sitzung). Es gibt keine Cookies für Analyse oder Werbung. Bei Formularen kann der Bot-Schutz von Cloudflare (Turnstile) technische Merkmale Ihres Browsers prüfen.</p>
+
+    <h2>8. Ihre Rechte</h2>
+    <p>Sie können Auskunft über Ihre Daten verlangen, falsche Daten berichtigen und Daten löschen lassen, soweit keine Aufbewahrungspflicht entgegensteht. Schreiben Sie uns dazu an <Offen wert={c.email} was="E-Mail" />. Sie können sich zudem beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB) beschweren.</p>
+
+    <h2>9. Änderungen</h2>
+    <p>Wir passen diese Erklärung an, wenn sich unsere Bearbeitung ändert. Es gilt die hier veröffentlichte Fassung. Stand: <Offen wert={null} was="Datum der Veröffentlichung" /></p>
+  </div>
+</ContentLayout>
