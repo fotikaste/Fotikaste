@@ -4,13 +4,12 @@
  */
 import type { Env } from "./env";
 import { verlangeRecht } from "./lib/auth";
-import { esc, fehler, html, json, sameOrigin, withSecurityHeaders } from "./lib/http";
+import { fehler, json, sameOrigin, withSecurityHeaders } from "./lib/http";
 import { protokolliere } from "./lib/audit";
 import { verbrauch } from "./lib/usage";
-import { adminSeite } from "./admin/seite";
 import { EINSTELLUNGEN } from "./admin/einstellungen";
-import { bestaetige, lehneAb, listeBuchungen, listeOutbox, type BuchungZeile } from "./admin/buchungen";
-import type { Outboxzeile } from "./admin/seite";
+import { bestaetige, lehneAb, listeBuchungen } from "./admin/buchungen";
+import { adminRoute } from "./routen/admin";
 import { istFehler } from "./lib/buchung";
 import { oeffentlicheRoute } from "./routen/oeffentlich";
 
@@ -25,15 +24,8 @@ export async function handle(request: Request, env: Env): Promise<Response> {
   const oeffentlich = await oeffentlicheRoute(request, env, pfad);
   if (oeffentlich) return oeffentlich;
 
-  if (pfad === "/admin" && request.method === "GET") {
-    const u = await verlangeRecht(request, env, "admin:view");
-    if (u instanceof Response) return u;
-    const { messwerte, speicher } = await verbrauch(env);
-    const buchungen: BuchungZeile[] = u.permissions.includes("bookings:read") ? await listeBuchungen(env) : [];
-    const outbox = (u.permissions.includes("bookings:read") ? await listeOutbox(env) : []) as unknown as Outboxzeile[];
-    // Ohne Recht «usage:read» (Mitarbeiter) keine Verbrauchszahlen anzeigen
-    return html(u.permissions.includes("usage:read") ? adminSeite(u, messwerte, speicher, buchungen, outbox) : adminSeite(u, [], { ...speicher, belegt: 0, reserviert: 0 }, buchungen, outbox));
-  }
+  const admin = await adminRoute(request, env, pfad);
+  if (admin) return admin;
 
   if (pfad === "/api/admin/buchungen" && request.method === "GET") {
     const u = await verlangeRecht(request, env, "bookings:read");
@@ -41,22 +33,15 @@ export async function handle(request: Request, env: Env): Promise<Response> {
     return json({ buchungen: await listeBuchungen(env, 200) });
   }
 
-  // Anfrage bestätigen/ablehnen: als JSON (API) oder als Formular aus der Admin-Seite (Weiterleitung zurück)
-  const aktion = pfad.match(/^\/(api\/)?admin\/buchungen\/([0-9a-f]{32})\/(bestaetigen|ablehnen)$/);
+  // Anfrage bestätigen/ablehnen als JSON-API (Formulare der Admin-Seiten: routen/admin.ts)
+  const aktion = pfad.match(/^\/api\/admin\/buchungen\/([0-9a-f]{32})\/(bestaetigen|ablehnen)$/);
   if (aktion && request.method === "POST") {
     const u = await verlangeRecht(request, env, "bookings:write");
     if (u instanceof Response) return u;
-    const [, api, id, was] = aktion;
-    let fahrt: unknown;
-    if (api) fahrt = ((await request.json().catch(() => ({}))) as { fahrtRappen?: unknown }).fahrtRappen;
-    else {
-      const t = (await request.formData()).get("fahrt_chf");
-      fahrt = typeof t === "string" && t.trim() !== "" ? Math.round(Number(t.replace(",", ".")) * 100) : undefined;
-    }
+    const [, id, was] = aktion;
+    const fahrt = ((await request.json().catch(() => ({}))) as { fahrtRappen?: unknown }).fahrtRappen;
     const r = was === "bestaetigen" ? await bestaetige(env, u, id!, fahrt, url.origin) : await lehneAb(env, u, id!);
-    if (api) return istFehler(r) ? fehler(r.status, r.code, r.text) : json(r);
-    if (istFehler(r)) return html(`<!doctype html><meta charset="utf-8"><title>Fehler</title><p>${esc(r.text)}</p><p><a href="/admin">Zurück</a></p>`, r.status);
-    return withSecurityHeaders(new Response(null, { status: 303, headers: { Location: "/admin" } }));
+    return istFehler(r) ? fehler(r.status, r.code, r.text) : json(r);
   }
 
   if (pfad === "/api/admin/me" && request.method === "GET") {

@@ -2,6 +2,12 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
+## 2026-11-26 – Phase 4 umgesetzt (Administration)
+- Admin mit Übersicht, Buchungen (Detail, Storno, Termin ändern, Positionen, Zahlung, Kontakt, Notizen), Kalender (Sperren), Kunden, Preise
+  (Pakete, Konditionen, Liefergebiete), Inhalte (FAQ mit Platzhaltern, Leistungen, technische Angaben), Einstellungen → `PHASE4_BERICHT.md`.
+- Entscheid ADR-030: Inhalte in D1, Webseite bleibt statisch, Knopf «Webseite aktualisieren» (lokal geprüft: 4 s; online ab Phase 7).
+- Tests: 96 Vitest, 74 Playwright grün. Fotobox-Software unverändert.
+
 ## 2026-11-26 – Phase 3 umgesetzt (Buchung)
 - Migration 0002: Pakete, Liefergebiete, PLZ-Tabelle, Ressourcen, Kunden, Buchungen mit Positions-Snapshot, Zahlungsplan, allocation_days (UNIQUE),
   Magic Links, Sitzungen, Outbox. Serverseitige Preise, Hold 15 Min., Direktbuchung + Anfrage-Weg, Admin bestätigen/ablehnen,
@@ -51,4 +57,4 @@ Cloudflare-Architektur, D1-Modell, R2-Migrationsplan, Markenprüfung, Wettbewerb
 Erste Analyse (Vercel/Supabase, überholt).
 
 ## Nächster Schritt
-Sichtprüfung der Buchungsseiten, Merge nach `main`, dann Phase 4 (Administration).
+Sichtprüfung Admin, Merge nach `main`, dann Phase 5 (Fotobox-Integration).

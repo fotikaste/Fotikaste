@@ -52,7 +52,10 @@ test("Buchung A–Z: Datum, Preis vom Server, Reservierung, Kontakt, Bestätigun
   expect((await (await request.get(`/api/verfuegbarkeit?von=${tag}&bis=${tag}`)).json()).belegt).toEqual([tag]);
   // Admin sieht die Buchung und die zurückgehaltene Mail (Testmodus)
   await page.goto("/admin");
-  await expect(page.getByText(nummer, { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "E-Mail-Ausgang" })).toBeVisible();
+  await page.goto(`/admin/buchungen?q=${nummer}&zeit=alle`);
+  await expect(page.getByRole("link", { name: nummer })).toBeVisible();
+  await page.goto("/admin");
   await expect(page.getByText("zurückgehalten (Testmodus)").first()).toBeVisible();
   await page.screenshot({ path: `test-results/ansicht-${info.project.name}-admin.png`, fullPage: true });
 });

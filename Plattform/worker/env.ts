@@ -13,4 +13,7 @@ export interface Env {
   MAIL_TEST_RECIPIENT?: string;
   MAIL_FROM?: string;
   RESEND_API_KEY?: string;
+  // «Webseite aktualisieren» (Phase 4): Adresse des Dienstes, der die statischen Seiten neu erzeugt, und gemeinsamer Schlüssel.
+  REBUILD_HOOK_URL?: string;
+  REBUILD_SECRET?: string;
 }
