@@ -28,7 +28,7 @@ test("Buchung im Admin: suchen, öffnen, Notiz speichern", async ({ page, reques
     const t = new Date(Date.parse(heute) + (60 + Math.floor(Math.random() * 420)) * 86_400_000).toISOString().slice(0, 10);
     if ((await (await request.get(`/api/verfuegbarkeit?von=${t}&bis=${t}`)).json()).belegt.length === 0) tag = t;
   }
-  const o = { Origin: "http://127.0.0.1:8788" };
+  const o = { Origin: `http://127.0.0.1:${process.env.PW_PORT ?? "8788"}` };
   const h = await request.post("/api/buchung/halten", { headers: o, data: { wahl: { paket: "essential", event: tag, start: tag, ende: tag, lieferung: false, stornierbar: false } } });
   expect(h.status()).toBe(201);
   const b = await request.post("/api/buchung/abschliessen", { headers: o, data: { halteId: (await h.json()).halteId, kontakt: { name: "Admin Test", email: `admin.e2e.${Date.now()}@example.ch`, telefon: "+41 79 000 00 00", agb: true } } });

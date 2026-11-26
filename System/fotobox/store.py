@@ -47,7 +47,11 @@ STANDARD_EINSTELLUNGEN = {
     "sim_druck_dauer_s": 3,
     # Online-Galerie (Fotos fürs Handy per QR-Code)
     "galerie_modus": "nachfrage",      # aus | nachfrage (Gast entscheidet) | immer
-    "galerie_anbieter": "simuliert",   # simuliert | r2 (Cloudflare R2)
+    "galerie_anbieter": "simuliert",   # simuliert | r2 (Cloudflare R2, alt) | plattform (Fotikaste-Plattform, Phase 5)
+    "plattform_url": "",               # z. B. https://fotikaste.ch (lokal zum Testen: http://<laptop>:8788)
+    "plattform_token": "",             # Geräte-Token aus dem Plattform-Admin (geheim, nie an den Browser)
+    "plattform_event_id": "",          # zuletzt bekanntes aktives Event (für Fotos, die offline entstehen)
+    "plattform_event_name": "",
     # Cloudflare R2 – Werte aus dem Cloudflare-Dashboard (Geheimnis nie anzeigen/zurückgeben!)
     "r2_konto_id": "",
     "r2_bucket": "",

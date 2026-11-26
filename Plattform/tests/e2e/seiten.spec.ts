@@ -37,7 +37,7 @@ test("Unbekannte Adresse liefert 404", async ({ page }) => {
 });
 
 test("Noch nicht gebaute private Bereiche liefern 404 (Admin: siehe admin.spec.ts)", async ({ request }) => {
-  for (const p of ["/api/device/v1/config", "/admin/gibts-nicht", "/api/konto/gibts-nicht"]) {
+  for (const p of ["/api/gibts-nicht", "/admin/gibts-nicht", "/api/konto/gibts-nicht"]) {
     const res = await request.get(p);
     expect(res.status()).toBe(404);
   }

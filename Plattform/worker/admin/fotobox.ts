@@ -44,6 +44,8 @@ Bei Verlust oder Diebstahl der Fotobox hier sofort widerrufen.</p></div>` : ""}
 
 export async function geraetAnlegen(env: Env, u: AdminUser, name: string): Promise<{ name: string; token: string } | Fehler> {
   if (name.length < 2 || name.length > 60) return f(400, "name", "Name 2–60 Zeichen.");
+  // Gleicher Name = vermutlich doppelt abgeschickt (z. B. Seite neu geladen) → kein zweites Gerät
+  if (await env.DB.prepare("SELECT 1 FROM devices WHERE name = ?1 COLLATE NOCASE").bind(name).first()) return f(409, "name", "Ein Gerät mit diesem Namen gibt es schon. Für ein neues Token beim Gerät «Neues Token» wählen.");
   const id = zufallsId();
   await env.DB.prepare("INSERT INTO devices (id, name) VALUES (?1, ?2)").bind(id, name).run();
   const token = await neuesGeraeteToken(env, id);

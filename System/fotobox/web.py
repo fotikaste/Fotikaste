@@ -29,8 +29,9 @@ log = logging.getLogger("fotobox")
 
 # Diese Einstellungen darf der Betreiber über die Betriebsseite ändern (mit Typ).
 # Die PIN gehört nicht dazu – sie hat eine eigene Funktion, die die alte PIN verlangt.
-GEHEIM = {"betreiber_pin", "r2_geheimnis"}   # werden nie an den Browser zurückgegeben
-AENDERBAR = {k: type(v) for k, v in STANDARD_EINSTELLUNGEN.items() if k not in GEHEIM}
+GEHEIM = {"betreiber_pin", "r2_geheimnis", "plattform_token"}   # werden nie an den Browser zurückgegeben
+NUR_INTERN = {"plattform_event_id", "plattform_event_name", "plattform_url"}   # nur über eigene Prüfungen änderbar
+AENDERBAR = {k: type(v) for k, v in STANDARD_EINSTELLUNGEN.items() if k not in GEHEIM | NUR_INTERN}
 ABMELDEN_NACH_S = 15 * 60  # automatische Abmeldung nach 15 Minuten ohne Aktivität
 
 
@@ -253,6 +254,7 @@ def erstelle_app(box: Fotobox, wlan=None) -> Flask:
         v = box.store.aktive_veranstaltung()
         e = box.store.einstellungen()
         e["r2_geheimnis_gesetzt"] = bool(e.get("r2_geheimnis"))
+        e["plattform_token_gesetzt"] = bool(e.get("plattform_token"))
         for k in GEHEIM:
             e.pop(k, None)
         return jsonify({
@@ -291,6 +293,8 @@ def erstelle_app(box: Fotobox, wlan=None) -> Flask:
             try:
                 wert = typ(wert)
             except (TypeError, ValueError):
+                return jsonify({"fehler": f"ungültig: {k}"}), 400
+            if k == "galerie_anbieter" and wert not in ("simuliert", "r2", "plattform"):
                 return jsonify({"fehler": f"ungültig: {k}"}), 400
             if k == "thema" and wert not in THEMEN:
                 return jsonify({"fehler": f"ungültig: {k}"}), 400
@@ -449,6 +453,45 @@ def erstelle_app(box: Fotobox, wlan=None) -> Flask:
             box.store.setze_einstellung("r2_geheimnis", str(d["r2_geheimnis"]).strip())
         log.info("Betreiber: Zugangsdaten Cloudflare R2 gespeichert")
         return jsonify({"ok": True})
+
+    @app.post("/api/betrieb/plattform")
+    def b_plattform():
+        """Adresse der Plattform und Geräte-Token speichern. Leeres Token-Feld lässt das bisherige stehen."""
+        import re
+        from urllib.parse import urlsplit
+        d = request.get_json(silent=True) or {}
+        url = str(d.get("plattform_url", "")).strip().rstrip("/")
+        token = str(d.get("plattform_token", "")).strip()
+        teile = urlsplit(url) if url else None
+        lokal = bool(teile and (teile.hostname in ("127.0.0.1", "localhost") or re.fullmatch(r"(10|192\.168|172\.(1[6-9]|2\d|3[01]))\..*", teile.hostname or "")))
+        if url and not (teile and teile.hostname and (teile.scheme == "https" or (teile.scheme == "http" and lokal)) and not teile.path):
+            return jsonify({"fehler": "plattform_format", "text": "Adresse: https://… ohne Pfad (http nur für Tests im eigenen Netz)"}), 400
+        if token and not re.fullmatch(r"[0-9a-f]{64}", token):
+            return jsonify({"fehler": "plattform_format", "text": f"Geräte-Token: 64 Zeichen 0–9 und a–f (eingegeben: {len(token)})"}), 400
+        if "plattform_url" in d:
+            box.store.setze_einstellung("plattform_url", url)
+        if token:
+            box.store.setze_einstellung("plattform_token", token)
+        log.info("Betreiber: Zugang Fotikaste-Plattform gespeichert")
+        return jsonify({"ok": True})
+
+    @app.post("/api/betrieb/plattform/testen")
+    def b_plattform_testen():
+        from .galerie import PlattformGalerie
+        e = box.store.einstellungen()
+        g = PlattformGalerie(e["plattform_url"], e["plattform_token"], merken=box.store.setze_einstellung, zeitlimit_s=10)
+        if not g.eingerichtet:
+            return jsonify({"ok": False, "schritte": ["Adresse oder Geräte-Token fehlt"]})
+        try:
+            k = g.konfiguration()
+        except GalerieFehler as f:
+            log.warning("Plattform-Verbindungstest fehlgeschlagen: %s", f)
+            return jsonify({"ok": False, "schritte": [str(f)]})
+        ev = k.get("event")
+        schritte = [f"Verbindung: ok (Gerät «{k['geraet']['name']}»)",
+                    f"Aktives Event: «{ev['name']}»" if ev else "Aktives Event: keins – im Plattform-Admin ein Event aktivieren"]
+        log.info("Plattform-Verbindungstest: %s", "; ".join(schritte))
+        return jsonify({"ok": bool(ev), "schritte": schritte})
 
     @app.post("/api/betrieb/r2/testen")
     def b_r2_testen():
