@@ -7,6 +7,7 @@ import { brand } from "../../src/config/brand";
 import { fehler } from "./http";
 import { sha256, zufallsId } from "./id";
 import { mailEinreihen } from "./mail";
+import { zaehle } from "./usage";
 
 const LINK_MINUTEN = 15;
 const SITZUNG_TAGE = 30;
@@ -74,6 +75,18 @@ export async function meldeAb(env: Env, sessionHash: string, jetzt = new Date())
   await env.DB.prepare("UPDATE sessions SET revoked_at = ?2 WHERE session_hash = ?1").bind(sessionHash, iso(jetzt)).run();
 }
 
+/** Ein Foto für den Veranstalter – nur wenn das Event zu einer Buchung dieses Kunden gehört. */
+export async function kundenFoto(env: Env, customerId: string, photoId: string, variante: "web" | "thumb"): Promise<Response | null> {
+  const p = await env.DB.prepare(
+    `SELECT p.web_key, p.thumb_key FROM photos p JOIN events e ON e.id = p.event_id JOIN bookings b ON b.id = e.booking_id
+     WHERE p.id = ?1 AND p.status = 'ready' AND e.status != 'archived' AND b.customer_id = ?2`,
+  ).bind(photoId, customerId).first<{ web_key: string; thumb_key: string }>();
+  if (!p) return null;
+  const obj = await env.PHOTOS.get(variante === "web" ? p.web_key : p.thumb_key);
+  await zaehle(env, "r2_class_b");
+  return obj ? new Response(obj.body, { headers: { "Content-Type": "image/jpeg", "Cache-Control": "private, max-age=3600", "X-Robots-Tag": "noindex", "X-Content-Type-Options": "nosniff" } }) : null;
+}
+
 /** Nur die Buchungen dieses Kunden – jede Abfrage mit customer_id. */
 export async function buchungenVon(env: Env, customerId: string) {
   const kunde = await env.DB.prepare("SELECT name, email FROM customers WHERE id = ?1").bind(customerId).first<{ name: string; email: string }>();
@@ -85,9 +98,18 @@ export async function buchungenVon(env: Env, customerId: string) {
     .bind(customerId).all<Record<string, unknown> & { booking_id: string }>();
   const plan = await env.DB.prepare("SELECT p.booking_id, p.kind, p.amount_rappen, p.due_on, p.status FROM payment_schedule p JOIN bookings b ON b.id = p.booking_id WHERE b.customer_id = ?1")
     .bind(customerId).all<Record<string, unknown> & { booking_id: string }>();
+  const fotos = await env.DB.prepare(
+    `SELECT e.booking_id, e.name, e.retention_until, p.id FROM events e JOIN bookings b ON b.id = e.booking_id
+     JOIN photos p ON p.event_id = e.id AND p.status = 'ready'
+     WHERE b.customer_id = ?1 AND e.status != 'archived' ORDER BY COALESCE(p.taken_at, p.created_at)`,
+  ).bind(customerId).all<{ booking_id: string; name: string; retention_until: string; id: string }>();
   return {
     kunde,
     buchungen: b.results.map(({ id, ...x }) => ({
+      galerie: (() => {
+        const eigene = fotos.results.filter((f) => f.booking_id === id);
+        return eigene.length ? { name: eigene[0]!.name, online_bis: eigene[0]!.retention_until, fotos: eigene.map((f) => f.id) } : null;
+      })(),
       ...x,
       positionen: pos.results.filter((p) => p.booking_id === id).map(({ booking_id: _, ...p }) => p),
       zahlungsplan: plan.results.filter((p) => p.booking_id === id).map(({ booking_id: _, ...p }) => p),

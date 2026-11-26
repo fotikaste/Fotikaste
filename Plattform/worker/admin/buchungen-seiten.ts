@@ -6,6 +6,7 @@ import { heuteZurich } from "../lib/datum";
 import { esc } from "../lib/http";
 import { chf } from "../lib/preis";
 import { chfFeld, rahmen, STATUS, zeit } from "./layout";
+import { eventFormular } from "./fotobox";
 
 const ZAHLUNG: Record<string, string> = { full: "Gesamtbetrag", deposit: "Anzahlung", balance: "Restbetrag", security_deposit: "Kaution" };
 const ZSTATUS: Record<string, string> = { open: "offen", paid: "bezahlt", waived: "erlassen", refunded: "zurückerstattet" };
@@ -97,6 +98,7 @@ ${b.reason ? `<p class="hinweis">Anfrage-Grund: ${v(b.reason)}</p>` : ""}
 </div>
 ${b.message ? `<h3>Nachricht des Kunden</h3><p class="hinweis">${v(b.message)}</p>` : ""}
 ${aktionen}
+${await eventTeil(env, u, b)}
 <h2>Positionen</h2>
 <div class="scroll" tabindex="0" role="region" aria-label="Positionen"><table><thead><tr><th>Pos.</th><th>Bezeichnung</th><th class="zahl">Menge</th><th class="zahl">Einzelpreis</th><th class="zahl">Betrag</th><th></th></tr></thead>
 <tbody>${positionen}<tr><td></td><td><b>Total</b></td><td></td><td></td><td class="zahl"><b>${esc(chf(b.total_rappen))}</b></td><td></td></tr></tbody></table></div>
@@ -130,6 +132,13 @@ ${schreiben ? `<form method="post" action="${basis}/notiz"><div class="felder"><
 <ul class="verlauf">${hist.results.map((h) => `<li><span class="klein">${esc(zeit(h.at))} · ${esc(h.actor)}</span> – <b>${esc(FELD[h.field] ?? h.field)}</b>: ${h.old_value !== null ? `${esc(wert(h.field, h.old_value))} → ` : ""}${esc(wert(h.field, h.new_value ?? "–"))}</li>`).join("")}</ul>
 <p><a href="/admin/buchungen">← Alle Buchungen</a></p>`;
   return rahmen(u, `Buchung ${b.number}`, "/admin/buchungen", inhalt, url);
+}
+
+async function eventTeil(env: Env, u: AdminUser, b: Record<string, unknown>): Promise<string> {
+  if (!u.permissions.includes("devices:manage") || !["confirmed", "completed"].includes(String(b.status))) return "";
+  const ev = await env.DB.prepare("SELECT id, name FROM events WHERE booking_id = ?1").bind(b.id).first<{ id: string; name: string }>();
+  if (ev) return `<h2>Galerie</h2><p><a href="/admin/events/${esc(ev.id)}">${esc(ev.name)}</a></p>`;
+  return `<h2>Galerie</h2>${await eventFormular(env, String(b.id), `${String(b.contact_name)} ${datumCh(String(b.event_day))}`.slice(0, 80), String(b.event_day))}`;
 }
 
 export { chfFeld };

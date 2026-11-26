@@ -30,7 +30,7 @@ async function keys() {
 
 export async function makeEnv(over: Partial<Env> = {}): Promise<Env> {
   const assets = { fetch: async () => new Response("statische Seite", { status: 200 }) } as unknown as Fetcher;
-  return { DB: await db(), ASSETS: assets, ENVIRONMENT: "test", ACCESS_TEAM_DOMAIN: TEAM, ACCESS_AUD: AUD, ACCESS_JWKS: (await keys()).jwks, ...over };
+  return { DB: await db(), PHOTOS: await fotos(), ASSETS: assets, ENVIRONMENT: "test", ACCESS_TEAM_DOMAIN: TEAM, ACCESS_AUD: AUD, ACCESS_JWKS: (await keys()).jwks, ...over };
 }
 
 const b64url = (data: string | Uint8Array) =>
@@ -51,4 +51,10 @@ export function anfrage(pfad: string, opts: { token?: string; method?: string; b
   if (opts.method && opts.method !== "GET") headers["Origin"] = opts.origin ?? base;
   if (opts.body !== undefined) headers["Content-Type"] = "application/json";
   return new Request(base + pfad, { method: opts.method ?? "GET", headers, body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined });
+}
+
+/** Lokal simulierter privater Fotospeicher (R2) aus derselben Testumgebung. */
+export async function fotos(): Promise<R2Bucket> {
+  await db();
+  return (proxy!.env as unknown as { PHOTOS: R2Bucket }).PHOTOS;
 }

@@ -4,7 +4,7 @@ import { berechneAngebot, gibHoldFrei, halte, istFehler, kalender, leseWahl, sch
 import { istTag, tageZwischen } from "../lib/datum";
 import { fehler, json } from "../lib/http";
 import { clientIp } from "../lib/id";
-import { buchungenVon, fordereLink, loeseEin, meldeAb, SITZUNG_SEK, sitzungsCookie, verlangeKunde } from "../lib/kunde";
+import { buchungenVon, fordereLink, kundenFoto, loeseEin, meldeAb, SITZUNG_SEK, sitzungsCookie, verlangeKunde } from "../lib/kunde";
 import { versendeAusstehende } from "../lib/mail";
 import { begrenze } from "../lib/ratelimit";
 import { menschGeprueft } from "../lib/turnstile";
@@ -116,6 +116,14 @@ export async function oeffentlicheRoute(request: Request, env: Env, pfad: string
     const k = await verlangeKunde(request, env);
     if (k instanceof Response) return k;
     return json(await buchungenVon(env, k.customerId));
+  }
+
+  const foto = pfad.match(/^\/api\/konto\/foto\/([0-9a-f]{32})\/(web|thumb)$/);
+  if (foto && m === "GET") {
+    const k = await verlangeKunde(request, env);
+    if (k instanceof Response) return k;
+    const r = await kundenFoto(env, k.customerId, foto[1]!, foto[2] as "web" | "thumb");
+    return r ?? fehler(404, "nicht_gefunden", "Foto nicht gefunden.");
   }
 
   if (pfad === "/api/konto/abmelden" && m === "POST") {
