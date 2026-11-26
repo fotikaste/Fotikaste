@@ -10,7 +10,7 @@ Grundlage: Angaben auf den Webseiten von 11 Ostschweizer/Zürcher Anbietern (`CO
 | Premium | CHF 450.– · Drucker · 300 Abzüge 10×15 · Galerie · Rahmen/Layouts |
 | Signature | **CHF 590.– · Drucker · 600 Abzüge** 10×15 · Galerie · Rahmen/Layouts (Material 600 × 0.15 = CHF 90) |
 | Mietdauer | bis 2 Tage inkl. (1 Eventtag); **jeder weitere Tag CHF 45.–** |
-| Fahrten | **Lieferung und Abholung zusammen** CHF 50.– bis 20 km, darüber CHF 1.20 pro km (einfache Strecke ab **8370 Sirnach** – Annahme, bitte bestätigen), einzeln buchbar; ohne Fahrt = Selbstabholung |
+| Fahrten | **Lieferung und Abholung zusammen** CHF 50.– bis 20 km, darüber CHF 1.20 pro km (einfache Strecke ab **8370 Sirnach**, bestätigt 2026-11-26), einzeln buchbar; ohne Fahrt = Selbstabholung |
 | Kapazität | 1 Fotobox → 1 Vermietung gleichzeitig, 1 Lieferung pro Tag |
 | Zahlung | keine Onlinezahlung, Zahlung nach Absprache (E-Mail/persönlich) |
 | Storno | Standard: **nicht stornierbar**. Option «stornierbar» **+ CHF 20.–**: kostenlose Absage bis **28 Tage** vor dem Event, danach nicht mehr stornierbar |
