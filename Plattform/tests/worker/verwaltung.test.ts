@@ -99,20 +99,16 @@ describe("Buchungen ändern", () => {
     expect((await form(`/admin/buchungen/${a}/termin`, { event: "2027-09-30", start: "2027-09-22", ende: "2027-09-23" })).status).toBe(400);
   });
 
-  it("Positionen: Zusatz und Rabatt ändern Total und Zahlungsplan; nach Zahlung bleibt der Plan", async () => {
+  it("Positionen: Zusatz und Rabatt ändern das Total, Verlauf vollständig", async () => {
     const id = await buche("2027-10-04", "2027-10-04");
     expect((await form(`/admin/buchungen/${id}/position`, { text: "Zusätzlicher Miettag", menge: "2", preis_chf: "45.00" })).status).toBe(303);
     expect((await form(`/admin/buchungen/${id}/position`, { text: "Rabatt Stammkunde", menge: "1", preis_chf: "-50" })).status).toBe(303);
     expect((await buchung(id))?.total_rappen).toBe(45000 + 9000 - 5000);
-    const plan = async () => (await (await db()).prepare("SELECT kind, amount_rappen, status FROM payment_schedule WHERE booking_id = ?1").bind(id).all()).results;
-    expect(await plan()).toEqual([{ kind: "full", amount_rappen: 49000, status: "open" }]);
     expect((await form(`/admin/buchungen/${id}/position`, { text: "Zu viel Rabatt", menge: "1", preis_chf: "-9999" })).status).toBe(400);
-    expect((await form(`/admin/buchungen/${id}/zahlung`, { kind: "full", status: "paid" })).status).toBe(303);
     expect((await form(`/admin/buchungen/${id}/position-weg`, { pos: "3" })).status).toBe(303);
     expect((await buchung(id))?.total_rappen).toBe(54000);
-    expect(await plan()).toEqual([{ kind: "full", amount_rappen: 49000, status: "paid" }]); // bezahlt → nicht neu berechnet
     const hist = await (await db()).prepare("SELECT field FROM booking_history WHERE booking_id = ?1 ORDER BY id").bind(id).all<{ field: string }>();
-    expect(hist.results.map((h) => h.field)).toEqual(["status", "position+", "position+", "zahlung:full", "position−"]);
+    expect(hist.results.map((h) => h.field)).toEqual(["status", "position+", "position+", "position−"]);
   });
 
   it("Kontakt korrigieren und Notiz: Verlauf und Prüfung", async () => {
@@ -178,9 +174,11 @@ describe("Preise und Einstellungen", () => {
     expect((await form("/admin/preise/konditionen", { ...gueltig, booking_hold_minutes: "20" })).status).toBe(303);
     expect((await (await db()).prepare("SELECT value FROM settings WHERE key = 'booking_hold_minutes'").first<{ value: string }>())?.value).toBe("20");
     expect((await form("/admin/preise/konditionen", gueltig)).status).toBe(303);
-    expect((await form("/admin/einstellungen/zahlung", { deposit_percent: "30", security_deposit_rappen: "0", payment_due_days_before: "", terms_version: "ENTWURF-2026-11", payment_due_before_event: "on" })).status).toBe(303);
-    expect((await (await db()).prepare("SELECT value FROM settings WHERE key = 'deposit_percent'").first<{ value: string }>())?.value).toBe("30");
-    await form("/admin/einstellungen/zahlung", { deposit_percent: "0", security_deposit_rappen: "0", payment_due_days_before: "", terms_version: "ENTWURF-2026-11", payment_due_before_event: "on" });
+    expect((await form("/admin/einstellungen/finanzen", { print_cost_rappen: "0.15", cost_per_km_rappen: "abc", hourly_rate_rappen: "" })).status).toBe(400);
+    expect((await form("/admin/einstellungen/finanzen", { print_cost_rappen: "0.15", cost_per_km_rappen: "0.70", hourly_rate_rappen: "" })).status).toBe(303);
+    expect((await (await db()).prepare("SELECT value FROM settings WHERE key = 'cost_per_km_rappen'").first<{ value: string }>())?.value).toBe("70");
+    expect((await (await db()).prepare("SELECT value FROM settings WHERE key = 'hourly_rate_rappen'").first<{ value: string }>())?.value).toBe("null");
+    await form("/admin/einstellungen/finanzen", { print_cost_rappen: "0.15", cost_per_km_rappen: "", hourly_rate_rappen: "" });
   });
 
   it("neue Zone macht eine Region direkt buchbar; ungültige Kantone abgelehnt", async () => {

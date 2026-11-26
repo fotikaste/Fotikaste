@@ -8,6 +8,7 @@ export const PERMISSIONS = [
   "settings:write",
   "users:manage",
   "finance:read",
+  "finance:write",
   "content:write",
   "bookings:read",
   "bookings:write",

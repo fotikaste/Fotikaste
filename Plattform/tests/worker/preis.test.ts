@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { chf, fahrtRappen, findeZone, geschaetzteKm, luftlinieKm, zusatztage, type Zone } from "../../worker/lib/preis";
 import { heuteZurich, istTag, plusTage, tageVonBis, tageZwischen } from "../../worker/lib/datum";
-import { zahlungsplan } from "../../worker/lib/buchung";
+import { abschreibung, csv, fixkostenAnteil, jahresauswertung, proBuchung } from "../../worker/lib/wirtschaft";
 import { packages, terms } from "../../src/data/content";
 import { readFileSync } from "node:fs";
 
@@ -56,16 +56,44 @@ describe("Datum (Europe/Zurich)", () => {
   });
 });
 
-describe("Zahlungsplan (nur Information)", () => {
-  it("Standard: Gesamtbetrag nach Absprache", () => {
-    expect(zahlungsplan(45000, { deposit_percent: 0, security_deposit_rappen: 0, payment_due_days_before: null }, "2027-06-12")).toEqual([{ kind: "full", amount_rappen: 45000, due_on: null }]);
+describe("Wirtschaftlichkeit (reine Rechnung)", () => {
+  const b = { id: "x", number: "FK-1", event_day: "2027-06-12", status: "completed", package_name: "Premium", total_rappen: 50000, bezahlt_rappen: 50000, prints: 200, km: 80, minutes: 360, direkte_ausgaben_rappen: 1000 };
+  it("Abschreibung linear in ganzen Jahren, Summe = Kaufpreis", () => {
+    const a = { purchased_on: "2026-03-01", amount_rappen: 100000, life_years: 3 };
+    expect([2025, 2026, 2027, 2028, 2029].map((j) => abschreibung(a, j))).toEqual([0, 33333, 33333, 33334, 0]);
   });
-  it("konfigurierbar: 30 % Anzahlung, Rest 10 Tage vorher, Kaution", () => {
-    expect(zahlungsplan(45000, { deposit_percent: 30, security_deposit_rappen: 20000, payment_due_days_before: 10 }, "2027-06-12")).toEqual([
-      { kind: "deposit", amount_rappen: 13500, due_on: null },
-      { kind: "balance", amount_rappen: 31500, due_on: "2027-06-02" },
-      { kind: "security_deposit", amount_rappen: 20000, due_on: "2027-06-02" },
-    ]);
+  it("Fixkosten anteilig nach Tagen", () => {
+    expect(fixkostenAnteil({ amount_rappen_year: 36500, valid_from: "2027-01-01", valid_to: null }, 2027)).toBe(36500);
+    expect(fixkostenAnteil({ amount_rappen_year: 36500, valid_from: "2027-07-02", valid_to: null }, 2027)).toBe(18300); // 183 Tage
+    expect(fixkostenAnteil({ amount_rappen_year: 36500, valid_from: "2028-01-01", valid_to: null }, 2027)).toBe(0);
+  });
+  it("pro Buchung: Material, Fahrzeug, Deckungsbeitrag, pro Stunde; Ansatz offen = nicht geschätzt", () => {
+    const x = proBuchung(b, { material_pro_abzug: 15, pro_km: 70, pro_stunde: 4000 });
+    expect([x.material, x.fahrzeug, x.arbeit, x.deckungsbeitrag, x.pro_stunde]).toEqual([3000, 5600, 24000, 40400, 6733]);
+    const y = proBuchung({ ...b, km: null }, { material_pro_abzug: 15, pro_km: null, pro_stunde: null });
+    expect([y.fahrzeug, y.arbeit, y.aufwand_fehlt]).toEqual([null, null, true]);
+  });
+  it("Jahr: Ergebnis, offene Beträge, Break-even, offene Ansätze", () => {
+    const j = jahresauswertung({
+      jahr: 2027, heute: "2027-12-31", ansaetze: { material_pro_abzug: 15, pro_km: null, pro_stunde: 4000 },
+      buchungen: [b, { ...b, id: "y", number: "FK-2", bezahlt_rappen: 20000 }], eingenommen: 70000,
+      ausgaben: [{ amount_rappen: 1000, category: "material", booking_id: "x" }, { amount_rappen: 5000, category: "werbung", booking_id: null }],
+      anlagen: [{ purchased_on: "2027-01-10", amount_rappen: 300000, life_years: 3 }], fixkosten: [{ amount_rappen_year: 20000, valid_from: "2027-01-01", valid_to: null }],
+    });
+    expect([j.gebucht, j.offen, j.material, j.ausgaben, j.abschreibung, j.fixkosten]).toEqual([100000, 30000, 6000, 6000, 100000, 20000]);
+    expect(j.ergebnis_geld).toBe(70000 - 6000 - 6000 - 20000 - 100000);
+    expect(j.ergebnis_kalkulatorisch).toBeNull(); // km-Ansatz offen
+    expect(j.offene_ansaetze).toEqual(["Fahrzeugkosten pro km"]);
+    expect(j.break_even.kosten_fix).toBe(20000 + 100000 + 5000);
+    expect(j.break_even.db_durchschnitt).toBe(46000); // 50000 − 3000 − 1000 (beide Buchungen tragen die direkte Ausgabe von «x»)
+    expect(j.break_even.buchungen_noetig).toBe(3);
+  });
+  it("CSV: Semikolon, BOM, keine Formeln (CSV-Injection)", () => {
+    const t = csv([["Datum", "Text"], ["2027-01-01", "=HYPERLINK(1)"], ["2027-01-02", "a;b"], ["2027-01-03", "-12.50"]]);
+    expect(t.startsWith("\uFEFF")).toBe(true);
+    expect(t).toContain("'=HYPERLINK(1)");
+    expect(t).toContain('"a;b"');
+    expect(t).toContain("2027-01-03;-12.50");
   });
 });
 

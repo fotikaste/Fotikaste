@@ -13,10 +13,10 @@ Entwicklung auf Branch `plattform/entwicklung`; Übernahme nach `main` nur nach 
 | **3** ✅ Buchung (2026-11-26, lokal getestet) | Pakete, Extras, **Liefergebiete** (PLZ, Kantone, km, Kosten, Abholung, Vorlauf, Kapazität, Puffer), serverseitige Preise, Verfügbarkeit mit `allocation_days`, Direktbuchung + Anfrage-Weg, Anzahlung/Rest/Kaution konfigurierbar, Bestätigungsmail (Testmodus), Magic-Link-Portal | Testbuchung A–Z, Gleichzeitigkeitstest | Liefergebiet/Zahlungsplan ausgebaut |
 | **4** ✅ Administration (2026-11-26, lokal getestet) | Dashboard inkl. **Verbrauchsanzeige**, Buchungen, Kalender, Kunden, Inhalte/Preise/FAQ ohne Code | Selbstverwaltung | Verbrauch neu |
 | **5** ✅ Fotobox-Integration (2026-11-26, Laptop; Pi-Update + Schlüssel löschen offen) | Geräteverwaltung, Geräte-API, Simulator, privater Bucket, Galerie, `PlattformGalerie` im Pi-Code (Laptop), **Migration nach `R2_MIGRATION.md`**, Pi-Update erst nach Freigabe | QR → Plattform, alte Schlüssel gelöscht | Pi darf erweitert werden |
-| **6** Rechnungen & Finanzen | Rechnung als PDF (im Browser erzeugt, unveränderlich), Storno/Gutschrift, CSV, Zahlungserinnerung, Wirtschaftlichkeit (0.15/Abzug vorläufig) | Rechnung zur Buchung | PDF-Erzeugung im Browser |
+| **6** ✅ Zahlung persönlich & Wirtschaftlichkeit (2026-11-26, ADR-032) | Keine Zahlungsfunktion/Rechnungen; Zahlungseingang und Aufwand von Hand, Ausgaben, Anschaffungen mit Abschreibung, Fixkosten, Deckungsbeitrag, Break-even, CSV für Treuhand | Wirtschaftlichkeit pro Jahr und Buchung | Rechnungen/Erinnerungen gestrichen (Entscheid Inhaber) |
 | **7** Veröffentlichung | Sicherheits-/Datenschutzprüfung, Rechtstexte, Domain (nach Namensentscheid), Search Console/Bing, Backups + Wiederherstellungstest | Live nach Freigabe | – |
 
-**Später:** QR-Rechnung, Onlinezahlung (nur gehostete Zahlungsseite), Marketing-Dashboard, KI-Sichtbarkeitsmonitoring, Sprachen FR/IT/EN, Halbtages-Slots, Mitarbeiter-Rolle.
+**Später:** Marketing-Dashboard, KI-Sichtbarkeitsmonitoring, Sprachen FR/IT/EN, Halbtages-Slots, Mitarbeiter-Rolle.
 
 **Auswirkungen der CHF-0-Vorgabe auf den Plan:** +ca. 1 Woche Aufwand für Eigenbau Anmeldung/Magic Link, Backup-Export,
 Verbrauchsschutz und Browser-PDF; dafür entfallen Anbieterkonten bei Vercel/Supabase.

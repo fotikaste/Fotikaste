@@ -28,6 +28,7 @@ async function simuliereUpload(request: APIRequestContext, token: string): Promi
 }
 
 test("Fotobox → Plattform → Gast: Gerät, Event, Upload, Gäste-Link, Admin-Galerie", async ({ page, request }, info) => {
+  const galerie = `E2E-Galerie ${info.project.name} ${Date.now()}`;
   // Gerät anlegen (Token wird einmal angezeigt)
   await page.goto("/admin/geraete");
   await pruefe(page);
@@ -42,7 +43,7 @@ test("Fotobox → Plattform → Gast: Gerät, Event, Upload, Gäste-Link, Admin-
   // Event anlegen, Gerät zuweisen, aktivieren (vorheriges aktives Event dieses Geräts gibt es nicht)
   const geraet = (await (await request.get("/api/device/v1/config", { headers: { Authorization: `Bearer ${token}` } })).json()).geraet;
   await page.goto("/admin/events");
-  await page.getByLabel("Name der Galerie").fill(`E2E-Galerie ${info.project.name}`);
+  await page.getByLabel("Name der Galerie").fill(galerie);
   await page.getByLabel("Eventtag").fill("2027-08-14");
   await page.getByLabel("Fotobox").selectOption(geraet.id);
   await page.getByRole("button", { name: "Event anlegen" }).click();
@@ -65,7 +66,7 @@ test("Fotobox → Plattform → Gast: Gerät, Event, Upload, Gäste-Link, Admin-
 
   // Admin-Galerie zeigt das Foto, aufräumen: archivieren löscht alles
   await page.goto("/admin/events");
-  await page.getByRole("link", { name: `E2E-Galerie ${info.project.name}` }).first().click();
+  await page.getByRole("link", { name: galerie }).first().click();
   await expect(page.getByRole("heading", { name: /Fotos \(1/ })).toBeVisible();
   await pruefe(page);
   await page.screenshot({ path: `test-results/fotobox-${info.project.name}-event.png`, fullPage: true });

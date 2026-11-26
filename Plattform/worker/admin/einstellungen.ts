@@ -2,8 +2,8 @@
  * Änderbare Einstellungen mit Prüfung (nur Eigentümer). Unbekannte Schlüssel werden abgelehnt.
  * SPEC beschreibt jedes Feld für die Formulare (Bezeichnung, Art, Grenzen, Gruppe).
  */
-export type Art = "ganz" | "rappen" | "bool" | "liste" | "faktor" | "plz" | "tage_oder_leer" | "gb" | "text";
-export type Gruppe = "konditionen" | "zahlung" | "system";
+export type Art = "ganz" | "rappen" | "rappen_oder_leer" | "bool" | "liste" | "faktor" | "plz" | "tage_oder_leer" | "gb" | "text";
+export type Gruppe = "konditionen" | "zahlung" | "system" | "finanzen";
 export interface Spec { label: string; art: Art; min?: number; max?: number; gruppe: Gruppe; hilfe?: string; webseite?: boolean }
 
 export const SPEC: Record<string, Spec> = {
@@ -17,16 +17,14 @@ export const SPEC: Record<string, Spec> = {
   booking_hold_minutes: { label: "Termin halten (Minuten)", art: "ganz", min: 5, max: 60, gruppe: "konditionen" },
   delivery_origin_plz: { label: "Ausgangsort Fahrten (PLZ)", art: "plz", gruppe: "konditionen", webseite: true },
   delivery_detour_factor: { label: "Umwegfaktor (Luftlinie × Faktor)", art: "faktor", min: 1, max: 2, gruppe: "konditionen" },
-  deposit_percent: { label: "Anzahlung in %", art: "ganz", min: 0, max: 100, gruppe: "zahlung", hilfe: "0 = keine Anzahlung, ganzer Betrag auf einmal." },
-  security_deposit_rappen: { label: "Kaution", art: "rappen", min: 0, max: 500_000, gruppe: "zahlung", hilfe: "0 = keine Kaution." },
-  payment_due_days_before: { label: "Zahlung fällig Tage vor Event", art: "tage_oder_leer", min: 0, max: 90, gruppe: "zahlung", hilfe: "Leer = nach Absprache." },
   vat_enabled: { label: "MWST ausweisen", art: "bool", gruppe: "zahlung", hilfe: "Erst einschalten, wenn die MWST-Pflicht geklärt ist." },
-  payment_due_before_event: { label: "Zahlung vor dem Event", art: "bool", gruppe: "zahlung" },
   terms_version: { label: "AGB-Version für neue Buchungen", art: "text", gruppe: "zahlung" },
+  cost_per_km_rappen: { label: "Fahrzeugkosten pro km", art: "rappen_oder_leer", min: 0, max: 1000, gruppe: "finanzen", hilfe: "Eigener Ansatz (Benzin, Unterhalt, Abnutzung). Leer = noch offen." },
+  hourly_rate_rappen: { label: "Eigener Stundenansatz", art: "rappen_oder_leer", min: 0, max: 100_000, gruppe: "finanzen", hilfe: "Was eine Stunde deiner Arbeit wert sein soll. Leer = noch offen." },
   storage_limit_bytes: { label: "Fotospeicher App-Grenze (GB)", art: "gb", min: 0.1, max: 10, gruppe: "system", hilfe: "Höchstens 10 GB (Gratisgrenze)." },
   usage_warn_percent: { label: "Warnstufen in % (z. B. 50, 75, 90)", art: "liste", gruppe: "system" },
   usage_block_percent: { label: "Sperre ab %", art: "ganz", min: 50, max: 100, gruppe: "system" },
-  print_cost_rappen: { label: "Druckkosten pro Abzug", art: "rappen", min: 0, max: 500, gruppe: "system" },
+  print_cost_rappen: { label: "Material pro Abzug (Papier + Farbband)", art: "rappen", min: 0, max: 500, gruppe: "finanzen", hilfe: "Vorläufig CHF 0.15 – mit echten Einkaufspreisen prüfen." },
   gallery_retention_days: { label: "Galerie online (Tage)", art: "ganz", min: 1, max: 365, gruppe: "system" },
   image_long_edge_px: { label: "Bildgrösse lange Seite (px)", art: "ganz", min: 1600, max: 3000, gruppe: "system" },
   image_jpeg_quality: { label: "JPEG-Qualität", art: "ganz", min: 70, max: 95, gruppe: "system" },
@@ -43,7 +41,7 @@ function pruefer(s: Spec): Pruefer {
     case "bool": return (v) => typeof v === "boolean";
     case "faktor": return (v) => typeof v === "number" && v >= s.min! && v <= s.max!;
     case "plz": return (v) => typeof v === "string" && /^\d{4}$/.test(v);
-    case "tage_oder_leer": return (v) => v === null || ganz(s.min!, s.max!)(v);
+    case "tage_oder_leer": case "rappen_oder_leer": return (v) => v === null || ganz(s.min!, s.max!)(v);
     case "liste": return (v) => Array.isArray(v) && v.length > 0 && v.length <= 5 && v.every((x) => Number.isInteger(x) && x > 0 && x <= 100);
     case "text": return (v) => typeof v === "string" && v.length >= 1 && v.length <= 40;
   }
@@ -57,6 +55,7 @@ export function ausFormular(s: Spec, text: string | undefined): unknown {
   switch (s.art) {
     case "bool": return text === "on";
     case "rappen": { if (!/^\d{1,6}([.,]\d{1,2})?$/.test(t)) return undefined; return Math.round(Number(t.replace(",", ".")) * 100); }
+    case "rappen_oder_leer": { if (t === "") return null; if (!/^\d{1,6}([.,]\d{1,2})?$/.test(t)) return undefined; return Math.round(Number(t.replace(",", ".")) * 100); }
     case "gb": { const n = Number(t.replace(",", ".")); return Number.isFinite(n) ? Math.round(n * 1e9) : undefined; }
     case "faktor": { const n = Number(t.replace(",", ".")); return Number.isFinite(n) ? n : undefined; }
     case "tage_oder_leer": return t === "" ? null : /^\d+$/.test(t) ? Number(t) : undefined;
@@ -70,6 +69,7 @@ export function ausFormular(s: Spec, text: string | undefined): unknown {
 export function fuerFormular(s: Spec, v: unknown): string {
   switch (s.art) {
     case "rappen": return (Number(v) / 100).toFixed(2);
+    case "rappen_oder_leer": return v === null || v === undefined ? "" : (Number(v) / 100).toFixed(2);
     case "gb": return String(Number(v) / 1e9);
     case "liste": return Array.isArray(v) ? v.join(", ") : "";
     case "tage_oder_leer": return v === null || v === undefined ? "" : String(v);

@@ -3,7 +3,7 @@ import type { Env } from "../env";
 import type { AdminUser } from "../lib/auth";
 import { brand } from "../../src/config/brand";
 import { protokolliere } from "../lib/audit";
-import { datumCh, einstellungen, zahlungsplan, type Fehler } from "../lib/buchung";
+import { datumCh, ZAHLUNG_TEXT, type Fehler } from "../lib/buchung";
 import { mailEinreihen } from "../lib/mail";
 import { chf } from "../lib/preis";
 
@@ -41,13 +41,11 @@ export async function bestaetige(env: Env, u: AdminUser, id: string, fahrtRappen
     stmts.push(mit("INSERT INTO booking_items (booking_id, pos, code, text, qty, unit_rappen, total_rappen) SELECT ?99, (SELECT COALESCE(MAX(pos), 0) + 1 FROM booking_items WHERE booking_id = ?99), 'fahrt', ?1, 1, ?2, ?2",
       [`Lieferung und Abholung (bestätigt)`, fahrtRappen]));
   }
-  const plan = zahlungsplan(total, await einstellungen(env), b.event_day);
   stmts.push(
-    ...plan.map((p) => mit("INSERT INTO payment_schedule (booking_id, kind, amount_rappen, due_on) SELECT ?99, ?1, ?2, ?3", [p.kind, p.amount_rappen, p.due_on])),
     mit("INSERT INTO booking_history (booking_id, actor, field, old_value, new_value) SELECT ?99, ?1, 'status', 'request', 'confirmed'", [u.email]),
     mailEinreihen(env, {
       dedupeKey: `buchung:${id}:bestaetigt`, to: b.contact_email, subject: `Buchungsbestätigung ${b.number} – ${brand.name}`,
-      text: `Guten Tag ${b.contact_name}\n\nIhre Anfrage ${b.number} für den ${datumCh(b.event_day)} ist bestätigt.\nTotal: ${chf(total)}\n\nOnline wird nichts bezahlt – die Zahlung vereinbaren wir mit Ihnen per E-Mail oder persönlich.\nDetails im Kundenkonto: ${origin}/konto\n\nFreundliche Grüsse\n${brand.name}`,
+      text: `Guten Tag ${b.contact_name}\n\nIhre Anfrage ${b.number} für den ${datumCh(b.event_day)} ist bestätigt.\nTotal: ${chf(total)}\n\n${ZAHLUNG_TEXT}\nDetails im Kundenkonto: ${origin}/konto\n\nFreundliche Grüsse\n${brand.name}`,
     }, "EXISTS (SELECT 1 FROM bookings WHERE id = ?6 AND status = 'request')", id),
     env.DB.prepare("UPDATE bookings SET status = 'confirmed', total_rappen = ?2, price_final = 1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?1 AND status = 'request'").bind(id, total),
   );

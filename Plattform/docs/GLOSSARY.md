@@ -63,3 +63,9 @@ Ergänzt `Dokumente/GLOSSAR.md` (Fotobox). Je Begriff: Was? · Wozu? · Wo bei u
 | **Privater Bucket** | Speicher ohne öffentliche Adresse; Dateien nur über die Plattform mit Prüfung | `fotikaste-fotos` |
 | **Cron** | Zeitplan, nach dem der Server eine Aufgabe automatisch ausführt | täglich 03:15 UTC: abgelaufene Fotos löschen |
 | **Widerrufen** | Ein Token ungültig machen; wer es kennt, kommt nicht mehr hinein | bei Verlust/Diebstahl der Fotobox |
+| **Deckungsbeitrag** | Umsatz minus die Kosten, die nur wegen dieser Buchung entstehen (Material, direkte Ausgaben, Fahrzeug) | muss Fixkosten, Abschreibung und deine Arbeit decken |
+| **Abschreibung** | Kaufpreis eines Geräts wird auf die Nutzungsjahre verteilt | Fotobox, Kamera, Drucker |
+| **Fixkosten** | Kosten, die unabhängig von der Anzahl Buchungen anfallen | Versicherung, Domain |
+| **Kalkulatorische Kosten** | Kosten, für die kein Geld fliesst, die aber einen Wert haben | eigene Arbeitszeit, eigenes Auto |
+| **Break-even** | Punkt, ab dem die Einnahmen alle Kosten decken | «nötige Buchungen pro Jahr» |
+| **CSV** | einfache Tabellendatei, die Excel und Treuhand-Programme öffnen | Export Einnahmen/Ausgaben |

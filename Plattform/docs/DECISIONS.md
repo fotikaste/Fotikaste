@@ -107,3 +107,9 @@ Die Fotobox meldet ein Foto an (Grösse + SHA-256 je Variante) und lädt Web-Ver
 Keine vorsignierten URLs → kein R2-Schlüssel auf der Fotobox **und** keiner im Worker (Binding genügt). Der Gäste-Link `/f/<zufall>` entsteht offline auf der
 Fotobox; die Plattform kennt nur dessen Hash. Originale werden nicht hochgeladen. Gemeinsame Galerie mit Passwort: später (Passwort-Hash im Gratis-Tarif zu CPU-intensiv).
 Ersetzt im API-Entwurf die vorsignierten URLs.
+
+## ADR-032 Zahlung immer persönlich, Plattform rechnet nur — *angenommen (Inhaber, 2026-11-26)*
+Ersetzt den Rechnungs-Teil der ursprünglichen Phase 6 (PDF-Rechnung, Storno/Gutschrift, Zahlungserinnerung) und den konfigurierbaren Zahlungsplan.
+Keine Bankdaten, keine Rechnungen, keine Erinnerungen, keine Anzahlung/Kaution. Erfasst wird nur von Hand: Zahlungseingang, Aufwand, Ausgaben,
+Anschaffungen, Fixkosten. Daraus: Wirtschaftlichkeit (Deckungsbeitrag, Ergebnis, Stundenlohn, Break-even) und CSV für Treuhand.
+Grund: Sicherheit (keine Zahlungsdaten), weniger Fehlerquellen, persönlicher Kontakt. Kalkulatorische Ansätze bleiben leer, bis der Inhaber sie festlegt.

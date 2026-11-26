@@ -8,7 +8,7 @@ import { istFehler, type Fehler } from "../lib/buchung";
 import { html } from "../lib/http";
 import type { Permission } from "../lib/permissions";
 import { bestaetige, lehneAb } from "../admin/buchungen";
-import { kontakt, notiz, positionHinzu, positionWeg, setzeStatus, verschiebe, zahlung } from "../admin/buchung-aktionen";
+import { kontakt, notiz, positionHinzu, positionWeg, setzeStatus, verschiebe } from "../admin/buchung-aktionen";
 import { buchungsDetail, buchungsListe } from "../admin/buchungen-seiten";
 import { hebeAuf, kalenderSeite, sperre } from "../admin/kalender";
 import { einstellungenSeite, preiseSeite, speichereEinstellungen, speicherePaket, speichereZone } from "../admin/katalog";
@@ -16,6 +16,7 @@ import { kundenDetail, kundenListe, kundenName, kundenNotiz } from "../admin/kun
 import { aktualisiereWebseite, inhalteSeite, loescheFaq, speichereFakten, speichereFaq, speichereLeistungen } from "../admin/inhalte";
 import { formFehler, formular, MELDUNGEN, rappenAus, zurueck } from "../admin/layout";
 import { uebersicht } from "../admin/seite";
+import { anlageErfassen, aufwandSpeichern, ausgabeErfassen, csvExport, eintragLoeschen, finanzenSeite, fixkostenErfassen, zahlungErfassen, zahlungLoeschen } from "../admin/finanzen";
 import { adminFoto, eventAnlegen, eventDetail, eventGeraet, eventStatus, eventsSeite, geraetAnlegen, geraeteSeite, geraetToken, geraetWiderrufen } from "../admin/fotobox";
 
 type Seite = (env: Env, u: AdminUser, url: URL) => Promise<string | null>;
@@ -31,12 +32,14 @@ const SEITEN: [RegExp, Permission, Seite][] = [
   [/^\/admin\/geraete$/, "devices:manage", (e, u, url) => geraeteSeite(e, u, url)],
   [/^\/admin\/events$/, "devices:manage", eventsSeite],
   [/^\/admin\/events\/([0-9a-f]{32})$/, "devices:manage", (e, u, url) => eventDetail(e, u, url.pathname.split("/")[3]!, url)],
+  [/^\/admin\/finanzen$/, "finance:read", finanzenSeite],
   [/^\/admin\/preise$/, "settings:write", preiseSeite],
   [/^\/admin\/inhalte$/, "content:write", inhalteSeite],
   [/^\/admin\/einstellungen$/, "settings:write", einstellungenSeite],
 ];
 
 const B = "/admin/buchungen/([0-9a-f]{32})";
+const jahrZiel = (f: Map<string, string>) => `/admin/finanzen${/^\d{4}$/.test(f.get("jahr") ?? "") ? `?jahr=${f.get("jahr")}` : ""}`;
 const ganz = (t: string | undefined) => (t !== undefined && /^\d+$/.test(t) ? Number(t) : NaN);
 
 /** [Muster, Recht, Aktion, Ziel nach Erfolg (aus den Teilen der Adresse), Meldungscode] */
@@ -48,7 +51,13 @@ const AKTIONEN: [RegExp, Permission, Aktion, (t: string[], f: Map<string, string
   [new RegExp(`^${B}/termin$`), "bookings:write", (e, u, f, t) => verschiebe(e, u, t[0]!, f.get("event") ?? "", f.get("start") ?? "", f.get("ende") ?? ""), (t) => `/admin/buchungen/${t[0]}`, "verschoben"],
   [new RegExp(`^${B}/position$`), "bookings:write", (e, u, f, t) => { const p = rappenAus(f.get("preis_chf"), true); return p === null ? Promise.resolve({ status: 400, code: "betrag", text: "Ungültiger Betrag (z. B. 45.00 oder -50.00)." }) : positionHinzu(e, u, t[0]!, f.get("text") ?? "", ganz(f.get("menge")), p); }, (t) => `/admin/buchungen/${t[0]}`, "gespeichert"],
   [new RegExp(`^${B}/position-weg$`), "bookings:write", (e, u, f, t) => positionWeg(e, u, t[0]!, ganz(f.get("pos"))), (t) => `/admin/buchungen/${t[0]}`, "gespeichert"],
-  [new RegExp(`^${B}/zahlung$`), "bookings:write", (e, u, f, t) => zahlung(e, u, t[0]!, f.get("kind") ?? "", f.get("status") ?? ""), (t) => `/admin/buchungen/${t[0]}`, "gespeichert"],
+  [new RegExp(`^${B}/zahlung$`), "finance:write", (e, u, f, t) => zahlungErfassen(e, u, t[0]!, f), (t) => `/admin/buchungen/${t[0]}`, "zahlung"],
+  [new RegExp(`^${B}/zahlung-weg$`), "finance:write", (e, u, f, t) => zahlungLoeschen(e, u, t[0]!, Number(f.get("id"))), (t) => `/admin/buchungen/${t[0]}`, "geloescht"],
+  [new RegExp(`^${B}/aufwand$`), "finance:write", (e, u, f, t) => aufwandSpeichern(e, u, t[0]!, f), (t) => `/admin/buchungen/${t[0]}`, "gespeichert"],
+  [/^\/admin\/finanzen\/ausgabe$/, "finance:write", (e, u, f) => ausgabeErfassen(e, u, f), (_t, f) => jahrZiel(f), "gespeichert"],
+  [/^\/admin\/finanzen\/anlage$/, "finance:write", (e, u, f) => anlageErfassen(e, u, f), (_t, f) => jahrZiel(f), "gespeichert"],
+  [/^\/admin\/finanzen\/fixkosten$/, "finance:write", (e, u, f) => fixkostenErfassen(e, u, f), (_t, f) => jahrZiel(f), "gespeichert"],
+  [/^\/admin\/finanzen\/(ausgabe|anlage|fixkosten)\/(\d+)\/loeschen$/, "finance:write", (e, u, _f, t) => eintragLoeschen(e, u, t[0]!, Number(t[1])), (_t, f) => jahrZiel(f), "geloescht"],
   [new RegExp(`^${B}/kontakt$`), "bookings:write", (e, u, f, t) => kontakt(e, u, t[0]!, { name: f.get("name") ?? "", firma: f.get("firma") ?? "", email: f.get("email") ?? "", telefon: f.get("telefon") ?? "", strasse: f.get("strasse") ?? "", plz: f.get("plz") ?? "", ort: f.get("ort") ?? "", gaeste: f.get("gaeste") ?? "" }), (t) => `/admin/buchungen/${t[0]}`, "gespeichert"],
   [new RegExp(`^${B}/notiz$`), "bookings:write", (e, u, f, t) => notiz(e, u, t[0]!, f.get("text") ?? ""), (t) => `/admin/buchungen/${t[0]}`, "notiz"],
   [/^\/admin\/kalender\/sperren$/, "bookings:write", (e, u, f) => sperre(e, u, f.get("von") ?? "", f.get("bis") ?? "", f.get("art") ?? "", f.get("ressource") ?? "", f.get("notiz") ?? ""), (_t, f) => `/admin/kalender?monat=${(f.get("von") ?? "").slice(0, 7)}`, "gesperrt"],
@@ -58,7 +67,7 @@ const AKTIONEN: [RegExp, Permission, Aktion, (t: string[], f: Map<string, string
   [/^\/admin\/preise\/paket\/([a-z]{2,20})$/, "settings:write", (e, u, f, t) => speicherePaket(e, u, t[0]!, f), () => "/admin/preise", "gespeichert"],
   [/^\/admin\/preise\/konditionen$/, "settings:write", (e, u, f) => speichereEinstellungen(e, u, "konditionen", f), () => "/admin/preise", "gespeichert"],
   [/^\/admin\/preise\/zone(?:\/(\d+))?$/, "settings:write", (e, u, f, t) => speichereZone(e, u, t[0] ? Number(t[0]) : null, f), () => "/admin/preise", "gespeichert"],
-  [/^\/admin\/einstellungen\/(zahlung|system)$/, "settings:write", (e, u, f, t) => speichereEinstellungen(e, u, t[0] as "zahlung" | "system", f), () => "/admin/einstellungen", "gespeichert"],
+  [/^\/admin\/einstellungen\/(zahlung|system|finanzen)$/, "settings:write", (e, u, f, t) => speichereEinstellungen(e, u, t[0] as "zahlung" | "system" | "finanzen", f), () => "/admin/einstellungen", "gespeichert"],
   [/^\/admin\/inhalte\/faq(?:\/(\d+))?$/, "content:write", (e, u, f, t) => speichereFaq(e, u, t[0] ? Number(t[0]) : null, f), () => "/admin/inhalte", "gespeichert"],
   [/^\/admin\/inhalte\/faq\/(\d+)\/loeschen$/, "content:write", (e, u, _f, t) => loescheFaq(e, u, Number(t[0])), () => "/admin/inhalte", "geloescht"],
   [/^\/admin\/inhalte\/leistungen\/([a-z]{2,20})$/, "content:write", (e, u, f, t) => speichereLeistungen(e, u, t[0]!, f.get("leistungen") ?? ""), () => "/admin/inhalte", "gespeichert"],
@@ -73,6 +82,11 @@ const AKTIONEN: [RegExp, Permission, Aktion, (t: string[], f: Map<string, string
 export async function adminRoute(request: Request, env: Env, pfad: string): Promise<Response | null> {
   const url = new URL(request.url);
   if (request.method === "GET") {
+    if (pfad === "/admin/finanzen/export.csv") {
+      const u = await verlangeRecht(request, env, "finance:read");
+      if (u instanceof Response) return u;
+      return csvExport(env, url);
+    }
     const foto = pfad.match(/^\/admin\/events\/([0-9a-f]{32})\/foto\/([0-9a-f]{32})\/(web|thumb)$/);
     if (foto) {
       const u = await verlangeRecht(request, env, "devices:manage");

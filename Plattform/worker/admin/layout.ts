@@ -16,6 +16,7 @@ const NAV: { href: string; text: string; recht: Permission }[] = [
   { href: "/admin/kunden", text: "Kunden", recht: "bookings:read" },
   { href: "/admin/events", text: "Events", recht: "devices:manage" },
   { href: "/admin/geraete", text: "Geräte", recht: "devices:manage" },
+  { href: "/admin/finanzen", text: "Finanzen", recht: "finance:read" },
   { href: "/admin/preise", text: "Preise", recht: "settings:write" },
   { href: "/admin/inhalte", text: "Inhalte", recht: "content:write" },
   { href: "/admin/einstellungen", text: "Einstellungen", recht: "settings:write" },
@@ -33,6 +34,7 @@ export const MELDUNGEN: Record<string, string> = {
   freigegeben: "Sperre aufgehoben.",
   geloescht: "Gelöscht.",
   notiz: "Notiz gespeichert.",
+  zahlung: "Zahlung festgehalten.",
   aktualisierung: "Die Webseite wird neu erzeugt. Das dauert etwa 1–2 Minuten.",
 };
 

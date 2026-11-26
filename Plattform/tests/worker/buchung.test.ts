@@ -89,7 +89,7 @@ describe("Angebot (serverseitige Preise)", () => {
 });
 
 describe("Buchung A–Z", () => {
-  it("halten → abschliessen: bestätigt, Snapshot, Zahlungsplan, Mails im Testmodus", async () => {
+  it("halten → abschliessen: bestätigt, Snapshot, keine Zahlungsdaten, Mails im Testmodus", async () => {
     const { r } = await bucheKomplett(wahl("2027-04-02", "2027-04-03"));
     expect(r.status).toBe(201);
     const b = (await r.json()) as { nummer: string; status: string };
@@ -101,8 +101,8 @@ describe("Buchung A–Z", () => {
     expect(row?.terms_version).toBe("ENTWURF-2026-11");
     const items = await d.prepare("SELECT code, total_rappen FROM booking_items WHERE booking_id = ?1 ORDER BY pos").bind(row!.id).all();
     expect(items.results).toEqual([{ code: "paket", total_rappen: 45000 }, { code: "fahrt", total_rappen: 6080 }]);
-    const plan = await d.prepare("SELECT kind, amount_rappen, due_on FROM payment_schedule WHERE booking_id = ?1").bind(row!.id).all();
-    expect(plan.results).toEqual([{ kind: "full", amount_rappen: 51080, due_on: null }]);
+    const zahlungen = await d.prepare("SELECT COUNT(*) AS n FROM payments WHERE booking_id = ?1").bind(row!.id).first<{ n: number }>();
+    expect(zahlungen?.n).toBe(0); // nichts automatisch, Zahlung wird persönlich vereinbart
     const tage = await d.prepare("SELECT d.resource_id, d.day FROM allocation_days d JOIN allocations a ON a.id = d.allocation_id WHERE a.booking_id = ?1 AND a.type = 'booking' ORDER BY 1, 2").bind(row!.id).all();
     expect(tage.results).toEqual([
       { resource_id: "fotobox-1", day: "2027-04-02" }, { resource_id: "fotobox-1", day: "2027-04-03" },
@@ -111,7 +111,8 @@ describe("Buchung A–Z", () => {
     const mails = await d.prepare("SELECT to_email, status, test_mode, body_text FROM outbox WHERE dedupe_key LIKE ?1 ORDER BY id").bind(`buchung:${row!.id}:%`).all<{ to_email: string; status: string; test_mode: number; body_text: string }>();
     expect(mails.results.map((m) => [m.to_email, m.status, m.test_mode])).toEqual([["kunde.a@example.ch", "held", 1], ["inhaber@example.ch", "held", 1]]);
     expect(mails.results[0]!.body_text).toContain("CHF 510.80");
-    expect(mails.results[0]!.body_text).toContain("Online wird nichts bezahlt");
+    expect(mails.results[0]!.body_text).toContain("Online wird nichts bezahlt. Wir melden uns persönlich");
+    expect(mails.results[0]!.body_text).not.toMatch(/IBAN|Anzahlung|Kaution|fällig/);
     // Danach ist der Termin belegt
     const a = (await (await handle(req("/api/buchung/angebot", wahl("2027-04-03", "2027-04-04")), await makeEnv())).json()) as { frei: boolean; belegteTage: string[] };
     expect(a.frei).toBe(false);
@@ -215,8 +216,6 @@ describe("Anfrage-Weg und Administration", () => {
     expect(ok.status).toBe(200);
     const b = await (await db()).prepare("SELECT status, total_rappen, price_final FROM bookings WHERE id = ?1").bind(id).first();
     expect(b).toEqual({ status: "confirmed", total_rappen: 54000, price_final: 1 });
-    const plan = await (await db()).prepare("SELECT amount_rappen FROM payment_schedule WHERE booking_id = ?1").bind(id).first<{ amount_rappen: number }>();
-    expect(plan?.amount_rappen).toBe(54000);
     expect((await handle(req(`/api/admin/buchungen/${id}/bestaetigen`, { fahrtRappen: 1 }, { token: await admin() }), env)).status).toBe(409); // nur einmal
     const log = await (await db()).prepare("SELECT COUNT(*) AS n FROM audit_log WHERE action = 'buchung.bestaetigt'").first<{ n: number }>();
     expect(log?.n).toBe(1);
@@ -272,7 +271,7 @@ describe("Kundenportal (Magic Link)", () => {
     const env = await makeEnv();
     const a = await anmelden("kunde.a@example.ch");
     const b = await anmelden("kunde.b@example.ch");
-    const ja = (await (await handle(req("/api/konto/buchungen", undefined, { cookie: a }), env)).json()) as { buchungen: { event_day: string; positionen: unknown[]; zahlungsplan: unknown[] }[] };
+    const ja = (await (await handle(req("/api/konto/buchungen", undefined, { cookie: a }), env)).json()) as { buchungen: { event_day: string; positionen: unknown[]; bezahlt: number }[] };
     const jb = (await (await handle(req("/api/konto/buchungen", undefined, { cookie: b }), env)).json()) as { buchungen: { event_day: string; contact_email?: string }[] };
     expect(ja.buchungen.length).toBeGreaterThanOrEqual(3);
     expect(ja.buchungen.some((x) => x.event_day === "2027-08-06")).toBe(false);
