@@ -2,6 +2,12 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
+## 2026-11-26 – Phase 6 umgesetzt (Zahlung persönlich, Wirtschaftlichkeit)
+- Entscheid Inhaber (ADR-032): keine Zahlungsfunktion, keine Rechnungen/Bankdaten/Erinnerungen; Zahlungsplan entfernt (Migration 0006).
+- Neu: Zahlungseingang und Aufwand im Buchungsdetail, /admin/finanzen mit Jahresrechnung, pro Buchung, Ausgaben, Anschaffungen (Abschreibung),
+  Fixkosten, Break-even, CSV für Treuhand; Kosten-Ansätze in Einstellungen (km- und Stundenansatz offen) → `PHASE6_BERICHT.md`.
+- Tests: 120 Vitest, 76 Playwright grün.
+
 ## 2026-11-26 – Phase 5 umgesetzt (Fotobox-Integration, nur Laptop)
 - Plattform: Geräte + Token, Events (ein aktives pro Gerät), Geräte-API mit Prüfsumme und Speicherreservierung, privater Bucket (lokal simuliert),
   Gäste-Link /f/, Veranstalter-Fotos im Kundenkonto, Admin Geräte/Events, täglicher Cron (Löschung nach 30 Tagen) → `PHASE5_BERICHT.md`, ADR-031.
@@ -63,4 +69,4 @@ Cloudflare-Architektur, D1-Modell, R2-Migrationsplan, Markenprüfung, Wettbewerb
 Erste Analyse (Vercel/Supabase, überholt).
 
 ## Nächster Schritt
-Sichtprüfung, Merge nach `main`, Phase 6 (Rechnungen). Pi-Update erst nach Freigabe und sobald die Plattform online ist.
+Ansätze eintragen, Sichtprüfung, Merge nach `main`, Phase 7 (Veröffentlichung). Pi-Update erst nach Freigabe.

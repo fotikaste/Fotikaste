@@ -6,7 +6,7 @@ import type { Env } from "../env";
 import type { AdminUser } from "../lib/auth";
 import { brand } from "../../src/config/brand";
 import { protokolliere } from "../lib/audit";
-import { datumCh, einstellungen, zahlungsplan, type Fehler } from "../lib/buchung";
+import { datumCh, type Fehler } from "../lib/buchung";
 import { istTag, plusTage, tageVonBis, tageZwischen } from "../lib/datum";
 import { mailEinreihen } from "../lib/mail";
 import { chf } from "../lib/preis";
@@ -75,18 +75,14 @@ export async function verschiebe(env: Env, u: AdminUser, id: string, event: stri
   return OK;
 }
 
-/** Positionen ändern (Rabatt = negativer Betrag). Total wird neu berechnet; Zahlungsplan neu, solange nichts bezahlt ist. */
+/** Positionen ändern (Rabatt = negativer Betrag). Total wird neu berechnet. */
 async function positionenGeaendert(env: Env, b: B, aenderung: D1PreparedStatement[], neuesTotal: number, u: AdminUser, feld: string, alt: string | null, neu: string | null) {
-  const bezahlt = await env.DB.prepare("SELECT COUNT(*) AS n FROM payment_schedule WHERE booking_id = ?1 AND status = 'paid'").bind(b.id).first<{ n: number }>();
-  const plan = b.status === "confirmed" && (bezahlt?.n ?? 0) === 0 ? zahlungsplan(neuesTotal, await einstellungen(env), b.event_day) : null;
   await env.DB.batch([
     ...aenderung,
     env.DB.prepare(`UPDATE bookings SET total_rappen = (SELECT COALESCE(SUM(total_rappen), 0) FROM booking_items WHERE booking_id = ?1), ${aktualisiert} WHERE id = ?1`).bind(b.id),
-    ...(plan ? [env.DB.prepare("DELETE FROM payment_schedule WHERE booking_id = ?1").bind(b.id),
-      ...plan.map((p) => env.DB.prepare("INSERT INTO payment_schedule (booking_id, kind, amount_rappen, due_on) VALUES (?1, ?2, ?3, ?4)").bind(b.id, p.kind, p.amount_rappen, p.due_on))] : []),
     verlauf(env, b.id, u.email, feld, alt, neu),
   ]);
-  await protokolliere(env, u.email, "buchung.positionen", b.number, { feld, alt, neu, total_rappen: neuesTotal, zahlungsplan_neu: plan !== null });
+  await protokolliere(env, u.email, "buchung.positionen", b.number, { feld, alt, neu, total_rappen: neuesTotal });
 }
 
 export async function positionHinzu(env: Env, u: AdminUser, id: string, text: string, qty: number, unit: number): Promise<Ok | Fehler> {
@@ -113,21 +109,6 @@ export async function positionWeg(env: Env, u: AdminUser, id: string, pos: numbe
   const neu = b.total_rappen - p.total_rappen;
   if (neu < 0) return f(400, "negativ", "Das Total darf nicht negativ werden.");
   await positionenGeaendert(env, b, [env.DB.prepare("DELETE FROM booking_items WHERE booking_id = ?1 AND pos = ?2").bind(id, pos)], neu, u, "position−", `${p.text} (${chf(p.total_rappen)})`, null);
-  return OK;
-}
-
-/** Zahlung als bezahlt/offen markieren (nur Information, keine Zahlungsfunktion). */
-export async function zahlung(env: Env, u: AdminUser, id: string, kind: string, status: string): Promise<Ok | Fehler> {
-  if (!["paid", "open", "waived", "refunded"].includes(status)) return f(400, "status", "Ungültiger Status.");
-  const b = await lade(env, id);
-  if (!b) return f(404, "unbekannt", "Diese Buchung gibt es nicht.");
-  const alt = await env.DB.prepare("SELECT status FROM payment_schedule WHERE booking_id = ?1 AND kind = ?2").bind(id, kind).first<{ status: string }>();
-  if (!alt) return f(404, "zahlung", "Diese Zahlung gibt es nicht.");
-  await env.DB.batch([
-    env.DB.prepare("UPDATE payment_schedule SET status = ?3 WHERE booking_id = ?1 AND kind = ?2").bind(id, kind, status),
-    verlauf(env, id, u.email, `zahlung:${kind}`, alt.status, status),
-  ]);
-  await protokolliere(env, u.email, "buchung.zahlung", b.number, { kind, alt: alt.status, neu: status });
   return OK;
 }
 

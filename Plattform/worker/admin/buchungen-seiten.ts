@@ -7,13 +7,12 @@ import { esc } from "../lib/http";
 import { chf } from "../lib/preis";
 import { chfFeld, rahmen, STATUS, zeit } from "./layout";
 import { eventFormular } from "./fotobox";
+import { buchungFinanzTeil } from "./finanzen";
 
-const ZAHLUNG: Record<string, string> = { full: "Gesamtbetrag", deposit: "Anzahlung", balance: "Restbetrag", security_deposit: "Kaution" };
-const ZSTATUS: Record<string, string> = { open: "offen", paid: "bezahlt", waived: "erlassen", refunded: "zurückerstattet" };
 const FELD: Record<string, string> = { status: "Status", termin: "Termin", notiz: "Notiz", "position+": "Position hinzugefügt", "position−": "Position entfernt", contact_name: "Name", contact_company: "Firma", contact_email: "E-Mail", contact_phone: "Telefon", street: "Strasse", plz: "PLZ", city: "Ort", guests: "Gäste" };
 
 /** Statuswerte im Verlauf auf Deutsch */
-const wert = (feld: string, v: string) => (feld === "status" ? (STATUS[v] ?? v) : feld.startsWith("zahlung:") ? (ZSTATUS[v] ?? v) : v);
+const wert = (feld: string, v: string) => (feld === "status" ? (STATUS[v] ?? v) : v);
 
 export function statusPill(s: string) {
   const farbe = s === "request" ? "gelb" : s === "confirmed" || s === "completed" ? "gruen" : "rot";
@@ -68,7 +67,6 @@ export async function buchungsDetail(env: Env, u: AdminUser, id: string, url: UR
   const b = await env.DB.prepare("SELECT b.*, z.name AS zone_name FROM bookings b LEFT JOIN delivery_zones z ON z.id = b.zone_id WHERE b.id = ?1").bind(id).first<Record<string, unknown> & Zeile>();
   if (!b) return null;
   const pos = await env.DB.prepare("SELECT pos, code, text, qty, unit_rappen, total_rappen FROM booking_items WHERE booking_id = ?1 ORDER BY pos").bind(id).all<{ pos: number; code: string; text: string; qty: number; unit_rappen: number; total_rappen: number }>();
-  const plan = await env.DB.prepare("SELECT kind, amount_rappen, due_on, status FROM payment_schedule WHERE booking_id = ?1").bind(id).all<{ kind: string; amount_rappen: number; due_on: string | null; status: string }>();
   const hist = await env.DB.prepare("SELECT at, actor, field, old_value, new_value FROM booking_history WHERE booking_id = ?1 ORDER BY id DESC").bind(id).all<{ at: string; actor: string; field: string; old_value: string | null; new_value: string | null }>();
   const schreiben = u.permissions.includes("bookings:write");
   const offen = ["request", "confirmed"].includes(b.status);
@@ -85,9 +83,6 @@ ${offen ? `<form class="zeile" method="post" action="${basis}/stornieren"><label
   const positionen = pos.results.map((p) => `<tr><td>${p.pos}</td><td>${esc(p.text)}</td><td class="zahl">${p.qty}</td><td class="zahl">${esc(chf(p.unit_rappen))}</td><td class="zahl">${esc(chf(p.total_rappen))}</td>
     <td>${schreiben && offen && pos.results.length > 1 ? `<form class="zeile" method="post" action="${basis}/position-weg"><input type="hidden" name="pos" value="${p.pos}"><button aria-label="Position ${p.pos} entfernen">Entfernen</button></form>` : ""}</td></tr>`).join("");
 
-  const zahlungen = plan.results.map((z) => `<tr><td>${esc(ZAHLUNG[z.kind] ?? z.kind)}</td><td class="zahl">${esc(chf(z.amount_rappen))}</td><td>${z.due_on ? esc(datumCh(z.due_on)) : "nach Absprache"}</td><td>${esc(ZSTATUS[z.status] ?? z.status)}</td>
-    <td>${schreiben ? `<form class="zeile" method="post" action="${basis}/zahlung"><input type="hidden" name="kind" value="${esc(z.kind)}"><input type="hidden" name="status" value="${z.status === "paid" ? "open" : "paid"}"><button>${z.status === "paid" ? "als offen markieren" : "als bezahlt markieren"}</button></form>` : ""}</td></tr>`).join("");
-
   const inhalt = `<p>${statusPill(b.status)} <span class="klein">erstellt ${esc(zeit(b.created_at as string))} · AGB-Version ${v(b.terms_version)}</span></p>
 ${b.reason ? `<p class="hinweis">Anfrage-Grund: ${v(b.reason)}</p>` : ""}
 <div class="karten">
@@ -99,6 +94,7 @@ ${b.reason ? `<p class="hinweis">Anfrage-Grund: ${v(b.reason)}</p>` : ""}
 ${b.message ? `<h3>Nachricht des Kunden</h3><p class="hinweis">${v(b.message)}</p>` : ""}
 ${aktionen}
 ${await eventTeil(env, u, b)}
+${await buchungFinanzTeil(env, u, b)}
 <h2>Positionen</h2>
 <div class="scroll" tabindex="0" role="region" aria-label="Positionen"><table><thead><tr><th>Pos.</th><th>Bezeichnung</th><th class="zahl">Menge</th><th class="zahl">Einzelpreis</th><th class="zahl">Betrag</th><th></th></tr></thead>
 <tbody>${positionen}<tr><td></td><td><b>Total</b></td><td></td><td></td><td class="zahl"><b>${esc(chf(b.total_rappen))}</b></td><td></td></tr></tbody></table></div>
@@ -107,9 +103,6 @@ ${schreiben && offen ? `<form method="post" action="${basis}/position"><div clas
   <div><label for="pmenge">Menge</label><input id="pmenge" name="menge" value="1" inputmode="numeric" required></div>
   <div><label for="ppreis">Einzelpreis CHF</label><input id="ppreis" name="preis_chf" inputmode="decimal" required></div>
   <div style="align-self:end"><button>Hinzufügen</button></div></div></form>` : ""}
-<h2>Zahlung</h2>
-<p class="klein">Nur zur Übersicht – es gibt keine Onlinezahlung.</p>
-${plan.results.length ? `<div class="scroll" tabindex="0" role="region" aria-label="Zahlungsplan"><table><thead><tr><th>Art</th><th class="zahl">Betrag</th><th>Fällig</th><th>Status</th><th></th></tr></thead><tbody>${zahlungen}</tbody></table></div>` : `<p class="klein">Noch kein Zahlungsplan (entsteht mit der Bestätigung).</p>`}
 ${schreiben && offen ? `<h2>Termin ändern</h2><form method="post" action="${basis}/termin"><div class="felder">
   <div><label for="tev">Eventtag</label><input id="tev" type="date" name="event" value="${v(b.event_day)}" required></div>
   <div><label for="tst">Mietbeginn</label><input id="tst" type="date" name="start" value="${v(b.start_day)}" required></div>

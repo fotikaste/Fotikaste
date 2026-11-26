@@ -9,7 +9,7 @@ async function pruefe(page: Page) {
 }
 
 test("Admin-Seiten: laden, Navigation, barrierefrei, kein Überlauf", async ({ page }, info) => {
-  for (const [pfad, titel] of [["/admin", "Übersicht"], ["/admin/buchungen", "Buchungen"], ["/admin/kalender", "Kalender"], ["/admin/kunden", "Kunden"], ["/admin/preise", "Preise"], ["/admin/inhalte", "Inhalte"], ["/admin/einstellungen", "Einstellungen"]] as const) {
+  for (const [pfad, titel] of [["/admin", "Übersicht"], ["/admin/buchungen", "Buchungen"], ["/admin/kalender", "Kalender"], ["/admin/kunden", "Kunden"], ["/admin/events", "Events"], ["/admin/geraete", "Geräte"], ["/admin/finanzen", "Finanzen"], ["/admin/preise", "Preise"], ["/admin/inhalte", "Inhalte"], ["/admin/einstellungen", "Einstellungen"]] as const) {
     const res = await page.goto(pfad);
     expect(res?.status()).toBe(200);
     expect(res?.headers()["x-robots-tag"]).toContain("noindex");

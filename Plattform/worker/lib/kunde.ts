@@ -96,8 +96,8 @@ export async function buchungenVon(env: Env, customerId: string) {
   ).bind(customerId).all<Record<string, unknown> & { id: string }>();
   const pos = await env.DB.prepare("SELECT i.booking_id, i.pos, i.text, i.qty, i.unit_rappen, i.total_rappen FROM booking_items i JOIN bookings b ON b.id = i.booking_id WHERE b.customer_id = ?1 ORDER BY i.pos")
     .bind(customerId).all<Record<string, unknown> & { booking_id: string }>();
-  const plan = await env.DB.prepare("SELECT p.booking_id, p.kind, p.amount_rappen, p.due_on, p.status FROM payment_schedule p JOIN bookings b ON b.id = p.booking_id WHERE b.customer_id = ?1")
-    .bind(customerId).all<Record<string, unknown> & { booking_id: string }>();
+  const bezahlt = await env.DB.prepare("SELECT z.booking_id, SUM(z.amount_rappen) AS summe FROM payments z JOIN bookings b ON b.id = z.booking_id WHERE b.customer_id = ?1 GROUP BY z.booking_id")
+    .bind(customerId).all<{ booking_id: string; summe: number }>();
   const fotos = await env.DB.prepare(
     `SELECT e.booking_id, e.name, e.retention_until, p.id FROM events e JOIN bookings b ON b.id = e.booking_id
      JOIN photos p ON p.event_id = e.id AND p.status = 'ready'
@@ -112,7 +112,7 @@ export async function buchungenVon(env: Env, customerId: string) {
       })(),
       ...x,
       positionen: pos.results.filter((p) => p.booking_id === id).map(({ booking_id: _, ...p }) => p),
-      zahlungsplan: plan.results.filter((p) => p.booking_id === id).map(({ booking_id: _, ...p }) => p),
+      bezahlt: bezahlt.results.find((z) => z.booking_id === id)?.summe ?? 0,
     })),
   };
 }

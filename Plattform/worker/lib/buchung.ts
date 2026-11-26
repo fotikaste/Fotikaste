@@ -238,26 +238,10 @@ export function leseKontakt(x: unknown, lieferung: boolean): Kontakt | Fehler {
   return { name, firma: text("firma", 100) || null, email, telefon, strasse: lieferung ? strasse : null, gaeste: g, nachricht: text("nachricht", 2000) || null };
 }
 
-export interface PlanZeile { kind: "full" | "deposit" | "balance" | "security_deposit"; amount_rappen: number; due_on: string | null }
+/** Zahlung: immer persönlich vereinbart (Entscheid Inhaber 2026-11-26) – keine Zahlungsfunktion, keine Bankdaten, keine Erinnerungen. */
+export const ZAHLUNG_TEXT = "Online wird nichts bezahlt. Wir melden uns persönlich bei Ihnen, um die Zahlung zu vereinbaren.";
 
-/** Zahlungsplan aus den Einstellungen (nur Information, keine Zahlungsfunktion). */
-export function zahlungsplan(total: number, s: Record<string, unknown>, event: string): PlanZeile[] {
-  const prozent = zahl(s, "deposit_percent", 0);
-  const kaution = zahl(s, "security_deposit_rappen", 0);
-  const frist = typeof s.payment_due_days_before === "number" ? (s.payment_due_days_before as number) : null;
-  const faellig = frist === null ? null : plusTage(event, -frist);
-  const plan: PlanZeile[] = [];
-  if (prozent > 0) {
-    const anz = Math.round((total * prozent) / 100);
-    plan.push({ kind: "deposit", amount_rappen: anz, due_on: null }, { kind: "balance", amount_rappen: total - anz, due_on: faellig });
-  } else plan.push({ kind: "full", amount_rappen: total, due_on: faellig });
-  if (kaution > 0) plan.push({ kind: "security_deposit", amount_rappen: kaution, due_on: faellig });
-  return plan;
-}
-
-const ZAHLUNG: Record<PlanZeile["kind"], string> = { full: "Gesamtbetrag", deposit: "Anzahlung", balance: "Restbetrag", security_deposit: "Kaution" };
-
-function mailtext(name: string, nummer: string, status: "confirmed" | "request", a: Angebot, k: Kontakt, origin: string, plan: PlanZeile[]): string {
+function mailtext(name: string, nummer: string, status: "confirmed" | "request", a: Angebot, k: Kontakt, origin: string): string {
   const w = a.wahl;
   const zeilen = a.positionen.map((p) => `- ${p.qty > 1 ? `${p.qty} × ` : ""}${p.text}: ${chf(p.total_rappen)}`).join("\n");
   return [
@@ -275,7 +259,7 @@ function mailtext(name: string, nummer: string, status: "confirmed" | "request",
     zeilen,
     `Total: ${chf(a.total_rappen)}${a.preisFix ? "" : " (ohne Fahrtkosten – folgen mit der Bestätigung)"}`,
     "",
-    status === "confirmed" ? `Zahlung: ${plan.map((p) => `${ZAHLUNG[p.kind]} ${chf(p.amount_rappen)}${p.due_on ? ` bis ${datumCh(p.due_on)}` : ""}`).join(", ")}. Online wird nichts bezahlt – die Zahlung vereinbaren wir mit Ihnen per E-Mail oder persönlich.` : "Online wird nichts bezahlt.",
+    ZAHLUNG_TEXT,
     `Storno: ${a.stornoBis ? `kostenlose Absage bis ${datumCh(a.stornoBis)}, danach nicht mehr stornierbar.` : "Diese Buchung ist nicht stornierbar."}`,
     "",
     `Ihre Buchungen sehen Sie im Kundenkonto: ${origin}/konto`,
@@ -299,7 +283,6 @@ export async function schliesseAb(env: Env, holdId: string, rohKontakt: unknown,
   const status = a.modus === "direkt" ? "confirmed" : "request";
   const id = zufallsId();
   const jahr = heuteZurich(jetzt).slice(0, 4);
-  const plan = status === "confirmed" ? zahlungsplan(a.total_rappen, s, a.wahl.event) : [];
   const HOLD_OK = "EXISTS (SELECT 1 FROM allocations WHERE id = ?98 AND type = 'hold' AND expires_at > ?99)";
   const BUCHUNG_OK = "EXISTS (SELECT 1 FROM allocations WHERE id = ?98 AND booking_id = ?97) AND ?99 IS NOT NULL";
   // ?97/?98/?99 = feste Parameter am Ende jeder Anweisung (D1 verlangt, dass der höchste Index ?99 in jeder Anweisung vorkommt)
@@ -321,7 +304,6 @@ export async function schliesseAb(env: Env, holdId: string, rohKontakt: unknown,
     env.DB.prepare("UPDATE allocations SET type = 'booking', booking_id = ?1, expires_at = NULL, request = NULL WHERE id = ?2 AND type = 'hold' AND expires_at > ?3 AND EXISTS (SELECT 1 FROM bookings WHERE id = ?1)")
       .bind(id, holdId, iso(jetzt)),
     ...a.positionen.map((p, i) => mit("INSERT INTO booking_items (booking_id, pos, code, text, qty, unit_rappen, total_rappen) SELECT ?97, ?1, ?2, ?3, ?4, ?5, ?6", [i + 1, p.code, p.text, p.qty, p.unit_rappen, p.total_rappen], BUCHUNG_OK)),
-    ...plan.map((p) => mit("INSERT INTO payment_schedule (booking_id, kind, amount_rappen, due_on) SELECT ?97, ?1, ?2, ?3", [p.kind, p.amount_rappen, p.due_on], BUCHUNG_OK)),
     mit("INSERT INTO booking_history (booking_id, actor, field, new_value) SELECT ?97, 'kunde', 'status', ?1", [status], BUCHUNG_OK),
   ];
   await env.DB.batch(stmts);
@@ -330,7 +312,7 @@ export async function schliesseAb(env: Env, holdId: string, rohKontakt: unknown,
 
   // Mails über die Outbox (dedupe_key verhindert Duplikate)
   const mails: Mail[] = [
-    { dedupeKey: `buchung:${id}:eingang`, to: k.email, subject: `${status === "confirmed" ? "Buchungsbestätigung" : "Ihre Anfrage"} ${b.number} – ${brand.name}`, text: mailtext(k.name, b.number, status, a, k, origin, plan) },
+    { dedupeKey: `buchung:${id}:eingang`, to: k.email, subject: `${status === "confirmed" ? "Buchungsbestätigung" : "Ihre Anfrage"} ${b.number} – ${brand.name}`, text: mailtext(k.name, b.number, status, a, k, origin) },
   ];
   const inhaber = await env.DB.prepare("SELECT email FROM admin_users WHERE role = 'owner' AND active = 1").all<{ email: string }>();
   for (const o of inhaber.results) {

@@ -37,10 +37,10 @@ export async function uebersicht(env: Env, u: AdminUser, url: URL): Promise<stri
         (SELECT COUNT(*) FROM bookings WHERE status = 'confirmed' AND event_day BETWEEN ?1 AND ?2) AS naechste30,
         (SELECT COUNT(*) FROM bookings WHERE status IN ('confirmed','completed') AND substr(event_day, 1, 4) = ?3) AS jahr,
         (SELECT COALESCE(SUM(total_rappen), 0) FROM bookings WHERE status IN ('confirmed','completed') AND substr(event_day, 1, 4) = ?3) AS umsatz,
-        (SELECT COUNT(*) FROM payment_schedule p JOIN bookings b ON b.id = p.booking_id WHERE p.status = 'open' AND b.status IN ('confirmed','completed') AND b.event_day < ?1) AS offen_vergangen`,
+        (SELECT COUNT(*) FROM bookings b WHERE b.status IN ('confirmed','completed') AND b.event_day < ?1 AND b.total_rappen > COALESCE((SELECT SUM(amount_rappen) FROM payments z WHERE z.booking_id = b.id), 0)) AS offen_vergangen`,
     ).bind(heute, plusTage(heute, 30), heute.slice(0, 4)).first<{ anfragen: number; naechste30: number; jahr: number; umsatz: number; offen_vergangen: number }>())!;
     if (k.anfragen > 0) warnungen.push(`${k.anfragen} offene Anfrage(n) warten auf Antwort`);
-    if (k.offen_vergangen > 0 && darf("finance:read")) warnungen.push(`${k.offen_vergangen} Zahlung(en) zu vergangenen Events noch offen`);
+    if (k.offen_vergangen > 0 && darf("finance:read")) warnungen.push(`${k.offen_vergangen} vergangene Buchung(en) noch nicht als bezahlt erfasst (Buchungsdetail → Zahlungseingang)`);
     teile.push(`<div class="karten">
   <div class="karte"><span class="klein">Offene Anfragen</span><b>${k.anfragen}</b><a class="klein" href="/admin/buchungen?status=request&amp;zeit=alle">ansehen</a></div>
   <div class="karte"><span class="klein">Events in den nächsten 30 Tagen</span><b>${k.naechste30}</b><a class="klein" href="/admin/kalender">Kalender</a></div>

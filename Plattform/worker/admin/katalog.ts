@@ -149,7 +149,9 @@ export async function speichereZone(env: Env, u: AdminUser, id: number | null, f
 
 export async function einstellungenSeite(env: Env, u: AdminUser, url: URL): Promise<string> {
   const werte = await einstellungen(env);
-  const inhalt = `<h2>Zahlung und AGB</h2><p class="klein">Nur Information für Kunden und Zahlungsplan – es gibt keine Onlinezahlung. Gilt für neu bestätigte Buchungen.</p>
+  const inhalt = `<h2>Kosten-Ansätze</h2><p class="klein">Für die Wirtschaftlichkeit (Finanzen). Nur eigene, geprüfte Werte eintragen.</p>
+<form method="post" action="/admin/einstellungen/finanzen"><div class="felder">${einstellungsFelder("finanzen", werte)}<div style="align-self:end"><button>Speichern</button></div></div></form>
+<h2>AGB und MWST</h2><p class="klein">Zahlung wird immer persönlich vereinbart – die Plattform hat keine Zahlungsfunktion.</p>
 <form method="post" action="/admin/einstellungen/zahlung"><div class="felder">${einstellungsFelder("zahlung", werte)}<div style="align-self:end"><button>Speichern</button></div></div></form>
 <h2>System und Kostenkontrolle</h2>
 <form method="post" action="/admin/einstellungen/system"><div class="felder">${einstellungsFelder("system", werte)}<div style="align-self:end"><button>Speichern</button></div></div></form>`;

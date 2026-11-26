@@ -4,7 +4,6 @@ export const datumCh = (tag: string) => `${tag.slice(8, 10)}.${tag.slice(5, 7)}.
 export const plusTage = (tag: string, n: number) => new Date(Date.parse(`${tag}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 export const heuteZurich = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 export const STATUS: Record<string, string> = { request: "Anfrage – wird geprüft", confirmed: "Bestätigt", completed: "Abgeschlossen", cancelled: "Storniert", declined: "Abgelehnt" };
-export const ZAHLUNG: Record<string, string> = { full: "Gesamtbetrag", deposit: "Anzahlung", balance: "Restbetrag", security_deposit: "Kaution" };
 
 /** Turnstile-Widget (nur wenn ein öffentlicher Site-Key beim Build gesetzt ist). */
 export function turnstileToken(form: HTMLElement): string | undefined {

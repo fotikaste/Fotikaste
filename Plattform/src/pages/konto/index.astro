@@ -22,10 +22,10 @@ import Turnstile from "../../components/Turnstile.astro";
 </ContentLayout>
 
 <script>
-  import { chf, datumCh, post, STATUS, turnstileToken, ZAHLUNG } from "../../lib/format";
+  import { chf, datumCh, post, STATUS, turnstileToken } from "../../lib/format";
   const $ = (id: string) => document.getElementById(id)!;
   const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-  type B = { number: string; status: string; package_slug: string; event_day: string; start_day: string; end_day: string; delivery: number; street: string | null; plz: string | null; city: string | null; flex_cancel_until: string | null; total_rappen: number; price_final: number; positionen: { text: string; qty: number; total_rappen: number }[]; galerie: { name: string; online_bis: string; fotos: string[] } | null; zahlungsplan: { kind: string; amount_rappen: number; due_on: string | null; status: string }[] };
+  type B = { number: string; status: string; package_slug: string; event_day: string; start_day: string; end_day: string; delivery: number; street: string | null; plz: string | null; city: string | null; flex_cancel_until: string | null; total_rappen: number; price_final: number; positionen: { text: string; qty: number; total_rappen: number }[]; galerie: { name: string; online_bis: string; fotos: string[] } | null; bezahlt: number };
 
   async function lade() {
     const r = await fetch("/api/konto/buchungen", { credentials: "same-origin" });
@@ -42,7 +42,7 @@ import Turnstile from "../../components/Turnstile.astro";
         <p class="text-muted text-sm">${b.delivery ? `Lieferung an ${esc(b.street)}, ${esc(b.plz)} ${esc(b.city ?? "")}` : "Selbstabholung"}</p>
         <ul class="mt-4 text-[0.95rem]">${b.positionen.map((p) => `<li class="flex justify-between gap-4 py-2 border-b border-line"><span>${p.qty > 1 ? `${p.qty} × ` : ""}${esc(p.text)}</span><span class="whitespace-nowrap">${chf(p.total_rappen)}</span></li>`).join("")}</ul>
         <p class="flex justify-between font-semibold mt-3"><span>Total</span><span>${chf(b.total_rappen)}${b.price_final ? "" : " + Fahrt (offen)"}</span></p>
-        ${b.zahlungsplan.length ? `<p class="text-sm text-muted mt-3">Zahlung (nach Absprache, nicht online): ${b.zahlungsplan.map((z) => `${ZAHLUNG[z.kind] ?? z.kind} ${chf(z.amount_rappen)}${z.due_on ? ` bis ${datumCh(z.due_on)}` : ""}${z.status === "paid" ? " – bezahlt" : ""}`).join(" · ")}</p>` : ""}
+        <p class="text-sm text-muted mt-3">${["confirmed", "completed"].includes(b.status) && b.bezahlt >= b.total_rappen ? "Zahlung erhalten – vielen Dank." : "Zahlung: Wir melden uns persönlich bei Ihnen. Online wird nichts bezahlt."}</p>
         ${b.galerie ? `<h3 class="text-xl mt-6">Ihre Fotos (${b.galerie.fotos.length})</h3><p class="text-sm text-muted">Nur für Sie sichtbar, online bis ${datumCh(b.galerie.online_bis)}. Bild antippen zum Öffnen und Speichern.</p>
           <div class="mt-3 grid grid-cols-3 sm:grid-cols-5 gap-2">${b.galerie.fotos.map((id, i) => `<a href="/api/konto/foto/${id}/web" target="_blank" rel="noopener"><img src="/api/konto/foto/${id}/thumb" alt="Foto ${i + 1}" loading="lazy" width="400" height="267" class="w-full h-auto border border-line"></a>`).join("")}</div>` : ""}
         <p class="text-sm text-muted mt-1">${b.flex_cancel_until ? `Kostenlose Absage bis ${datumCh(b.flex_cancel_until)}.` : "Nicht stornierbar."}</p>
