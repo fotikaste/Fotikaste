@@ -1,10 +1,12 @@
 ---
 import ContentLayout from "../layouts/ContentLayout.astro";
 import PackageCards from "../components/PackageCards.astro";
-import { packages } from "../data/content";
-const printsLabel = (p: (typeof packages)[number]) => (p.prints ? `${p.prints}${p.printsIsExample ? " (Beispiel)" : ""}` : "folgt");
+import { packages, terms } from "../data/content";
+import { offersJsonLd } from "../lib/seo";
+const chf = (n: number) => new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(n);
+const d = terms.delivery;
 ---
-<ContentLayout path="/preise" eyebrow="Angebote" heading="Pakete und Preise" lead="Transparent und vollständig: Grundpreis, Ausdrucke, Lieferung und Extras sehen Sie vor der Buchung. Bezahlung auf Rechnung vor dem Event, in Schweizer Franken.">
+<ContentLayout path="/preise" eyebrow="Angebote" heading="Pakete und Preise" lead="Transparent und vollständig: Paketpreis, Fahrt und Extras sehen Sie vor der Buchung. Online wird nichts bezahlt – die Zahlung vereinbaren wir nach der Buchung per E-Mail oder persönlich." jsonLd={[offersJsonLd(packages)]}>
   <PackageCards level={2} />
   <h2 class="text-3xl sm:text-4xl mt-20">Leistungen im Vergleich</h2>
   <div class="mt-6 overflow-x-auto border border-line bg-white" tabindex="0" role="region" aria-label="Paketvergleich, seitlich scrollbar">
@@ -12,14 +14,31 @@ const printsLabel = (p: (typeof packages)[number]) => (p.prints ? `${p.prints}${
       <caption class="sr-only">Vergleich der Pakete</caption>
       <thead class="bg-paper"><tr><th scope="col" class="p-4 font-semibold">Leistung</th>{packages.map((p) => <th scope="col" class="p-4 font-display text-xl font-medium">{p.name}</th>)}</tr></thead>
       <tbody>
-        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Preis</th>{packages.map(() => <td class="p-4">folgt</td>)}</tr>
-        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Ausdrucke 10 × 15 cm</th>{packages.map((p) => <td class="p-4">{printsLabel(p)}</td>)}</tr>
-        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Online-Galerie (30 Tage)</th>{packages.map(() => <td class="p-4">✓</td>)}</tr>
-        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Lieferung und Aufbau</th>{packages.map(() => <td class="p-4">folgt</td>)}</tr>
+        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Preis</th>{packages.map((p) => <td class="p-4 font-semibold">{chf(p.priceChf)}</td>)}</tr>
+        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Sofortdruck 10 × 15 cm</th>{packages.map((p) => <td class="p-4">{p.prints ? `${p.prints} Abzüge` : "–"}</td>)}</tr>
+        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Online-Galerie und QR-Download</th>{packages.map(() => <td class="p-4">✓</td>)}</tr>
+        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Rahmen und Layouts</th>{packages.map(() => <td class="p-4">✓</td>)}</tr>
+        <tr class="border-t border-line"><th scope="row" class="p-4 font-normal text-muted">Mietdauer</th>{packages.map(() => <td class="p-4">bis {terms.includedDays} Tage</td>)}</tr>
       </tbody>
     </table>
   </div>
-  <h2 class="text-3xl sm:text-4xl mt-20">Lieferung</h2>
-  <p class="mt-4 text-muted max-w-[62ch]">Wir liefern in die Ostschweiz und in den Kanton Zürich. Die Lieferkosten richten sich nach der Entfernung und erscheinen in der Buchung, bevor Sie verbindlich bestätigen.</p>
-  <p class="mt-6"><span class="placeholder-tag">Preise werden derzeit festgelegt</span></p>
+
+  <h2 class="text-3xl sm:text-4xl mt-20">Zusatzleistungen</h2>
+  <dl class="mt-6 border-t border-line max-w-3xl">
+    <div class="grid sm:grid-cols-[16rem_1fr] gap-2 sm:gap-6 py-5 border-b border-line">
+      <dt class="font-semibold">Lieferung und Abholung</dt>
+      <dd class="text-muted">{chf(d.baseChf)} zusammen, bis {d.includedKm} km ab {d.origin}. Darüber {chf(d.perKmChf)} pro km. Beispiel 35 km: {chf(d.baseChf)} + 15 × {chf(d.perKmChf)} = {chf(d.baseChf + 15 * d.perKmChf)}. Ohne Lieferung holen Sie die Fotobox selbst ab.</dd>
+    </div>
+    <div class="grid sm:grid-cols-[16rem_1fr] gap-2 sm:gap-6 py-5 border-b border-line">
+      <dt class="font-semibold">Zusätzlicher Miettag</dt>
+      <dd class="text-muted">{chf(terms.extraDayChf)} pro Tag über {terms.includedDays} Tage hinaus.</dd>
+    </div>
+    <div class="grid sm:grid-cols-[16rem_1fr] gap-2 sm:gap-6 py-5 border-b border-line">
+      <dt class="font-semibold">Option «stornierbar»</dt>
+      <dd class="text-muted">{chf(terms.flexCancelChf)}. Kostenlose Absage bis {terms.flexCancelDays} Tage vor dem Event. Ohne diese Option ist die Buchung nicht stornierbar.</dd>
+    </div>
+  </dl>
+
+  <h2 class="text-3xl sm:text-4xl mt-20">Liefergebiet</h2>
+  <p class="mt-4 text-muted max-w-[62ch]">Wir liefern in die Ostschweiz und in den Kanton Zürich. Die Fahrtkosten sehen Sie in der Buchung, bevor Sie verbindlich bestätigen.</p>
 </ContentLayout>

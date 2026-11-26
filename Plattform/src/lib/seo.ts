@@ -68,6 +68,24 @@ export function serviceJsonLd(): Json {
   };
 }
 
+/** Angebote mit Preisen – nur, weil die Preise auch sichtbar auf der Seite stehen. */
+export function offersJsonLd(pkgs: { slug: string; name: string; priceChf: number; prints: number | null }[]): Json {
+  return {
+    "@type": "OfferCatalog",
+    name: "Fotobox-Pakete",
+    itemListElement: pkgs.map((p) => ({
+      "@type": "Offer",
+      name: `Fotobox ${p.name}`,
+      description: p.prints ? `Fotobox mit Sofortdruck, ${p.prints} Abzüge 10 × 15 cm, Online-Galerie, Miete bis 2 Tage` : "Fotobox ohne Drucker, Online-Galerie, Miete bis 2 Tage",
+      price: p.priceChf.toFixed(2),
+      priceCurrency: "CHF",
+      url: absoluteUrl("/preise"),
+      seller: { "@id": absoluteUrl("/#organisation") },
+      areaServed: brand.areaServed.map((name) => ({ "@type": "AdministrativeArea", name })),
+    })),
+  };
+}
+
 export function faqJsonLd(items: { question: string; answer: string }[]): Json {
   return {
     "@type": "FAQPage",

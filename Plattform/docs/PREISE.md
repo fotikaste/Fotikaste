@@ -1,7 +1,19 @@
 # Preise und Leistungen
 
-Stand: 2026-11-26 · Status: **Vorschlag, wartet auf Bestätigung**. Alle Werte später im Admin änderbar.
+Stand: 2026-11-26 · Status: **bestätigt am 2026-11-26** (Abschnitt «Festgelegt»). Alle Werte später im Admin änderbar.
 Grundlage: Angaben auf den Webseiten von 11 Ostschweizer/Zürcher Anbietern (`COMPETITOR_ANALYSIS.md`, Abruf 2026-11-25), Druckkosten 0.15 CHF/Abzug.
+
+## Festgelegt (Inhaber, 2026-11-26)
+| Punkt | Wert |
+|---|---|
+| Essential | CHF 290.– · ohne Drucker · Online-Galerie, QR-Download, Rahmen/Layouts |
+| Premium | CHF 450.– · Drucker · 300 Abzüge 10×15 · Galerie · Rahmen/Layouts |
+| Signature | **CHF 590.– · Drucker · 600 Abzüge** 10×15 · Galerie · Rahmen/Layouts (Material 600 × 0.15 = CHF 90) |
+| Mietdauer | bis 2 Tage inkl. (1 Eventtag); **jeder weitere Tag CHF 45.–** |
+| Fahrten | **Lieferung und Abholung zusammen** CHF 50.– bis 20 km, darüber CHF 1.20 pro km (einfache Strecke ab **8370 Sirnach** – Annahme, bitte bestätigen), einzeln buchbar; ohne Fahrt = Selbstabholung |
+| Kapazität | 1 Fotobox → 1 Vermietung gleichzeitig, 1 Lieferung pro Tag |
+| Zahlung | keine Onlinezahlung, Zahlung nach Absprache (E-Mail/persönlich) |
+| Storno | Standard: **nicht stornierbar**. Option «stornierbar» **+ CHF 20.–**: kostenlose Absage bis **28 Tage** vor dem Event, danach nicht mehr stornierbar |
 
 ## Vorgaben des Inhabers (2026-11-26)
 - Pakete **Essential** (ohne Drucker, nur Online-Galerie), **Premium** (Drucker, 300 Abzüge, Galerie), **Signature** (Drucker, 400 Abzüge, Galerie).
@@ -39,11 +51,11 @@ Mit nur 400 Abzügen empfehle ich CHF 500.–; mit klarem Extra wären CHF 550�
 ## Fahrten (Lieferung und Abholung)
 - Pauschale **CHF 50.–** inkl. bis 20 km.
 - Darüber **CHF 1.20 pro km**. Rechenbeispiel (einfache Strecke ab Standort, 35 km): 50 + 15 × 1.20 = **CHF 68.–**.
-- **Offen:** Ausgangsort? Zählt die einfache Strecke oder Hin- und Rückfahrt? Gilt der Preis für Lieferung **und** Abholung zusammen?
+- Festgelegt: Ausgangsort 8370 Sirnach, einfache Strecke, Preis gilt für Lieferung und Abholung zusammen.
 - Distanz online ohne kostenpflichtigen Kartendienst: Luftlinie zwischen Postleitzahlen (offene Daten) × Umwegfaktor 1.3,
   als «geschätzt» angezeigt; der verbindliche Betrag steht in der Bestätigung. Ohne Fahrt = Selbstabholung.
 
 ## Zahlung und Storno
 - Keine Onlinezahlung, keine Zahlungsfunktion auf der Webseite. Die Buchung ist verbindlich; Zahlung nach Absprache (E-Mail/Treffen).
 - Rechnungen (Phase 6) bleiben sinnvoll als PDF zum Versenden – ohne Zahlungsfunktion.
-- **Offen:** Stornoregeln (z. B. kostenlos bis 28 Tage vorher – so bei MyFotobox und FotoboxThurgau).
+- Festgelegt: nicht stornierbar; Option «stornierbar» +20.– mit kostenloser Absage bis 28 Tage vorher.

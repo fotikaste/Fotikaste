@@ -8,18 +8,26 @@ import { brand } from "../config/brand";
 export interface PackageInfo {
   slug: string;
   name: string;
-  priceChf: number | null; // null = noch nicht festgelegt
-  prints: number | null;
-  printsIsExample?: boolean;
+  priceChf: number;
+  prints: number | null; // null = ohne Drucker
   features: string[];
-  placeholder: true;
 }
 
+/** Festgelegt vom Inhaber am 2026-11-26 (docs/PREISE.md). Später im Admin pflegbar. */
 export const packages: PackageInfo[] = [
-  { slug: "essential", name: "Essential", priceChf: null, prints: null, features: ["Online-Galerie", "QR-Download fürs Handy", "Mietdauer folgt"], placeholder: true },
-  { slug: "premium", name: "Premium", priceChf: null, prints: 300, printsIsExample: true, features: ["Lieferung und Aufbau", "Individuelles Fotolayout", "Online-Galerie"], placeholder: true },
-  { slug: "signature", name: "Signature", priceChf: null, prints: null, features: ["Hintergrundsystem", "Verlängerte Mietdauer", "Persönliche Betreuung"], placeholder: true },
+  { slug: "essential", name: "Essential", priceChf: 290, prints: null, features: ["Fotobox mit Spiegelreflexkamera", "Online-Galerie und QR-Download", "Rahmen und Layouts inbegriffen", "ohne Drucker"] },
+  { slug: "premium", name: "Premium", priceChf: 450, prints: 300, features: ["Sofortdruck 10 × 15 cm", "300 Abzüge inbegriffen", "Online-Galerie und QR-Download", "Rahmen und Layouts inbegriffen"] },
+  { slug: "signature", name: "Signature", priceChf: 590, prints: 600, features: ["Sofortdruck 10 × 15 cm", "600 Abzüge inbegriffen", "Online-Galerie und QR-Download", "Rahmen und Layouts inbegriffen"] },
 ];
+
+/** Konditionen (docs/PREISE.md). */
+export const terms = {
+  includedDays: 2,
+  extraDayChf: 45,
+  delivery: { baseChf: 50, includedKm: 20, perKmChf: 1.2, origin: "8370 Sirnach" },
+  flexCancelChf: 20,
+  flexCancelDays: 28,
+} as const;
 
 /** Technische Fakten: nur Bestätigtes (Hardware vorhanden). Unbekanntes = null. */
 export const productFacts = [
@@ -55,9 +63,9 @@ export const occasions = [
 ];
 
 export const faqs = [
-  { question: `Was kostet eine Fotobox bei ${brand.name}?`, answer: "Die Preise werden derzeit festgelegt und erscheinen hier transparent mit allen Leistungen. Lieferung, Ausdrucke und Extras sind dann einzeln ausgewiesen, ohne versteckte Kosten." },
+  { question: `Was kostet eine Fotobox bei ${brand.name}?`, answer: "Essential kostet CHF 290.– (ohne Drucker, mit Online-Galerie), Premium CHF 450.– (mit Drucker und 300 Abzügen) und Signature CHF 590.– (mit Drucker und 600 Abzügen). Die Miete gilt für bis zu 2 Tage, jeder weitere Tag kostet CHF 45.–. Lieferung und Abholung kosten zusammen CHF 50.– bis 20 km ab Sirnach, darüber CHF 1.20 pro km." },
   { question: `In welchen Regionen liefert ${brand.name}?`, answer: "In der Ostschweiz und im Kanton Zürich: Thurgau, St. Gallen, beide Appenzell, Schaffhausen, Glarus und Zürich. Die Lieferkosten richten sich nach der Entfernung und werden vor der Buchung angezeigt." },
-  { question: "Wie funktioniert die Buchung?", answer: "Sie wählen Ihr Eventdatum, sehen sofort die Verfügbarkeit, wählen Paket und Extras und buchen verbindlich online. Sie erhalten die Bestätigung sofort per E-Mail. Bezahlt wird auf Rechnung vor dem Event." },
+  { question: "Wie funktioniert die Buchung?", answer: "Sie wählen Ihr Eventdatum, sehen sofort die Verfügbarkeit, wählen Paket und Extras und buchen verbindlich online. Sie erhalten die Bestätigung sofort per E-Mail. Online wird nichts bezahlt – die Zahlung vereinbaren wir danach per E-Mail oder persönlich." },
   { question: "Wie bekommen die Gäste ihre Fotos?", answer: "Jedes Foto wird sofort als Postkarte 10 × 15 cm gedruckt. Auf Wunsch zeigt die Fotobox einen QR-Code, über den der Gast nur sein eigenes Foto auf das Handy lädt." },
   { question: "Wer sieht die Fotos meines Anlasses?", answer: "Standardmässig nur die Person, die ein Foto aufgenommen hat, über ihren persönlichen QR-Code. Eine gemeinsame Galerie für alle Gäste schalten Sie als Veranstalter bewusst frei, auf Wunsch mit Passwort." },
   { question: "Wie lange bleiben die Fotos online?", answer: "Standardmässig 30 Tage. Vor der Löschung erhalten Sie eine Erinnerung per E-Mail. Die Originalbilder bleiben bei uns auf der Fotobox und können auf Wunsch separat bereitgestellt werden." },

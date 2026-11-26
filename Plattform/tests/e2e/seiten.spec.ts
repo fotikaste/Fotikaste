@@ -50,11 +50,20 @@ test("Sicherheits-Header gesetzt", async ({ request }) => {
   expect(h["strict-transport-security"]).toContain("max-age");
 });
 
-test("Startseite: keine erfundenen Bewertungen, Preise als Platzhalter", async ({ page }) => {
+test("Startseite: keine erfundenen Bewertungen, festgelegte Preise sichtbar", async ({ page }) => {
   await page.goto("/");
   const html = await page.content();
   expect(html).not.toMatch(/aggregateRating|ratingValue/);
-  await expect(page.getByText("Preis folgt").first()).toBeVisible();
+  for (const preis of ["CHF 290.00", "CHF 450.00", "CHF 590.00"]) await expect(page.getByText(preis).first()).toBeVisible();
+});
+
+test("Preisseite: Preise in strukturierten Daten stimmen mit sichtbaren Preisen überein", async ({ page }) => {
+  await page.goto("/preise");
+  const ld = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((s) => JSON.parse(s));
+  const offers = ld.flatMap((g) => g["@graph"]).filter((n) => n["@type"] === "OfferCatalog").flatMap((c) => c.itemListElement);
+  expect(offers.map((o: { price: string }) => o.price)).toEqual(["290.00", "450.00", "590.00"]);
+  await expect(page.getByText("Option «stornierbar»")).toBeVisible();
+  await expect(page.getByText("CHF 68.00").first()).toBeVisible();
 });
 
 test("Bildschirmfotos für den Phasenbericht", async ({ page }, info) => {

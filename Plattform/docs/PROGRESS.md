@@ -2,6 +2,12 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
+## 2026-11-26 – Preise festgelegt und auf der Webseite
+- Essential 290 (ohne Drucker) · Premium 450 (300 Abzüge) · Signature 590 (600 Abzüge) · Zusatztag 45 · Fahrt 50 bis 20 km ab 8370 Sirnach, +1.20/km
+  (Lieferung und Abholung zusammen) · nicht stornierbar, Option «stornierbar» +20 (bis 28 Tage) · keine Onlinezahlung → `PREISE.md`.
+- Preisseite mit Zusatzleistungen und Angebots-JSON-LD (Preise = sichtbare Preise, per Test geprüft). Tests: 37 Vitest, 58 Playwright grün.
+- Annahme zu prüfen: km zählen als einfache Strecke ab Sirnach.
+
 ## 2026-11-26 – Phase 2 umgesetzt (Datenbank und Sicherheit)
 - Worker für `/api/*` und `/admin`, D1-Migration 0001, Access-JWT-Prüfung (WebCrypto, kein Zusatzpaket), Rollen, Protokoll, Verbrauchszähler,
   Warnstufen 50/75/90 %, Sperre ab 90 %, atomare Speicherreservierung, Anfragebegrenzung, Turnstile, Admin-Seite → `PHASE2_BERICHT.md`.
