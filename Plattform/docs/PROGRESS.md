@@ -6,7 +6,8 @@ Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Eintr�
 - GitHub-Repository `fotikaste/Fotikaste` (privat); CI grün, erste Veröffentlichung über die Umgebung `produktion` erfolgreich.
 - Cloudflare: Domain fotikaste.ch, D1 (Migrationen, 3190 PLZ, Inhaber als Admin), R2 (EU), Access als Bauzaun für die ganze Domain (Einmal-PIN), Turnstile-Schlüssel.
 - Resend: Domain bestätigt (EU), Sende-Schlüssel und Testempfänger als Secrets, Testmodus an.
-- Abnahme online: Testbuchung FK-2026-0001 im Browser des Inhabers (Turnstile ok; im automatisierten Browser abgelehnt, Fehler 600010 – erwartet). Kurzfristig → korrekt als Anfrage. Erste Mails mit Resend 422 abgelehnt (Zeilenumbruch im Testempfänger) → behoben, Versand robuster, Fehlergrund wird gespeichert. Danach alle 4 Mails von Resend angenommen; Testanfrage abgelehnt (Tag wieder frei).
+- Abnahme online: Testbuchung FK-2026-0001 im Browser des Inhabers (Turnstile ok; im automatisierten Browser abgelehnt, Fehler 600010 – erwartet). Kurzfristig → korrekt als Anfrage. Erste Mails mit Resend 422 abgelehnt (Zeilenumbruch im Testempfänger) → behoben, Versand robuster, Fehlergrund wird gespeichert. Danach alle 4 Mails von Resend zugestellt und vom Inhaber im Bluewin-Postfach bestätigt; Testanfrage abgelehnt (Tag wieder frei).
+- Impressum/Kontakt mit Inhaberangaben; Datenschutz ohne offene Stellen (DPF-Liste geprüft: Cloudflare und GitHub Swiss-U.S. DPF aktiv, Resend nur EU/UK → Standardvertragsklauseln laut DPA). Fachprüfung der Rechtstexte offen.
 - Behoben: Mails aus dem Admin warteten bis zum nächtlichen Cron → werden jetzt sofort gesendet. Storno-Texte überall einheitlich (ohne Option 50 %/100 %).
 - «Webseite aktualisieren»: GitHub-Token (nur Actions des Repositorys, bis 26.11.2027). Online ausgelöst: GitHub-Ablauf startet und wartet auf Freigabe `produktion`.
 - AGB: Entscheide des Inhabers eingetragen. Offen: Impressum-Daten, Datenschutz (USA-Grundlage, Datum), Fachprüfung, Go-live.
