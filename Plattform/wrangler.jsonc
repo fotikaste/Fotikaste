@@ -30,8 +30,8 @@
   "vars": {
     // Lokal überschrieben durch .dev.vars (ENVIRONMENT=development). In Produktion nie «development».
     "ENVIRONMENT": "production",
-    "ACCESS_TEAM_DOMAIN": "",
-    "ACCESS_AUD": ""
+    "ACCESS_TEAM_DOMAIN": "rapid-mouse-0b4a.cloudflareaccess.com",
+    "ACCESS_AUD": "3c9d398e36d3a9135b802f9d03c206b82c8644b1560ea4c787cfe14a7e103eda"
   },
   // Keine alternativen Adressen (*.workers.dev, Vorschau-URLs), die Cloudflare Access umgehen könnten.
   // Eigene Domain: Cloudflare legt den DNS-Eintrag und das Zertifikat beim Veröffentlichen selbst an.
