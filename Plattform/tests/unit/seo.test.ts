@@ -50,8 +50,12 @@ describe("Sitemap", () => {
 
 describe("Strukturierte Daten", () => {
   it("erfindet keine Kontaktdaten, Bewertungen oder Preise", () => {
-    const org = organizationJsonLd();
-    expect(org).not.toHaveProperty("telephone");
+    const org = organizationJsonLd() as Record<string, unknown>;
+    // Kontaktdaten nur aus brand.ts (vom Inhaber angegeben), sonst gar nicht
+    if (brand.contact.phone) expect(org.telephone).toBe(brand.contact.phone);
+    else expect(org).not.toHaveProperty("telephone");
+    if (brand.contact.email) expect(org.email).toBe(brand.contact.email);
+    else expect(org).not.toHaveProperty("email");
     expect(org).not.toHaveProperty("aggregateRating");
     expect(JSON.stringify(org)).not.toContain("price");
   });
