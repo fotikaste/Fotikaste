@@ -45,7 +45,7 @@ const chfGanz = (n: number) => new Intl.NumberFormat("de-CH", { style: "currency
 
         <fieldset>
           <legend class="text-2xl font-display">4. Option</legend>
-          <label class="wahl mt-4"><input type="checkbox" name="stornierbar" /><span><span class="font-semibold block">Stornierbar (+ {chfGanz(terms.flexCancelChf)})</span><span class="text-sm text-muted">Kostenlose Absage bis {terms.flexCancelDays} Tage vor dem Event. Ohne diese Option ist die Buchung nicht stornierbar.</span></span></label>
+          <label class="wahl mt-4"><input type="checkbox" name="stornierbar" /><span><span class="font-semibold block">Stornierbar (+ {chfGanz(terms.flexCancelChf)})</span><span class="text-sm text-muted">Kostenlose Absage bis {terms.flexCancelDays} Tage vor dem Event. Ohne diese Option kostet eine Absage bis 28 Tage vorher 50 %, danach den ganzen Mietpreis.</span></span></label>
         </fieldset>
       </form>
 

@@ -13,7 +13,7 @@ Grundlage: Angaben auf den Webseiten von 11 Ostschweizer/Zürcher Anbietern (`CO
 | Fahrten | **Lieferung und Abholung zusammen** CHF 50.– bis 20 km, darüber CHF 1.20 pro km (einfache Strecke ab **8370 Sirnach**, bestätigt 2026-11-26), einzeln buchbar; ohne Fahrt = Selbstabholung |
 | Kapazität | 1 Fotobox → 1 Vermietung gleichzeitig, 1 Lieferung pro Tag |
 | Zahlung | keine Onlinezahlung, Zahlung nach Absprache (E-Mail/persönlich) |
-| Storno | Standard: **nicht stornierbar**. Option «stornierbar» **+ CHF 20.–**: kostenlose Absage bis **28 Tage** vor dem Event, danach nicht mehr stornierbar |
+| Storno | Ohne Option: Absage bis **28 Tage** vorher **50 %**, danach **100 %** des Mietpreises (Entscheid 2026-11-27). Option «stornierbar» **+ CHF 20.–**: kostenlose Absage bis **28 Tage** vor dem Event, danach 100 % |
 
 ## Vorgaben des Inhabers (2026-11-26)
 - Pakete **Essential** (ohne Drucker, nur Online-Galerie), **Premium** (Drucker, 300 Abzüge, Galerie), **Signature** (Drucker, 400 Abzüge, Galerie).

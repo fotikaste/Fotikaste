@@ -89,7 +89,7 @@ ${b.reason ? `<p class="hinweis">Anfrage-Grund: ${v(b.reason)}</p>` : ""}
   <div class="karte"><span class="klein">Eventtag</span><b>${esc(datumCh(b.event_day))}</b><span class="klein">Miete ${esc(datumCh(b.start_day))} – ${esc(datumCh(b.end_day))}</span></div>
   <div class="karte"><span class="klein">${b.delivery ? "Lieferung" : "Selbstabholung"}</span><b style="font-size:1.2rem">${b.delivery ? `${v(b.street)}<br>${v(b.plz)} ${v(b.city)}` : "–"}</b><span class="klein">${b.delivery ? `${b.km_estimated ? `${v(b.km_estimated)} km geschätzt · ` : ""}${v(b.zone_name ?? "keine Zone")}` : ""}</span></div>
   <div class="karte"><span class="klein">Kunde</span><b style="font-size:1.2rem">${v(b.contact_name)}</b><span class="klein">${b.contact_company ? `${v(b.contact_company)} · ` : ""}${v(b.contact_email)} · ${v(b.contact_phone)}${b.guests ? ` · ${v(b.guests)} Gäste` : ""}</span><br><a class="klein" href="/admin/kunden/${v(b.customer_id)}">Kundenkonto</a></div>
-  <div class="karte"><span class="klein">Total</span><b>${esc(chf(b.total_rappen))}</b><span class="klein">${b.price_final ? "" : "Fahrtkosten offen · "}${b.flex_cancel_until ? `stornierbar bis ${esc(datumCh(b.flex_cancel_until as string))}` : "nicht stornierbar"}</span></div>
+  <div class="karte"><span class="klein">Total</span><b>${esc(chf(b.total_rappen))}</b><span class="klein">${b.price_final ? "" : "Fahrtkosten offen · "}${b.flex_cancel_until ? `stornierbar bis ${esc(datumCh(b.flex_cancel_until as string))}` : "ohne Storno-Option"}</span></div>
 </div>
 ${b.message ? `<h3>Nachricht des Kunden</h3><p class="hinweis">${v(b.message)}</p>` : ""}
 ${aktionen}
