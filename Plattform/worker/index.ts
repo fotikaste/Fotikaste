@@ -15,6 +15,7 @@ import { oeffentlicheRoute } from "./routen/oeffentlich";
 import { geraeteRoute } from "./routen/geraet";
 import { galerieRoute } from "./routen/galerie";
 import { wartung } from "./lib/wartung";
+import { versendeAusstehende } from "./lib/mail";
 
 export async function handle(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
@@ -100,9 +101,14 @@ export async function handle(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      return await handle(request, env);
+      const antwort = await handle(request, env);
+      // Mails aus dem Admin (Bestätigung, Ablehnung, Verschiebung …) sofort im Hintergrund senden statt erst beim nächtlichen Cron.
+      if (request.method !== "GET" && antwort.status < 400 && /^\/(api\/)?admin(\/|$)/.test(new URL(request.url).pathname)) {
+        ctx.waitUntil(versendeAusstehende(env).catch((e) => console.error("Mailversand", e)));
+      }
+      return antwort;
     } catch (e) {
       console.error("Unerwarteter Fehler", e);
       return withSecurityHeaders(fehler(500, "intern", "Interner Fehler. Bitte später erneut versuchen."));

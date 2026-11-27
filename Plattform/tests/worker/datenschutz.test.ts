@@ -93,6 +93,24 @@ describe("Datensparsamkeit", () => {
     expect(r.results[1]!.status).toBe("sent");
   });
 
+  it("erfolgreiche Admin-Aktion stösst den Mailversand sofort an, Lesen und Fehler nicht", async () => {
+    const worker = (await import("../../worker/index")).default;
+    const env = await makeEnv();
+    const lauf = async (req: Request) => {
+      const warten: Promise<unknown>[] = [];
+      await worker.fetch(req, env, { waitUntil: (p: Promise<unknown>) => warten.push(p), passThroughOnException() {} } as unknown as ExecutionContext);
+      await Promise.all(warten);
+      return warten.length;
+    };
+    const h = async () => ({ "Content-Type": "application/json", Origin: BASE, "Cf-Access-Jwt-Assertion": await jwt({ email: "inhaber@example.ch" }) });
+    // gleichen Wert zurückschreiben, damit andere Tests unbeeinflusst bleiben
+    const jetzt = await (await db()).prepare("SELECT value FROM settings WHERE key = 'print_cost_rappen'").first<{ value: string }>();
+    expect(await lauf(new Request(BASE + "/api/admin/einstellungen/print_cost_rappen", { method: "PUT", headers: await h(), body: JSON.stringify({ value: JSON.parse(jetzt!.value) }) }))).toBe(1);
+    expect(await lauf(new Request(BASE + "/api/admin/einstellungen/gibt_es_nicht", { method: "PUT", headers: await h(), body: JSON.stringify({ value: 1 }) }))).toBe(0);
+    expect(await lauf(new Request(BASE + "/admin", { headers: await h() }))).toBe(0);
+    expect(await lauf(new Request(BASE + "/api/buchung/angebot", { method: "POST", headers: await h(), body: "{}" }))).toBe(0);
+  });
+
   it("täglicher Cron löscht abgelaufene Links, Sitzungen und alte Mails", async () => {
     const d = await db();
     const k = await d.prepare("SELECT id FROM customers LIMIT 1").first<{ id: string }>();
