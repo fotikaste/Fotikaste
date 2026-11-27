@@ -14,7 +14,7 @@ Entwicklung auf Branch `plattform/entwicklung`; Übernahme nach `main` nur nach 
 | **4** ✅ Administration (2026-11-26, lokal getestet) | Dashboard inkl. **Verbrauchsanzeige**, Buchungen, Kalender, Kunden, Inhalte/Preise/FAQ ohne Code | Selbstverwaltung | Verbrauch neu |
 | **5** ✅ Fotobox-Integration (2026-11-26, Laptop; Pi-Update + Schlüssel löschen offen) | Geräteverwaltung, Geräte-API, Simulator, privater Bucket, Galerie, `PlattformGalerie` im Pi-Code (Laptop), **Migration nach `R2_MIGRATION.md`**, Pi-Update erst nach Freigabe | QR → Plattform, alte Schlüssel gelöscht | Pi darf erweitert werden |
 | **6** ✅ Zahlung persönlich & Wirtschaftlichkeit (2026-11-26, ADR-032) | Keine Zahlungsfunktion/Rechnungen; Zahlungseingang und Aufwand von Hand, Ausgaben, Anschaffungen mit Abschreibung, Fixkosten, Deckungsbeitrag, Break-even, CSV für Treuhand | Wirtschaftlichkeit pro Jahr und Buchung | Rechnungen/Erinnerungen gestrichen (Entscheid Inhaber) |
-| **7** Veröffentlichung | Sicherheits-/Datenschutzprüfung, Rechtstexte, Domain (nach Namensentscheid), Search Console/Bing, Backups + Wiederherstellungstest | Live nach Freigabe | – |
+| **7** 🟡 Veröffentlichung (lokal vorbereitet 2026-11-26; wartet auf Konten/Domain des Inhabers) | Sicherheits-/Datenschutzprüfung, Rechtstexte, Domain (nach Namensentscheid), Search Console/Bing, Backups + Wiederherstellungstest | Live nach Freigabe | – |
 
 **Später:** Marketing-Dashboard, KI-Sichtbarkeitsmonitoring, Sprachen FR/IT/EN, Halbtages-Slots, Mitarbeiter-Rolle.
 

@@ -10,7 +10,7 @@ export default defineConfig({
   globalSetup: "./tests/e2e/vorbereitung.ts",
   use: { baseURL: `http://127.0.0.1:${PORT}`, locale: "de-CH", timezoneId: "Europe/Zurich" },
   webServer: {
-    command: `npm run db:lokal && npx wrangler dev --port ${PORT} --ip 127.0.0.1 --var ENVIRONMENT:development --var DEV_ADMIN_EMAIL:inhaber@example.ch`,
+    command: `npm run db:lokal && npx wrangler dev --port ${PORT} --ip 127.0.0.1 --local-upstream 127.0.0.1:${PORT} --var ENVIRONMENT:development --var DEV_ADMIN_EMAIL:inhaber@example.ch`,
     url: `http://127.0.0.1:${PORT}/`,
     reuseExistingServer: true,
     env: { WRANGLER_SEND_METRICS: "false" },

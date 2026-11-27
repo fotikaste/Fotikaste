@@ -13,6 +13,13 @@ export async function wartung(env: Env, jetzt = new Date()): Promise<{ abgelaufe
   const grenze = new Date(jetzt.getTime() - 7 * 86_400_000).toISOString();
   const liegengeblieben = await loescheFotos(env, "status = 'pending' AND created_at < ?1", [grenze], "system", "Upload nicht abgeschlossen");
   await raeumeAuf(env, 86_400, jetzt.getTime());
+  // 3. Datensparsamkeit: abgelaufene Anmeldelinks und Sitzungen, alte E-Mails (Inhalt enthält Personendaten)
+  const tag = (n: number) => new Date(jetzt.getTime() - n * 86_400_000).toISOString();
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM magic_links WHERE expires_at < ?1").bind(tag(1)),
+    env.DB.prepare("DELETE FROM sessions WHERE expires_at < ?1 OR (revoked_at IS NOT NULL AND revoked_at < ?2)").bind(jetzt.toISOString(), tag(7)),
+    env.DB.prepare("DELETE FROM outbox WHERE created_at < ?1 AND status != 'pending'").bind(tag(180)),
+  ]);
   await versendeAusstehende(env, 20);
   return { abgelaufen, liegengeblieben };
 }

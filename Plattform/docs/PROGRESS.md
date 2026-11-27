@@ -2,6 +2,12 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
+## 2026-11-26 – Phase 7 lokal abgeschlossen (Veröffentlichung vorbereitet, nichts veröffentlicht)
+- Entscheide: Name «Fotikaste» bleibt (ADR-033), privates GitHub-Repository (ADR-034).
+- Sicherheit/Datenschutz: npm audit 0, strengere CSP, Anmeldelinks nach Versand entfernt, Aufräumen per Cron, DSG-Auskunft und Anonymisierung.
+- Rechtstexte als ENTWURF mit «noch offen»-Stellen; GitHub-Abläufe (Tests/Veröffentlichung, Webseite, Sicherung); Wiederherstellung lokal geprüft (33 Tabellen).
+- Tests: 124 Vitest, 76 Playwright grün. GitHub-Abläufe ungetestet (noch kein Repository) → `PHASE7_BERICHT.md`, Anleitung `DEPLOYMENT.md`.
+
 ## 2026-11-26 – Phase 6 umgesetzt (Zahlung persönlich, Wirtschaftlichkeit)
 - Entscheid Inhaber (ADR-032): keine Zahlungsfunktion, keine Rechnungen/Bankdaten/Erinnerungen; Zahlungsplan entfernt (Migration 0006).
 - Neu: Zahlungseingang und Aufwand im Buchungsdetail, /admin/finanzen mit Jahresrechnung, pro Buchung, Ausgaben, Anschaffungen (Abschreibung),
@@ -69,4 +75,4 @@ Cloudflare-Architektur, D1-Modell, R2-Migrationsplan, Markenprüfung, Wettbewerb
 Erste Analyse (Vercel/Supabase, überholt).
 
 ## Nächster Schritt
-Ansätze eintragen, Sichtprüfung, Merge nach `main`, Phase 7 (Veröffentlichung). Pi-Update erst nach Freigabe.
+Deine Schritte A–H in `DEPLOYMENT.md` (GitHub, Cloudflare, Domain, Access, Turnstile, Resend), Inhaberdaten und offene Punkte der Rechtstexte, Fachprüfung, dann Go-Live und Pi-Umstellung.

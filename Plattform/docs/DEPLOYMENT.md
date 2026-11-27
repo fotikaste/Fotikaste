@@ -1,21 +1,78 @@
-# Deployment (Plan)
+# Veröffentlichung – Schritt für Schritt
 
-Noch nichts eingerichtet. Jeder Schritt, der ein Konto, Kosten oder eine Veröffentlichung auslöst, braucht deine Freigabe.
+Stand: 2026-11-26 (Phase 7). **Konten, Käufe, Schlüssel und Freigaben machst du selbst.** Ich erkläre jeden Schritt und führe Befehle nur mit deiner Zustimmung aus.
+Budget: CHF 0 pro Monat, nur die Domain kostet jährlich. **Nie aktivieren:** Workers Paid, kostenpflichtige Tarife, Cloudflare Images.
 
-## Umgebungen
-| Umgebung | Zweck | Daten |
+## Überblick
+```
+GitHub (privat) ──Tests grün──► GitHub Actions ──► Cloudflare: Worker + statische Seiten + D1 + R2 (EU)
+                                     ▲                         │
+   Admin «Webseite aktualisieren» ───┘ (workflow_dispatch)      └── Cloudflare Access schützt /admin
+```
+Abläufe in `.github/workflows/`: `plattform.yml` (Tests, bei `main` veröffentlichen), `webseite.yml` (Webseite neu erzeugen), `sicherung.yml` (wöchentliche Datensicherung).
+
+## A – GitHub (du)
+1. GitHub-Konto mit **Zwei-Faktor-Anmeldung**. Neues **privates** Repository anlegen, z. B. `fotikaste`, leer (ohne README).
+2. Mir die Adresse des Repositorys geben. Ich verbinde es und lade den Code hoch – **nur nach deinem OK**. `.dev.vars` und Laufzeitdaten sind ausgeschlossen (`.gitignore`).
+3. Unter *Settings → Environments* eine Umgebung `produktion` anlegen und dort «Required reviewers» = du (jede Veröffentlichung braucht deinen Klick).
+
+## B – Cloudflare (du, bestehendes Konto)
+1. *Manage Account → Billing*: Budgetwarnung (z. B. USD 1) einrichten, prüfen, dass **kein** kostenpflichtiger Tarif aktiv ist.
+2. Am Laptop `npx wrangler login` (du meldest dich im Browser an).
+3. Mit deinem OK lege ich an (beides gratis):
+   - `npx wrangler d1 create fotikaste --location weur` → die angezeigte `database_id` in `wrangler.jsonc` eintragen.
+   - `npx wrangler r2 bucket create fotikaste-fotos --jurisdiction eu` (privat, **kein** r2.dev, keine öffentliche Domain).
+4. **API-Token** für GitHub (*My Profile → API Tokens → Create Custom Token*), nur dieses Konto:
+   Account · Workers Scripts: Edit · D1: Edit · Workers R2 Storage: Read · Account Settings: Read; Zone (deine Domain) · Workers Routes: Edit.
+   In GitHub als Secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+
+## C – Domain (du)
+1. `fotikaste.ch` bei einem Registrar deiner Wahl kaufen (Cloudflare verkauft keine .ch-Domains). Vorher nochmals prüfen, ob sie noch frei ist.
+2. Domain zu Cloudflare hinzufügen (Free-Plan) und beim Registrar die Cloudflare-Nameserver eintragen.
+3. Ich trage danach ein: `brand.siteUrl = "https://fotikaste.ch"` (`src/config/brand.ts`) und in `wrangler.jsonc`
+   `"routes": [{ "pattern": "fotikaste.ch", "custom_domain": true }]` (www leitet Cloudflare per Regel auf die Hauptadresse um).
+
+## D – Admin-Schutz: Cloudflare Access (du)
+1. *Zero Trust* (Free, bis 50 Personen) → *Settings → Authentication*: Google als Anmeldung (dein Google-Konto mit 2FA).
+2. *Access → Applications → Self-hosted*: Domain `fotikaste.ch`, Pfade `/admin` und `/api/admin/*`. Policy: **Allow**, Include = deine E-Mail-Adresse.
+3. «Application Audience (AUD) Tag» und Team-Domain (`<team>.cloudflareaccess.com`) in `wrangler.jsonc` bei `ACCESS_AUD` / `ACCESS_TEAM_DOMAIN` eintragen (keine Geheimnisse).
+4. Eigentümer in der echten Datenbank anlegen (mit deinem OK):
+   `npx wrangler d1 execute DB --remote --command "INSERT INTO admin_users (email, role) VALUES ('<deine Google-Adresse>', 'owner')"`
+
+## E – Bot-Schutz Turnstile (du)
+Widget für `fotikaste.ch` anlegen. **Site Key** (öffentlich) steht direkt in den Workflows (`0x4AAAAAAGVYl_-nC8vY7FT4`). **Secret Key** → `npx wrangler secret put TURNSTILE_SECRET_KEY` (du tippst ihn ein).
+
+## F – E-Mail: Resend (du)
+1. Konto (Free: 100 Mails/Tag), Domain `fotikaste.ch` hinzufügen, die angezeigten DNS-Einträge (SPF, DKIM) in Cloudflare eintragen, zusätzlich DMARC (`_dmarc` TXT `v=DMARC1; p=quarantine; rua=mailto:<deine Adresse>`).
+2. API-Key (nur «Sending access», nur diese Domain) → `npx wrangler secret put RESEND_API_KEY`.
+3. In `wrangler.jsonc` → `vars`: `MAIL_FROM` = `"Fotikaste <buchung@fotikaste.ch>"`, `MAIL_TEST_MODE` = `"true"`, `MAIL_TEST_RECIPIENT` = deine Adresse. **Erst nach der Abnahme** `MAIL_TEST_MODE` auf `"false"`.
+
+## G – «Webseite aktualisieren» online (du)
+1. GitHub → *Settings → Developer settings → Fine-grained tokens*: nur Repository `fotikaste`, Berechtigung **Actions: Read and write**, sonst nichts, Ablauf 1 Jahr.
+2. `npx wrangler secret put REBUILD_SECRET` (Token eintippen).
+3. `REBUILD_HOOK_URL` in `wrangler.jsonc` → `vars`: `https://api.github.com/repos/<konto>/fotikaste/actions/workflows/webseite.yml/dispatches`
+
+## H – Erste Veröffentlichung und Abnahme
+1. Push auf `main` → Tests → du bestätigst in GitHub die Umgebung `produktion` → Migrationen, Inhalte, Veröffentlichung.
+   Der Ablauf bricht ab, solange `database_id` oder `ACCESS_AUD` fehlen oder `ENVIRONMENT` nicht `production` ist.
+2. Prüfen: `/admin` verlangt Google-Anmeldung · Testbuchung (Mails gehen nur an dich) · Kalender · Kundenkonto · «Webseite aktualisieren».
+3. Rechtstexte vervollständigen (Impressum: Name, Adresse, Kontakt in `brand.ts`; offene Punkte in AGB/Datenschutz) und **fachlich prüfen lassen**.
+4. Go-Live: `MAIL_TEST_MODE = "false"`, Testdaten löschen, Fusszeile «Entwicklungsversion» entfernen, fertige Seiten auf `indexable: true`.
+5. Google Search Console und Bing Webmaster: Domain bestätigen (DNS-Eintrag), Sitemap `https://fotikaste.ch/sitemap.xml` einreichen.
+6. Danach Fotobox umstellen (`R2_MIGRATION.md`, Schritte 4–7) – nur nach deiner ausdrücklichen Freigabe.
+
+## Datensicherung und Wiederherstellung
+- **Automatisch:** wöchentlich (Montag) Export der Datenbank als Datei in GitHub (90 Tage) + Cloudflare D1 Time Travel (letzte Tage, auf die Minute).
+- **Probe:** `npm run sicherung:test` spielt einen Export in eine leere Datenbank und vergleicht alle Tabellen (lokal geprüft 2026-11-26: 33 Tabellen identisch).
+  Mit einer heruntergeladenen Sicherung: entpacken, `node tools/sicherung-test.mjs sicherung-JJJJ-MM-TT.sql`. Einmal pro Monat empfohlen.
+- **Ernstfall:** Zeitpunkt wählen → `npx wrangler d1 time-travel restore DB --timestamp <Zeit>` (letzte Tage) oder neue Datenbank anlegen und Sicherungsdatei einspielen.
+- **Nicht gesichert:** Fotos (bewusst – sie sind nur 30 Tage online, Originale bleiben auf der Fotobox).
+
+## Geheimnisse – wo was liegt
+| Name | Wo | Wer setzt |
 |---|---|---|
-| Lokal | Entwicklung auf deinem PC | nur Testdaten |
-| Vorschau (Cloudflare `*.workers.dev`, hinter Cloudflare Access) | Vorschau pro Änderung, `noindex` | nur Testdaten |
-| Produktion | echte Kunden | erst nach Phase 7 |
-
-## Checkliste Phase 7 (vor Go-Live)
-- [ ] Domain gekauft (Name entschieden, Markenprüfung gemacht)
-- [ ] DNS: Webseite, `files.`-Subdomain für R2 falls nötig, E-Mail **SPF/DKIM/DMARC**
-- [ ] D1 Time Travel aktiv, wöchentlicher Export per GitHub Actions, Wiederherstellung getestet
-- [ ] Geheimnisse mit `wrangler secret put` gesetzt (nie im Code); Workers Paid **nicht** aktiviert; Budgetwarnung USD 1 aktiv
-- [ ] Mail-Testmodus **aus**, Testkonten gelöscht
-- [ ] Sicherheitsprüfung, `npm audit`, Berechtigungstests grün
-- [ ] Rechtstexte geprüft, Impressum vollständig
-- [ ] robots.txt/Sitemap korrekt, Search Console + Bing verbunden
-- [ ] Überwachung (Uptime, Fehler-Mails)
+| `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `REBUILD_SECRET` | `wrangler secret put` (verschlüsselt bei Cloudflare) | du |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | GitHub Secrets | du |
+| `PUBLIC_TURNSTILE_SITE_KEY` | GitHub Variables (öffentlich) | du |
+| `ACCESS_AUD`, `ACCESS_TEAM_DOMAIN`, `MAIL_FROM`, `REBUILD_HOOK_URL`, `database_id` | `wrangler.jsonc` (keine Geheimnisse) | ich, mit deinen Werten |
+| lokal: `.dev.vars` | nur am Laptop, nie in Git | – |

@@ -1,4 +1,24 @@
 ---
-import SimplePage from "../layouts/SimplePage.astro";
+import ContentLayout from "../layouts/ContentLayout.astro";
+import Offen from "../components/Offen.astro";
+import { brand } from "../config/brand";
+const o = brand.owner, c = brand.contact;
 ---
-<SimplePage path="/impressum" lead="ENTWURF – nicht rechtlich geprüft. Der Text wird vor der Veröffentlichung erstellt und fachlich geprüft." tag="Entwurf" />
+<ContentLayout path="/impressum" eyebrow="Rechtliches" heading="Impressum" description={`Impressum von ${brand.name}: Inhaber, Adresse und Kontakt.`}>
+  <div class="rechtstext">
+    <p class="placeholder-tag">ENTWURF – nicht rechtlich geprüft</p>
+    <h2>Verantwortlich für diese Webseite</h2>
+    <p><strong>{brand.name}</strong><br />
+      Inhaber: <Offen wert={o.name} was="Vor- und Nachname" /><br />
+      Rechtsform: <Offen wert={o.legalForm} was="Rechtsform" /><br />
+      Adresse: {c.address ? <span>{c.address.street}, {c.address.postalCode} {c.address.city}</span> : <Offen wert={null} was="Geschäftsadresse" />}</p>
+    <h2>Kontakt</h2>
+    <p>E-Mail: <Offen wert={c.email} was="E-Mail-Adresse" /><br />Telefon: <Offen wert={c.phone} was="Telefonnummer" /></p>
+    {(o.uid || o.vatNumber) && <><h2>Registereinträge</h2><p>{o.uid && <>UID: {o.uid}<br /></>}{o.vatNumber && <>MWST-Nr.: {o.vatNumber}</>}</p></>}
+    <h2>Haftung für Inhalte und Links</h2>
+    <p>Die Inhalte dieser Webseite werden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität wird keine Gewähr übernommen. Für Inhalte externer Webseiten, auf die verlinkt wird, sind ausschliesslich deren Betreiber verantwortlich.</p>
+    <h2>Bilder und Daten</h2>
+    <p>Bilder auf dieser Webseite sind, wo angegeben, KI-generierte Visualisierungen und zeigen keine echten Kundinnen oder Kunden.
+      Distanzen für die Fahrtkosten werden mit dem amtlichen Ortschaftenverzeichnis berechnet. Quelle: Bundesamt für Landestopografie swisstopo.</p>
+  </div>
+</ContentLayout>

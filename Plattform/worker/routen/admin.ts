@@ -12,7 +12,7 @@ import { kontakt, notiz, positionHinzu, positionWeg, setzeStatus, verschiebe } f
 import { buchungsDetail, buchungsListe } from "../admin/buchungen-seiten";
 import { hebeAuf, kalenderSeite, sperre } from "../admin/kalender";
 import { einstellungenSeite, preiseSeite, speichereEinstellungen, speicherePaket, speichereZone } from "../admin/katalog";
-import { kundenDetail, kundenListe, kundenName, kundenNotiz } from "../admin/kunden";
+import { kundenAnonymisieren, kundenAuskunft, kundenDetail, kundenListe, kundenName, kundenNotiz } from "../admin/kunden";
 import { aktualisiereWebseite, inhalteSeite, loescheFaq, speichereFakten, speichereFaq, speichereLeistungen } from "../admin/inhalte";
 import { formFehler, formular, MELDUNGEN, rappenAus, zurueck } from "../admin/layout";
 import { uebersicht } from "../admin/seite";
@@ -64,6 +64,7 @@ const AKTIONEN: [RegExp, Permission, Aktion, (t: string[], f: Map<string, string
   [/^\/admin\/kalender\/aufheben$/, "bookings:write", (e, u, f) => hebeAuf(e, u, f.get("id") ?? ""), (_t, f) => `/admin/kalender?monat=${/^\d{4}-\d{2}$/.test(f.get("monat") ?? "") ? f.get("monat") : ""}`, "freigegeben"],
   [/^\/admin\/kunden\/([0-9a-f]{32})\/notiz$/, "bookings:write", (e, u, f, t) => kundenNotiz(e, u, t[0]!, f.get("text") ?? ""), (t) => `/admin/kunden/${t[0]}`, "notiz"],
   [/^\/admin\/kunden\/([0-9a-f]{32})\/name$/, "bookings:write", (e, u, f, t) => kundenName(e, u, t[0]!, f.get("name") ?? ""), (t) => `/admin/kunden/${t[0]}`, "gespeichert"],
+  [/^\/admin\/kunden\/([0-9a-f]{32})\/anonymisieren$/, "users:manage", (e, u, f, t) => kundenAnonymisieren(e, u, t[0]!, f.get("bestaetigung") ?? ""), (t) => `/admin/kunden/${t[0]}`, "gespeichert"],
   [/^\/admin\/preise\/paket\/([a-z]{2,20})$/, "settings:write", (e, u, f, t) => speicherePaket(e, u, t[0]!, f), () => "/admin/preise", "gespeichert"],
   [/^\/admin\/preise\/konditionen$/, "settings:write", (e, u, f) => speichereEinstellungen(e, u, "konditionen", f), () => "/admin/preise", "gespeichert"],
   [/^\/admin\/preise\/zone(?:\/(\d+))?$/, "settings:write", (e, u, f, t) => speichereZone(e, u, t[0] ? Number(t[0]) : null, f), () => "/admin/preise", "gespeichert"],
@@ -82,6 +83,12 @@ const AKTIONEN: [RegExp, Permission, Aktion, (t: string[], f: Map<string, string
 export async function adminRoute(request: Request, env: Env, pfad: string): Promise<Response | null> {
   const url = new URL(request.url);
   if (request.method === "GET") {
+    const auskunft = pfad.match(/^\/admin\/kunden\/([0-9a-f]{32})\/auskunft\.json$/);
+    if (auskunft) {
+      const u = await verlangeRecht(request, env, "users:manage");
+      if (u instanceof Response) return u;
+      return kundenAuskunft(env, u, auskunft[1]!);
+    }
     if (pfad === "/admin/finanzen/export.csv") {
       const u = await verlangeRecht(request, env, "finance:read");
       if (u instanceof Response) return u;

@@ -6,16 +6,23 @@
  */
 export const brand = {
   name: "Fotikaste",
-  /** Arbeitsname, rechtlich noch nicht geprüft (siehe docs/BRAND_CHECK.md). */
-  isWorkingName: true,
-  /** Platzhalter-Domain. Nicht registriert, nicht gekauft. */
-  siteUrl: "https://fotikaste.example",
+  /** Name festgelegt vom Inhaber am 2026-11-26 (ADR-033); Verwechslungsrisiko mit «Event Fotibox» bewusst in Kauf genommen. */
+  isWorkingName: false,
+  /** Domain fotikaste.ch (gekauft bei Hostpoint, DNS bei Cloudflare, 2026-11-26). */
+  siteUrl: "https://fotikaste.ch",
   locale: "de-CH",
   claim: "Besondere Momente. Bleibende Erinnerungen.",
   description:
     "Fotobox mit Spiegelreflexkamera und Sofortdruck für Hochzeiten, Geburtstage und Firmenanlässe in der Ostschweiz und im Raum Zürich – direkt online buchen.",
   /** Liefergebiet laut Entscheid (Kantone). Wird später aus dem Admin gepflegt. */
   areaServed: ["Thurgau", "St. Gallen", "Appenzell Ausserrhoden", "Appenzell Innerrhoden", "Schaffhausen", "Glarus", "Zürich"],
+  /** Inhaber für Impressum und Datenschutz (nur echte Angaben eintragen; null = «noch offen»). */
+  owner: {
+    name: null as string | null,          // Vor- und Nachname bzw. Firma
+    legalForm: null as string | null,     // z. B. «Einzelunternehmen»
+    uid: null as string | null,           // UID (CHE-…), falls vorhanden
+    vatNumber: null as string | null,     // MWST-Nummer, falls MWST-pflichtig
+  },
   contact: {
     email: null as string | null,
     phone: null as string | null,

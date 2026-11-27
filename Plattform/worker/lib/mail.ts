@@ -55,5 +55,7 @@ export async function versendeAusstehende(env: Env, max = 5, fetcher: typeof fet
     }
     n++;
   }
+  // Anmeldelinks nach dem Versand aus dem Mail-Ausgang entfernen (der Link ist ein Zugang). Zurückgehaltene Testmails bleiben lesbar (nur lokal).
+  await env.DB.prepare("UPDATE outbox SET body_text = '(Anmeldelink nach Versand entfernt)' WHERE dedupe_key LIKE 'magic:%' AND status IN ('sent', 'failed') AND body_text != '(Anmeldelink nach Versand entfernt)'").run();
   return n;
 }

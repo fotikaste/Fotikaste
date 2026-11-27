@@ -1,0 +1,6 @@
+---
+/** Zeigt einen echten Wert oder deutlich «noch offen» (nie erfundene Angaben). */
+interface Props { wert: string | null | undefined; was: string }
+const { wert, was } = Astro.props;
+---
+{wert ? <span>{wert}</span> : <span class="placeholder-tag">noch offen: {was}</span>}
