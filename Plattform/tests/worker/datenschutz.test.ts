@@ -78,7 +78,7 @@ describe("Datensparsamkeit", () => {
   it("Versand: Testempfänger ohne unsichtbaren Zeilenumbruch, Fehlergrund von Resend wird gespeichert", async () => {
     const d = await db();
     await d.prepare("UPDATE outbox SET status = 'held' WHERE status = 'pending'").run();
-    await d.prepare("INSERT INTO outbox (dedupe_key, to_email, subject, body_text, test_mode) VALUES ('versand:ok', 'kunde@example.ch', 'Hallo', 'Text', 1), ('versand:fehler', 'kunde2@example.ch', 'Hallo', 'Text', 1)").run();
+    await d.prepare("INSERT INTO outbox (dedupe_key, to_email, subject, body_text, test_mode, last_error) VALUES ('versand:ok', 'kunde@example.ch', 'Hallo', 'Text', 1, 'alter Fehler'), ('versand:fehler', 'kunde2@example.ch', 'Hallo', 'Text', 1, NULL)").run();
     const gesendet: { to: string[]; key: string | null }[] = [];
     const fetcher = (async (_u: string, init: RequestInit) => {
       const body = JSON.parse(String(init.body)) as { to: string[]; subject: string };
@@ -90,7 +90,7 @@ describe("Datensparsamkeit", () => {
     expect(gesendet[0]!.key).toMatch(/^outbox-\d+-inhaber@example\.ch$/);
     const r = await d.prepare("SELECT dedupe_key, status, last_error FROM outbox WHERE dedupe_key LIKE 'versand:%' ORDER BY dedupe_key").all<{ dedupe_key: string; status: string; last_error: string | null }>();
     expect(r.results[0]!.last_error).toContain("Invalid `to` field");
-    expect(r.results[1]!.status).toBe("sent");
+    expect(r.results[1]).toMatchObject({ status: "sent", last_error: null });
   });
 
   it("erfolgreiche Admin-Aktion stösst den Mailversand sofort an, Lesen und Fehler nicht", async () => {

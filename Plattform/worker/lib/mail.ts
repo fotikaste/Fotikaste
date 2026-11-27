@@ -49,7 +49,7 @@ export async function versendeAusstehende(env: Env, max = 5, fetcher: typeof fet
       });
       // Grund von Resend mitspeichern (enthält keine Geheimnisse), damit Fehler verständlich sind.
       if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text().catch(() => "")).slice(0, 150)}`);
-      await env.DB.prepare("UPDATE outbox SET status = 'sent', sent_day = ?2, attempts = attempts + 1 WHERE id = ?1").bind(m.id, tag).run();
+      await env.DB.prepare("UPDATE outbox SET status = 'sent', sent_day = ?2, attempts = attempts + 1, last_error = NULL WHERE id = ?1").bind(m.id, tag).run();
       await zaehle(env, "emails_tag", 1, jetzt);
       await zaehle(env, "emails_monat", 1, jetzt);
     } catch (e) {
