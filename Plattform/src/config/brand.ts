@@ -18,16 +18,17 @@ export const brand = {
   areaServed: ["Thurgau", "St. Gallen", "Appenzell Ausserrhoden", "Appenzell Innerrhoden", "Schaffhausen", "Glarus", "Zürich"],
   /** Inhaber für Impressum und Datenschutz (nur echte Angaben eintragen; null = «noch offen»). */
   owner: {
-    name: null as string | null,          // Vor- und Nachname bzw. Firma
-    legalForm: null as string | null,     // z. B. «Einzelunternehmen»
+    // Angaben des Inhabers vom 2026-11-27. Rechtsform: eine Person ohne Gesellschaft = Einzelunternehmen (nicht im Handelsregister).
+    name: "Tim Jones" as string | null,          // Vor- und Nachname bzw. Firma
+    legalForm: "Einzelunternehmen" as string | null,     // z. B. «Einzelunternehmen»
     uid: null as string | null,           // UID (CHE-…), falls vorhanden
     vatNumber: null as string | null,     // MWST-Nummer, falls MWST-pflichtig
   },
   contact: {
-    email: null as string | null,
-    phone: null as string | null,
+    email: "tim.jones@bluewin.ch" as string | null,
+    phone: "+41 79 812 07 73" as string | null,
     /** Geschäftsadresse für Impressum; im Google-Profil ausblendbar. */
-    address: null as null | { street: string; postalCode: string; city: string },
+    address: { street: "Kanalweg 2", postalCode: "8370", city: "Sirnach" } as null | { street: string; postalCode: string; city: string },
   },
   /** Nur echte, bestehende Profile eintragen. */
   sameAs: [] as string[],

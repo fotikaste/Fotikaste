@@ -1,4 +1,17 @@
 ---
-import SimplePage from "../layouts/SimplePage.astro";
+import ContentLayout from "../layouts/ContentLayout.astro";
+import { brand } from "../config/brand";
+const c = brand.contact;
+const tel = c.phone ? c.phone.replace(/\s+/g, "") : null;
 ---
-<SimplePage path="/kontakt" eyebrow="Kontakt" heading="Wir freuen uns auf Ihre Nachricht" lead="Telefon, E-Mail und Kontaktformular werden ergänzt, sobald die Kontaktdaten feststehen." tag="Kontaktdaten folgen" />
+<ContentLayout path="/kontakt" eyebrow="Kontakt" heading="Wir freuen uns auf Ihre Nachricht" lead="Fragen zur Fotobox, zu einem Termin oder zu Ihrer Buchung? Schreiben oder rufen Sie uns an.">
+  <div class="rechtstext">
+    <p><strong>{brand.name}</strong>{brand.owner.name && <>, {brand.owner.name}</>}<br />
+      {c.address && <>{c.address.street}, {c.address.postalCode} {c.address.city}</>}</p>
+    <p>
+      {c.email && <>E-Mail: <a href={`mailto:${c.email}`}>{c.email}</a><br /></>}
+      {tel && <>Telefon: <a href={`tel:${tel}`}>{c.phone}</a></>}
+    </p>
+    <p>Verfügbarkeit und Preise sehen Sie jederzeit online: <a href="/verfuegbarkeit">Verfügbarkeit prüfen</a>. Ihre Buchungen finden Sie im <a href="/konto">Kundenkonto</a>.</p>
+  </div>
+</ContentLayout>
