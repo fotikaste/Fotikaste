@@ -62,7 +62,7 @@ jobs:
       - name: Inhalte aus der echten Datenbank holen
         run: node tools/inhalte-export.mjs --remote
       - run: npx astro build
-        env: { PUBLIC_TURNSTILE_SITE_KEY: "${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}" }
+        env: { PUBLIC_TURNSTILE_SITE_KEY: "0x4AAAAAAGVYl_-nC8vY7FT4" }
       - name: Veröffentlichen
         run: npx wrangler deploy
       - name: «Webseite erzeugt» festhalten

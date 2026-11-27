@@ -40,7 +40,7 @@ Abläufe in `.github/workflows/`: `plattform.yml` (Tests, bei `main` veröffentl
    `npx wrangler d1 execute DB --remote --command "INSERT INTO admin_users (email, role) VALUES ('<deine Google-Adresse>', 'owner')"`
 
 ## E – Bot-Schutz Turnstile (du)
-Widget für `fotikaste.ch` anlegen. **Site Key** → GitHub *Variables* `PUBLIC_TURNSTILE_SITE_KEY`. **Secret Key** → `npx wrangler secret put TURNSTILE_SECRET_KEY` (du tippst ihn ein).
+Widget für `fotikaste.ch` anlegen. **Site Key** (öffentlich) steht direkt in den Workflows (`0x4AAAAAAGVYl_-nC8vY7FT4`). **Secret Key** → `npx wrangler secret put TURNSTILE_SECRET_KEY` (du tippst ihn ein).
 
 ## F – E-Mail: Resend (du)
 1. Konto (Free: 100 Mails/Tag), Domain `fotikaste.ch` hinzufügen, die angezeigten DNS-Einträge (SPF, DKIM) in Cloudflare eintragen, zusätzlich DMARC (`_dmarc` TXT `v=DMARC1; p=quarantine; rua=mailto:<deine Adresse>`).
