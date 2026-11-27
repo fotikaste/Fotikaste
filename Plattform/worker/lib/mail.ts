@@ -31,7 +31,8 @@ export async function versendeAusstehende(env: Env, max = 5, fetcher: typeof fet
   const tagesLimit = limitRow ? Number(JSON.parse(limitRow.value)) : 80;
   let n = 0;
   for (const m of r.results) {
-    const ziel = m.test_mode ? env.MAIL_TEST_RECIPIENT : m.to_email;
+    // trim(): Secrets aus der Kommandozeile können unsichtbare Zeilenumbrüche enthalten (Lehre 2026-11-27: Resend 422).
+    const ziel = (m.test_mode ? env.MAIL_TEST_RECIPIENT : m.to_email)?.trim();
     if (!ziel || !env.RESEND_API_KEY || !env.MAIL_FROM) {
       await env.DB.prepare("UPDATE outbox SET status = 'held', last_error = ?2 WHERE id = ?1").bind(m.id, m.test_mode ? "Testmodus: nicht versendet" : "Mailversand nicht eingerichtet").run();
       n++;
@@ -42,10 +43,12 @@ export async function versendeAusstehende(env: Env, max = 5, fetcher: typeof fet
     try {
       const res = await fetcher("https://api.resend.com/emails", {
         method: "POST",
-        headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": `outbox-${m.id}` },
-        body: JSON.stringify({ from: env.MAIL_FROM, to: [ziel], subject: m.test_mode ? `[TEST an ${m.to_email}] ${m.subject}` : m.subject, text: m.body_text }),
+        // Schlüssel enthält das Ziel: Ändert sich der Empfänger, lehnt Resend den neuen Versuch nicht als «gleicher Schlüssel, andere Daten» ab.
+        headers: { Authorization: `Bearer ${env.RESEND_API_KEY.trim()}`, "Content-Type": "application/json", "Idempotency-Key": `outbox-${m.id}-${ziel}` },
+        body: JSON.stringify({ from: env.MAIL_FROM.trim(), to: [ziel], subject: m.test_mode ? `[TEST an ${m.to_email}] ${m.subject}` : m.subject, text: m.body_text }),
       });
-      if (!res.ok) throw new Error(`Resend ${res.status}`);
+      // Grund von Resend mitspeichern (enthält keine Geheimnisse), damit Fehler verständlich sind.
+      if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text().catch(() => "")).slice(0, 150)}`);
       await env.DB.prepare("UPDATE outbox SET status = 'sent', sent_day = ?2, attempts = attempts + 1 WHERE id = ?1").bind(m.id, tag).run();
       await zaehle(env, "emails_tag", 1, jetzt);
       await zaehle(env, "emails_monat", 1, jetzt);

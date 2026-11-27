@@ -75,6 +75,24 @@ describe("Datensparsamkeit", () => {
     expect(r.results.map((x) => x.body_text)).toEqual(["https://x/konto/anmelden#def", "(Anmeldelink nach Versand entfernt)"]);
   });
 
+  it("Versand: Testempfänger ohne unsichtbaren Zeilenumbruch, Fehlergrund von Resend wird gespeichert", async () => {
+    const d = await db();
+    await d.prepare("UPDATE outbox SET status = 'held' WHERE status = 'pending'").run();
+    await d.prepare("INSERT INTO outbox (dedupe_key, to_email, subject, body_text, test_mode) VALUES ('versand:ok', 'kunde@example.ch', 'Hallo', 'Text', 1), ('versand:fehler', 'kunde2@example.ch', 'Hallo', 'Text', 1)").run();
+    const gesendet: { to: string[]; key: string | null }[] = [];
+    const fetcher = (async (_u: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body)) as { to: string[]; subject: string };
+      gesendet.push({ to: body.to, key: new Headers(init.headers).get("Idempotency-Key") });
+      return body.subject.includes("kunde2") ? new Response('{"message":"Invalid `to` field"}', { status: 422 }) : new Response("{}", { status: 200 });
+    }) as unknown as typeof fetch;
+    await versendeAusstehende(await makeEnv({ MAIL_TEST_RECIPIENT: "inhaber@example.ch\r\n", RESEND_API_KEY: "re_test\n", MAIL_FROM: "Fotikaste <buchung@example.ch>" }), 5, fetcher);
+    expect(gesendet.map((g) => g.to[0])).toEqual(["inhaber@example.ch", "inhaber@example.ch"]);
+    expect(gesendet[0]!.key).toMatch(/^outbox-\d+-inhaber@example\.ch$/);
+    const r = await d.prepare("SELECT dedupe_key, status, last_error FROM outbox WHERE dedupe_key LIKE 'versand:%' ORDER BY dedupe_key").all<{ dedupe_key: string; status: string; last_error: string | null }>();
+    expect(r.results[0]!.last_error).toContain("Invalid `to` field");
+    expect(r.results[1]!.status).toBe("sent");
+  });
+
   it("täglicher Cron löscht abgelaufene Links, Sitzungen und alte Mails", async () => {
     const d = await db();
     const k = await d.prepare("SELECT id FROM customers LIMIT 1").first<{ id: string }>();
