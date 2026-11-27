@@ -36,7 +36,10 @@
     // MAIL_TEST_RECIPIENT liegen als «wrangler secret» bei Cloudflare, nicht hier.
     // Testmodus: Mails gehen nur an den Testempfänger. Erst beim Go-live bewusst auf "false" stellen.
     "MAIL_FROM": "Fotikaste <buchung@fotikaste.ch>",
-    "MAIL_TEST_MODE": "true"
+    "MAIL_TEST_MODE": "true",
+    // «Webseite aktualisieren»: startet den GitHub-Ablauf webseite.yml. Token REBUILD_SECRET als Secret
+    // (nur Repository Fotikaste, nur «Actions: Read and write», gültig bis 26.11.2027).
+    "REBUILD_HOOK_URL": "https://api.github.com/repos/fotikaste/Fotikaste/actions/workflows/webseite.yml/dispatches"
   },
   // Keine alternativen Adressen (*.workers.dev, Vorschau-URLs), die Cloudflare Access umgehen könnten.
   // Eigene Domain: Cloudflare legt den DNS-Eintrag und das Zertifikat beim Veröffentlichen selbst an.

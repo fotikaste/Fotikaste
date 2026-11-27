@@ -2,6 +2,13 @@
 
 Ehrlich geführt: «erledigt» heisst umgesetzt **und** geprüft. Neueste Einträge oben.
 
+## 2026-11-27 – Phase 7: Einrichtung online (hinter Bauzaun)
+- GitHub-Repository `fotikaste/Fotikaste` (privat); CI grün, erste Veröffentlichung über die Umgebung `produktion` erfolgreich.
+- Cloudflare: Domain fotikaste.ch, D1 (Migrationen, 3190 PLZ, Inhaber als Admin), R2 (EU), Access als Bauzaun für die ganze Domain (Einmal-PIN), Turnstile-Schlüssel.
+- Resend: Domain bestätigt (EU), Sende-Schlüssel und Testempfänger als Secrets, Testmodus an. **Noch keine echte Testmail verschickt.**
+- «Webseite aktualisieren»: GitHub-Token (nur Actions des Repositorys, bis 26.11.2027) als Secret, Adresse in `wrangler.jsonc`. **Online noch nicht ausprobiert** (wirkt erst nach der nächsten Veröffentlichung).
+- AGB: Entscheide des Inhabers eingetragen. Offen: Impressum-Daten, Datenschutz (USA-Grundlage, Datum), Fachprüfung, Go-live.
+
 ## 2026-11-26 – Phase 7 lokal abgeschlossen (Veröffentlichung vorbereitet, nichts veröffentlicht)
 - Entscheide: Name «Fotikaste» bleibt (ADR-033), privates GitHub-Repository (ADR-034).
 - Sicherheit/Datenschutz: npm audit 0, strengere CSP, Anmeldelinks nach Versand entfernt, Aufräumen per Cron, DSG-Auskunft und Anonymisierung.

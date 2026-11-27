@@ -42,15 +42,17 @@ Abläufe in `.github/workflows/`: `plattform.yml` (Tests, bei `main` veröffentl
 ## E – Bot-Schutz Turnstile (du)
 Widget für `fotikaste.ch` anlegen. **Site Key** (öffentlich) steht direkt in den Workflows (`0x4AAAAAAGVYl_-nC8vY7FT4`). **Secret Key** → `npx wrangler secret put TURNSTILE_SECRET_KEY` (du tippst ihn ein).
 
-## F – E-Mail: Resend (du)
-1. Konto (Free: 100 Mails/Tag), Domain `fotikaste.ch` hinzufügen, die angezeigten DNS-Einträge (SPF, DKIM) in Cloudflare eintragen, zusätzlich DMARC (`_dmarc` TXT `v=DMARC1; p=quarantine; rua=mailto:<deine Adresse>`).
-2. API-Key (nur «Sending access», nur diese Domain) → `npx wrangler secret put RESEND_API_KEY`.
-3. In `wrangler.jsonc` → `vars`: `MAIL_FROM` = `"Fotikaste <buchung@fotikaste.ch>"`, `MAIL_TEST_MODE` = `"true"`, `MAIL_TEST_RECIPIENT` = deine Adresse. **Erst nach der Abnahme** `MAIL_TEST_MODE` auf `"false"`.
+## F – E-Mail: Resend (erledigt 2026-11-27)
+1. Konto (Free: 100 Mails/Tag), Domain `fotikaste.ch` (Region EU, Irland) – **bestätigt**. DNS in Cloudflare: CNAME `send` und `rsend` (nur DNS, nicht «proxied»), TXT `resend._domainkey` (DKIM), TXT `_dmarc` = `v=DMARC1; p=none;` (später auf `p=quarantine` verschärfen, wenn alles sauber läuft). Klick-/Öffnungs-Tracking bewusst aus.
+2. API-Key `fotikaste-worker` (nur «Sending access») → `npx wrangler secret put RESEND_API_KEY` ✔.
+3. `MAIL_TEST_RECIPIENT` (deine Adresse) als Secret ✔. In `wrangler.jsonc` → `vars`: `MAIL_FROM` = `"Fotikaste <buchung@fotikaste.ch>"`, `MAIL_TEST_MODE` = `"true"` ✔. **Erst nach der Abnahme** `MAIL_TEST_MODE` auf `"false"`.
+4. Mails empfangen (z. B. `info@fotikaste.ch`) ist noch nicht eingerichtet – später kostenlos über Cloudflare Email Routing.
 
-## G – «Webseite aktualisieren» online (du)
-1. GitHub → *Settings → Developer settings → Fine-grained tokens*: nur Repository `fotikaste`, Berechtigung **Actions: Read and write**, sonst nichts, Ablauf 1 Jahr.
-2. `npx wrangler secret put REBUILD_SECRET` (Token eintippen).
-3. `REBUILD_HOOK_URL` in `wrangler.jsonc` → `vars`: `https://api.github.com/repos/<konto>/fotikaste/actions/workflows/webseite.yml/dispatches`
+## G – «Webseite aktualisieren» online (erledigt 2026-11-27)
+1. Fine-grained Token `fotikaste-webseite-aktualisieren`: nur Repository `fotikaste/Fotikaste`, **Actions: Read and write**, sonst nichts. **Gültig bis 26.11.2027** – vorher neuen Token erstellen und Schritt 2 wiederholen.
+2. `npx wrangler secret put REBUILD_SECRET` ✔.
+3. `REBUILD_HOOK_URL` in `wrangler.jsonc` ✔: `https://api.github.com/repos/fotikaste/Fotikaste/actions/workflows/webseite.yml/dispatches`
+4. Der Ablauf nutzt die Umgebung `produktion`: Nach jedem Klick auf «Webseite aktualisieren» bestätigst du den Lauf in GitHub (Actions → «Review deployments»). Das ist Absicht: Nichts geht ohne dich online.
 
 ## H – Erste Veröffentlichung und Abnahme
 1. Push auf `main` → Tests → du bestätigst in GitHub die Umgebung `produktion` → Migrationen, Inhalte, Veröffentlichung.
@@ -71,7 +73,7 @@ Widget für `fotikaste.ch` anlegen. **Site Key** (öffentlich) steht direkt in d
 ## Geheimnisse – wo was liegt
 | Name | Wo | Wer setzt |
 |---|---|---|
-| `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `REBUILD_SECRET` | `wrangler secret put` (verschlüsselt bei Cloudflare) | du |
+| `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `REBUILD_SECRET`, `MAIL_TEST_RECIPIENT` | `wrangler secret put` (verschlüsselt bei Cloudflare) | du |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | GitHub Secrets | du |
 | `PUBLIC_TURNSTILE_SITE_KEY` | GitHub Variables (öffentlich) | du |
 | `ACCESS_AUD`, `ACCESS_TEAM_DOMAIN`, `MAIL_FROM`, `REBUILD_HOOK_URL`, `database_id` | `wrangler.jsonc` (keine Geheimnisse) | ich, mit deinen Werten |
